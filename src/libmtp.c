@@ -256,17 +256,18 @@ static int has_ogg_extension(char *name)
  * @return 0 if this does not end with flac, any other
  *           value means it does.
  */
-static int has_flac_extension(char *name) {
-  char *ptype;
+static int has_flac_extension(char *name)
+{
+    char *ptype;
 
-  if (name == NULL)
+    if (name == NULL)
+        return 0;
+    ptype = strrchr(name,'.');
+    if (ptype == NULL)
+        return 0;
+    if (strcasecmp(ptype, ".flac") == 0)
+        return 1;
     return 0;
-  ptype = strrchr(name,'.');
-  if (ptype == NULL)
-    return 0;
-  if (!strcasecmp (ptype, ".flac"))
-    return 1;
-  return 0;
 }
 
 
