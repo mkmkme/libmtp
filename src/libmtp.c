@@ -298,54 +298,49 @@ static filemap_t *new_filemap_entry()
  * @param ptp_id PTP filetype id
  * @return 0 for success any other value means error.
 */
-static int register_filetype(char const * const description, LIBMTP_filetype_t const id,
-			     uint16_t const ptp_id)
+static int register_filetype(char const * const description, LIBMTP_filetype_t const id, uint16_t const ptp_id)
 {
-  filemap_t *new = NULL, *current;
+    filemap_t *new = NULL, *current;
 
-  // Has this LIBMTP filetype been registered before ?
-  current = g_filemap;
-  while (current != NULL) {
-    if(current->id == id) {
-      break;
-    }
-    current = current->next;
-  }
-
-  // Create the entry
-  if(current == NULL) {
-    new = new_filemap_entry();
-    if(new == NULL) {
-      return 1;
+    // Has this LIBMTP filetype been registered before ?
+    current = g_filemap;
+    while (current != NULL) {
+        if(current->id == id)
+            break;
+        current = current->next;
     }
 
-    new->id = id;
-    if(description != NULL) {
-      new->description = strdup(description);
-    }
-    new->ptp_id = ptp_id;
+    // Create the entry
+    if(current == NULL) {
+        new = new_filemap_entry();
+        if(new == NULL)
+            return 1;
 
-    // Add the entry to the list
-    if(g_filemap == NULL) {
-      g_filemap = new;
-    } else {
-      current = g_filemap;
-      while (current->next != NULL ) current=current->next;
-      current->next = new;
-    }
+        new->id = id;
+        if(description != NULL)
+            new->description = strdup(description);
+        new->ptp_id = ptp_id;
+
+        // Add the entry to the list
+        if(g_filemap == NULL)
+            g_filemap = new;
+        else {
+            current = g_filemap;
+            while (current->next != NULL)
+                current = current->next;
+            current->next = new;
+        }
     // Update the existing entry
-  } else {
-    if (current->description != NULL) {
-      free(current->description);
+    } else {
+        if (current->description != NULL)
+            free(current->description);
+        current->description = NULL;
+        if(description != NULL)
+            current->description = strdup(description);
+        current->ptp_id = ptp_id;
     }
-    current->description = NULL;
-    if(description != NULL) {
-      current->description = strdup(description);
-    }
-    current->ptp_id = ptp_id;
-  }
 
-  return 0;
+    return 0;
 }
 
 static void init_filemap()
