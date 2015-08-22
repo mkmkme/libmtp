@@ -396,20 +396,18 @@ static void init_filemap()
  */
 static uint16_t map_libmtp_type_to_ptp_type(LIBMTP_filetype_t intype)
 {
-  filemap_t *current;
+    filemap_t *current;
 
-  current = g_filemap;
+    current = g_filemap;
 
-  while (current != NULL) {
-    if(current->id == intype) {
-      return current->ptp_id;
+    while (current != NULL) {
+        if(current->id == intype)
+            return current->ptp_id;
+        current = current->next;
     }
-    current = current->next;
-  }
-  // printf("map_libmtp_type_to_ptp_type: unknown filetype.\n");
-  return PTP_OFC_Undefined;
+    // printf("map_libmtp_type_to_ptp_type: unknown filetype.\n");
+    return PTP_OFC_Undefined;
 }
-
 
 /**
  * Returns the MTP internal interface type that maps to a certain ptp
