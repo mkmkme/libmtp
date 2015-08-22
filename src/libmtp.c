@@ -270,26 +270,24 @@ static int has_flac_extension(char *name)
     return 0;
 }
 
-
-
 /**
  * Create a new file mapping entry
  * @return a newly allocated filemapping entry.
  */
 static filemap_t *new_filemap_entry()
 {
-  filemap_t *filemap;
+    filemap_t *filemap;
 
-  filemap = (filemap_t *)malloc(sizeof(filemap_t));
+    filemap = (filemap_t *)malloc(sizeof(filemap_t));
 
-  if( filemap != NULL ) {
-    filemap->description = NULL;
-    filemap->id = LIBMTP_FILETYPE_UNKNOWN;
-    filemap->ptp_id = PTP_OFC_Undefined;
-    filemap->next = NULL;
-  }
+    if (filemap != NULL) {
+        filemap->description = NULL;
+        filemap->id = LIBMTP_FILETYPE_UNKNOWN;
+        filemap->ptp_id = PTP_OFC_Undefined;
+        filemap->next = NULL;
+    }
 
-  return filemap;
+    return filemap;
 }
 
 /**
