@@ -329,8 +329,7 @@ static int register_filetype(char const * const description, LIBMTP_filetype_t c
         }
     // Update the existing entry
     } else {
-        if (current->description != NULL)
-            free(current->description);
+        free(current->description);
         current->description = NULL;
         if(description != NULL)
             current->description = strdup(description);
