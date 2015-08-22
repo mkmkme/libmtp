@@ -233,17 +233,18 @@ static uint16_t put_func_wrapper(PTPParams* params, void* priv, unsigned long se
  * @return 0 if this does not end with ogg, any other
  *           value means it does.
  */
-static int has_ogg_extension(char *name) {
-  char *ptype;
+static int has_ogg_extension(char *name)
+{
+    char *ptype;
 
-  if (name == NULL)
+    if (name == NULL)
+        return 0;
+    ptype = strrchr(name,'.');
+    if (ptype == NULL)
+        return 0;
+    if (strcasecmp(ptype, ".ogg") == 0)
+        return 1;
     return 0;
-  ptype = strrchr(name,'.');
-  if (ptype == NULL)
-    return 0;
-  if (!strcasecmp (ptype, ".ogg"))
-    return 1;
-  return 0;
 }
 
 /**
