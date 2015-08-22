@@ -216,9 +216,9 @@ static int check_filename_exists(PTPParams* params, char const * const filename)
  * in a reliable way
  */
 typedef struct _MTPDataHandler {
-	MTPDataGetFunc		getfunc;
-	MTPDataPutFunc		putfunc;
-	void			*priv;
+    MTPDataGetFunc getfunc;
+    MTPDataPutFunc putfunc;
+    void *priv;
 } MTPDataHandler;
 
 static uint16_t get_func_wrapper(PTPParams* params, void* priv, unsigned long wantlen, unsigned char *data, unsigned long *gotlen);
