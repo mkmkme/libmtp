@@ -304,11 +304,8 @@ static int register_filetype(char const * const description, LIBMTP_filetype_t c
 
     // Has this LIBMTP filetype been registered before ?
     current = g_filemap;
-    while (current != NULL) {
-        if(current->id == id)
-            break;
+    while (current != NULL && current->id != id)
         current = current->next;
-    }
 
     // Create the entry
     if(current == NULL) {
