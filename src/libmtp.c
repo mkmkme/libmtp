@@ -788,18 +788,17 @@ char const * LIBMTP_Get_Filetype_Description(LIBMTP_filetype_t intype)
  */
 char const * LIBMTP_Get_Property_Description(LIBMTP_property_t inproperty)
 {
-  propertymap_t *current;
+    propertymap_t *current;
 
-  current = g_propertymap;
+    current = g_propertymap;
 
-  while (current != NULL) {
-    if(current->id == inproperty) {
-      return current->description;
+    while (current != NULL) {
+        if(current->id == inproperty)
+            return current->description;
+        current = current->next;
     }
-    current = current->next;
-  }
 
-  return "Unknown property";
+    return "Unknown property";
 }
 
 /**
