@@ -742,8 +742,7 @@ void LIBMTP_Init(void)
     const char *env_debug = getenv("LIBMTP_DEBUG");
     if (env_debug) {
         const long debug_flags = strtol(env_debug, NULL, 0);
-        if (debug_flags != LONG_MIN && debug_flags != LONG_MAX &&
-            INT_MIN <= debug_flags && debug_flags <= INT_MAX)
+        if (INT_MIN <= debug_flags && debug_flags <= INT_MAX)
             LIBMTP_Set_Debug(debug_flags);
         else
             fprintf(stderr, "LIBMTP_Init: error setting debug flags from environment value \"%s\"\n", env_debug);
