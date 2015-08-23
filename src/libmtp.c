@@ -715,7 +715,6 @@ static LIBMTP_property_t map_ptp_property_to_libmtp_property(uint16_t inproperty
     return LIBMTP_PROPERTY_UNKNOWN;
 }
 
-
 /**
  * Set the debug level.
  *
@@ -723,13 +722,12 @@ static LIBMTP_property_t map_ptp_property_to_libmtp_property(uint16_t inproperty
  */
 void LIBMTP_Set_Debug(int level)
 {
-  if (LIBMTP_debug || level)
-    LIBMTP_ERROR("LIBMTP_Set_Debug: Setting debugging level to %d (0x%02x) "
-                 "(%s)\n", level, level, level ? "on" : "off");
+    if (LIBMTP_debug || level)
+        LIBMTP_ERROR("LIBMTP_Set_Debug: Setting debugging level to %d (0x%02x) (%s)\n",
+                     level, level, level ? "on" : "off");
 
-  LIBMTP_debug = level;
+    LIBMTP_debug = level;
 }
-
 
 /**
  * Initialize the library. You are only supposed to call this
