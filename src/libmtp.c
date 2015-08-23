@@ -1531,30 +1531,30 @@ static int set_object_u32(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  * @return 0 on success, any other value means failure
  */
 static int set_object_u16(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			  uint16_t const attribute_id, uint16_t const value)
+              uint16_t const attribute_id, uint16_t const value)
 {
-  PTPPropertyValue propval;
-  PTPParams *params;
-  uint16_t ret;
+    PTPPropertyValue propval;
+    PTPParams *params;
+    uint16_t ret;
 
-  if (!device)
-    return 1;
+    if (!device)
+        return 1;
 
-  params = (PTPParams *) device->params;
+    params = (PTPParams *) device->params;
 
-  if (!ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "set_object_u16(): could not set unsigned 16bit integer property: "
-				"PTP_OC_MTP_SetObjectPropValue not supported.");
-    return -1;
-  }
-  propval.u16 = value;
-  ret = ptp_mtp_setobjectpropvalue(params, object_id, attribute_id, &propval, PTP_DTC_UINT16);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "set_object_u16(): could not set unsigned 16bit integer property.");
-    return 1;
-  }
+    if (!ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "set_object_u16(): could not set unsigned 16bit integer property: PTP_OC_MTP_SetObjectPropValue not supported.");
+        return -1;
+    }
+    propval.u16 = value;
+    ret = ptp_mtp_setobjectpropvalue(params, object_id, attribute_id, &propval, PTP_DTC_UINT16);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "set_object_u16(): could not set unsigned 16bit integer property.");
+        return 1;
+    }
 
-  return 0;
+    return 0;
 }
 
 /**
