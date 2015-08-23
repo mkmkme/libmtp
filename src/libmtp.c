@@ -1600,23 +1600,21 @@ static int set_object_u8(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  */
 LIBMTP_mtpdevice_t *LIBMTP_Get_First_Device(void)
 {
-  LIBMTP_mtpdevice_t *first_device = NULL;
-  LIBMTP_raw_device_t *devices;
-  int numdevs;
-  LIBMTP_error_number_t ret;
+    LIBMTP_mtpdevice_t *first_device = NULL;
+    LIBMTP_raw_device_t *devices;
+    int numdevs;
+    LIBMTP_error_number_t ret;
 
-  ret = LIBMTP_Detect_Raw_Devices(&devices, &numdevs);
-  if (ret != LIBMTP_ERROR_NONE) {
-    return NULL;
-  }
+    ret = LIBMTP_Detect_Raw_Devices(&devices, &numdevs);
+    if (ret != LIBMTP_ERROR_NONE)
+        return NULL;
 
-  if (devices == NULL || numdevs == 0) {
-    return NULL;
-  }
+    if (devices == NULL || numdevs == 0)
+        return NULL;
 
-  first_device = LIBMTP_Open_Raw_Device(&devices[0]);
-  free(devices);
-  return first_device;
+    first_device = LIBMTP_Open_Raw_Device(&devices[0]);
+    free(devices);
+    return first_device;
 }
 
 /**
