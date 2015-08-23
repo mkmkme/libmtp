@@ -1147,9 +1147,9 @@ char *LIBMTP_Get_String_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const o
  * @return the value
  */
 uint64_t LIBMTP_Get_u64_From_Object(LIBMTP_mtpdevice_t *device,uint32_t const object_id,
-                                    LIBMTP_property_t const attribute_id, uint64_t const value_default)
+                    LIBMTP_property_t const attribute_id, uint64_t const value_default)
 {
-  return get_u64_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
+    return get_u64_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
 }
 
 /**
