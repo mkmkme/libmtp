@@ -457,54 +457,49 @@ static propertymap_t *new_propertymap_entry()
  * @param ptp_id PTP property id
  * @return 0 for success any other value means error.
 */
-static int register_property(char const * const description, LIBMTP_property_t const id,
-			     uint16_t const ptp_id)
+static int register_property(char const * const description, LIBMTP_property_t const id, uint16_t const ptp_id)
 {
-  propertymap_t *new = NULL, *current;
+    propertymap_t *new = NULL, *current;
 
-  // Has this LIBMTP propety been registered before ?
-  current = g_propertymap;
-  while (current != NULL) {
-    if(current->id == id) {
-      break;
-    }
-    current = current->next;
-  }
-
-  // Create the entry
-  if(current == NULL) {
-    new = new_propertymap_entry();
-    if(new == NULL) {
-      return 1;
+    // Has this LIBMTP propety been registered before ?
+    current = g_propertymap;
+    while (current != NULL) {
+        if(current->id == id)
+            break;
+        current = current->next;
     }
 
-    new->id = id;
-    if(description != NULL) {
-      new->description = strdup(description);
-    }
-    new->ptp_id = ptp_id;
+    // Create the entry
+    if(current == NULL) {
+        new = new_propertymap_entry();
+        if(new == NULL)
+            return 1;
 
-    // Add the entry to the list
-    if(g_propertymap == NULL) {
-      g_propertymap = new;
-    } else {
-      current = g_propertymap;
-      while (current->next != NULL ) current=current->next;
-      current->next = new;
-    }
+        new->id = id;
+        if(description != NULL)
+            new->description = strdup(description);
+        new->ptp_id = ptp_id;
+
+        // Add the entry to the list
+        if(g_propertymap == NULL)
+            g_propertymap = new;
+        else {
+            current = g_propertymap;
+            while (current->next != NULL)
+                current=current->next;
+            current->next = new;
+        }
     // Update the existing entry
-  } else {
-    if (current->description != NULL) {
-      free(current->description);
+    } else {
+        if (current->description != NULL)
+            free(current->description);
+        current->description = NULL;
+        if(description != NULL)
+            current->description = strdup(description);
+        current->ptp_id = ptp_id;
     }
-    current->description = NULL;
-    if(description != NULL) {
-      current->description = strdup(description);
-    }
-    current->ptp_id = ptp_id;
-  }
 
-  return 0;
+    return 0;
 }
 
 static void init_propertymap()
