@@ -757,7 +757,6 @@ void LIBMTP_Init(void)
         use_mtpz = 1;
 }
 
-
 /**
  * This helper function returns a textual description for a libmtp
  * file type to be used in dialog boxes etc.
@@ -767,18 +766,17 @@ void LIBMTP_Init(void)
  */
 char const * LIBMTP_Get_Filetype_Description(LIBMTP_filetype_t intype)
 {
-  filemap_t *current;
+    filemap_t *current;
 
-  current = g_filemap;
+    current = g_filemap;
 
-  while (current != NULL) {
-    if(current->id == intype) {
-      return current->description;
+    while (current != NULL) {
+        if(current->id == intype)
+            return current->description;
+        current = current->next;
     }
-    current = current->next;
-  }
 
-  return "Unknown filetype";
+    return "Unknown filetype";
 }
 
 /**
