@@ -808,42 +808,36 @@ char const * LIBMTP_Get_Property_Description(LIBMTP_property_t inproperty)
  */
 static uint16_t adjust_u16(uint16_t val, PTPObjectPropDesc *opd)
 {
-  switch (opd->FormFlag) {
-  case PTP_DPFF_Range:
-    if (val < opd->FORM.Range.MinimumValue.u16) {
-      return opd->FORM.Range.MinimumValue.u16;
+    switch (opd->FormFlag) {
+    case PTP_DPFF_Range:
+        if (val < opd->FORM.Range.MinimumValue.u16)
+            return opd->FORM.Range.MinimumValue.u16;
+        if (val > opd->FORM.Range.MaximumValue.u16)
+            return opd->FORM.Range.MaximumValue.u16;
+        // Round down to last step.
+        if (val % opd->FORM.Range.StepSize.u16 != 0)
+            return val - (val % opd->FORM.Range.StepSize.u16);
+        return val;
+        break;
+    case PTP_DPFF_Enumeration: {
+        int i;
+        uint16_t bestfit = opd->FORM.Enum.SupportedValue[0].u16;
+
+        for (i = 0; i < opd->FORM.Enum.NumberOfValues; i++) {
+            if (val == opd->FORM.Enum.SupportedValue[i].u16)
+                return val;
+            // Rough guess of best fit
+            if (opd->FORM.Enum.SupportedValue[i].u16 < val)
+                bestfit = opd->FORM.Enum.SupportedValue[i].u16;
+        }
+        // Just some default that'll work.
+        return bestfit;
     }
-    if (val > opd->FORM.Range.MaximumValue.u16) {
-      return opd->FORM.Range.MaximumValue.u16;
-    }
-    // Round down to last step.
-    if (val % opd->FORM.Range.StepSize.u16 != 0) {
-      return val - (val % opd->FORM.Range.StepSize.u16);
+    default:
+        // Will accept any value
+        break;
     }
     return val;
-    break;
-  case PTP_DPFF_Enumeration:
-    {
-      int i;
-      uint16_t bestfit = opd->FORM.Enum.SupportedValue[0].u16;
-
-      for (i=0; i<opd->FORM.Enum.NumberOfValues; i++) {
-	if (val == opd->FORM.Enum.SupportedValue[i].u16) {
-	  return val;
-	}
-	// Rough guess of best fit
-	if (opd->FORM.Enum.SupportedValue[i].u16 < val) {
-	  bestfit = opd->FORM.Enum.SupportedValue[i].u16;
-	}
-      }
-      // Just some default that'll work.
-      return bestfit;
-    }
-  default:
-    // Will accept any value
-    break;
-  }
-  return val;
 }
 
 /**
