@@ -847,42 +847,36 @@ static uint16_t adjust_u16(uint16_t val, PTPObjectPropDesc *opd)
  */
 static uint32_t adjust_u32(uint32_t val, PTPObjectPropDesc *opd)
 {
-  switch (opd->FormFlag) {
-  case PTP_DPFF_Range:
-    if (val < opd->FORM.Range.MinimumValue.u32) {
-      return opd->FORM.Range.MinimumValue.u32;
+    switch (opd->FormFlag) {
+    case PTP_DPFF_Range:
+        if (val < opd->FORM.Range.MinimumValue.u32)
+            return opd->FORM.Range.MinimumValue.u32;
+        if (val > opd->FORM.Range.MaximumValue.u32)
+            return opd->FORM.Range.MaximumValue.u32;
+        // Round down to last step.
+        if (val % opd->FORM.Range.StepSize.u32 != 0)
+            return val - (val % opd->FORM.Range.StepSize.u32);
+        return val;
+        break;
+    case PTP_DPFF_Enumeration: {
+        int i;
+        uint32_t bestfit = opd->FORM.Enum.SupportedValue[0].u32;
+
+        for (i=0; i<opd->FORM.Enum.NumberOfValues; i++) {
+            if (val == opd->FORM.Enum.SupportedValue[i].u32)
+                return val;
+            // Rough guess of best fit
+            if (opd->FORM.Enum.SupportedValue[i].u32 < val)
+                bestfit = opd->FORM.Enum.SupportedValue[i].u32;
+        }
+        // Just some default that'll work.
+        return bestfit;
     }
-    if (val > opd->FORM.Range.MaximumValue.u32) {
-      return opd->FORM.Range.MaximumValue.u32;
-    }
-    // Round down to last step.
-    if (val % opd->FORM.Range.StepSize.u32 != 0) {
-      return val - (val % opd->FORM.Range.StepSize.u32);
+    default:
+        // Will accept any value
+        break;
     }
     return val;
-    break;
-  case PTP_DPFF_Enumeration:
-    {
-      int i;
-      uint32_t bestfit = opd->FORM.Enum.SupportedValue[0].u32;
-
-      for (i=0; i<opd->FORM.Enum.NumberOfValues; i++) {
-	if (val == opd->FORM.Enum.SupportedValue[i].u32) {
-	  return val;
-	}
-	// Rough guess of best fit
-	if (opd->FORM.Enum.SupportedValue[i].u32 < val) {
-	  bestfit = opd->FORM.Enum.SupportedValue[i].u32;
-	}
-      }
-      // Just some default that'll work.
-      return bestfit;
-    }
-  default:
-    // Will accept any value
-    break;
-  }
-  return val;
 }
 
 /**
