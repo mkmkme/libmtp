@@ -435,18 +435,18 @@ static LIBMTP_filetype_t map_ptp_type_to_libmtp_type(uint16_t intype)
  */
 static propertymap_t *new_propertymap_entry()
 {
-  propertymap_t *propertymap;
+    propertymap_t *propertymap;
 
-  propertymap = (propertymap_t *)malloc(sizeof(propertymap_t));
+    propertymap = (propertymap_t *)malloc(sizeof(propertymap_t));
 
-  if( propertymap != NULL ) {
-    propertymap->description = NULL;
-    propertymap->id = LIBMTP_PROPERTY_UNKNOWN;
-    propertymap->ptp_id = 0;
-    propertymap->next = NULL;
-  }
+    if (propertymap != NULL) {
+        propertymap->description = NULL;
+        propertymap->id = LIBMTP_PROPERTY_UNKNOWN;
+        propertymap->ptp_id = 0;
+        propertymap->next = NULL;
+    }
 
-  return propertymap;
+    return propertymap;
 }
 
 /**
