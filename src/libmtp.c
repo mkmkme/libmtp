@@ -416,18 +416,17 @@ static uint16_t map_libmtp_type_to_ptp_type(LIBMTP_filetype_t intype)
  */
 static LIBMTP_filetype_t map_ptp_type_to_libmtp_type(uint16_t intype)
 {
-  filemap_t *current;
+    filemap_t *current;
 
-  current = g_filemap;
+    current = g_filemap;
 
-  while (current != NULL) {
-    if(current->ptp_id == intype) {
-      return current->id;
+    while (current != NULL) {
+        if(current->ptp_id == intype)
+            return current->id;
+        current = current->next;
     }
-    current = current->next;
-  }
-  // printf("map_ptp_type_to_libmtp_type: unknown filetype.\n");
-  return LIBMTP_FILETYPE_UNKNOWN;
+    // printf("map_ptp_type_to_libmtp_type: unknown filetype.\n");
+    return LIBMTP_FILETYPE_UNKNOWN;
 }
 
 /**
