@@ -926,35 +926,35 @@ int LIBMTP_Get_Allowed_Property_Values(LIBMTP_mtpdevice_t *device, LIBMTP_proper
 
         switch (opd.DataType) {
         case PTP_DTC_INT8:
-            allowed_vals->i8vals = malloc(sizeof(int8_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->i8vals = calloc(opd.FORM.Enum.NumberOfValues, sizeof(int8_t));
             allowed_vals->datatype = LIBMTP_DATATYPE_INT8;
             break;
         case PTP_DTC_UINT8:
-            allowed_vals->u8vals = malloc(sizeof(uint8_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->u8vals = calloc(opd.FORM.Enum.NumberOfValues, sizeof(uint8_t));
             allowed_vals->datatype = LIBMTP_DATATYPE_UINT8;
             break;
         case PTP_DTC_INT16:
-            allowed_vals->i16vals = malloc(sizeof(int16_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->i16vals = calloc(opd.FORM.Enum.NumberOfValues, sizeof(int16_t));
             allowed_vals->datatype = LIBMTP_DATATYPE_INT16;
             break;
         case PTP_DTC_UINT16:
-            allowed_vals->u16vals = malloc(sizeof(uint16_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->u16vals = calloc(opd.FORM.Enum.NumberOfValues, sizeof(uint16_t));
             allowed_vals->datatype = LIBMTP_DATATYPE_UINT16;
             break;
         case PTP_DTC_INT32:
-            allowed_vals->i32vals = malloc(sizeof(int32_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->i32vals = calloc(opd.FORM.Enum.NumberOfValues, sizeof(int32_t));
             allowed_vals->datatype = LIBMTP_DATATYPE_INT32;
             break;
         case PTP_DTC_UINT32:
-            allowed_vals->u32vals = malloc(sizeof(uint32_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->u32vals = calloc(opd.FORM.Enum.NumberOfValues, sizeof(uint32_t));
             allowed_vals->datatype = LIBMTP_DATATYPE_UINT32;
             break;
         case PTP_DTC_INT64:
-            allowed_vals->i64vals = malloc(sizeof(int64_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->i64vals = calloc(opd.FORM.Enum.NumberOfValues, sizeof(int64_t));
             allowed_vals->datatype = LIBMTP_DATATYPE_INT64;
             break;
         case PTP_DTC_UINT64:
-            allowed_vals->u64vals = malloc(sizeof(uint64_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->u64vals = calloc(opd.FORM.Enum.NumberOfValues, sizeof(uint64_t));
             allowed_vals->datatype = LIBMTP_DATATYPE_UINT64;
             break;
         }
