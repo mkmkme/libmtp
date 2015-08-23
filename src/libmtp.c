@@ -1627,11 +1627,11 @@ __attribute__((__format__(printf,2,0)))
 #endif
 LIBMTP_ptp_debug(void *data, const char *format, va_list args)
 {
-  if ((LIBMTP_debug & LIBMTP_DEBUG_PTP) != 0) {
-    vfprintf (stderr, format, args);
-    fprintf (stderr, "\n");
-    fflush (stderr);
-  }
+    if ((LIBMTP_debug & LIBMTP_DEBUG_PTP) != 0) {
+        vfprintf (stderr, format, args);
+        fprintf (stderr, "\n");
+        fflush (stderr);
+    }
 }
 
 /**
