@@ -909,145 +909,142 @@ static char *get_iso8601_stamp(void)
 int LIBMTP_Get_Allowed_Property_Values(LIBMTP_mtpdevice_t *device, LIBMTP_property_t const property,
             LIBMTP_filetype_t const filetype, LIBMTP_allowed_values_t *allowed_vals)
 {
-  PTPObjectPropDesc opd;
-  uint16_t ret = 0;
+    PTPObjectPropDesc opd;
+    uint16_t ret = 0;
 
-  ret = ptp_mtp_getobjectpropdesc(device->params, map_libmtp_property_to_ptp_property(property), map_libmtp_type_to_ptp_type(filetype), &opd);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Allowed_Property_Values(): could not get property description.");
-    return -1;
-  }
-
-  if (opd.FormFlag == PTP_OPFF_Enumeration) {
-    int i = 0;
-
-    allowed_vals->is_range = 0;
-    allowed_vals->num_entries = opd.FORM.Enum.NumberOfValues;
-
-    switch (opd.DataType)
-    {
-      case PTP_DTC_INT8:
-        allowed_vals->i8vals = malloc(sizeof(int8_t) * opd.FORM.Enum.NumberOfValues);
-        allowed_vals->datatype = LIBMTP_DATATYPE_INT8;
-        break;
-      case PTP_DTC_UINT8:
-        allowed_vals->u8vals = malloc(sizeof(uint8_t) * opd.FORM.Enum.NumberOfValues);
-        allowed_vals->datatype = LIBMTP_DATATYPE_UINT8;
-        break;
-      case PTP_DTC_INT16:
-        allowed_vals->i16vals = malloc(sizeof(int16_t) * opd.FORM.Enum.NumberOfValues);
-        allowed_vals->datatype = LIBMTP_DATATYPE_INT16;
-        break;
-      case PTP_DTC_UINT16:
-        allowed_vals->u16vals = malloc(sizeof(uint16_t) * opd.FORM.Enum.NumberOfValues);
-        allowed_vals->datatype = LIBMTP_DATATYPE_UINT16;
-        break;
-      case PTP_DTC_INT32:
-        allowed_vals->i32vals = malloc(sizeof(int32_t) * opd.FORM.Enum.NumberOfValues);
-        allowed_vals->datatype = LIBMTP_DATATYPE_INT32;
-        break;
-      case PTP_DTC_UINT32:
-        allowed_vals->u32vals = malloc(sizeof(uint32_t) * opd.FORM.Enum.NumberOfValues);
-        allowed_vals->datatype = LIBMTP_DATATYPE_UINT32;
-        break;
-      case PTP_DTC_INT64:
-        allowed_vals->i64vals = malloc(sizeof(int64_t) * opd.FORM.Enum.NumberOfValues);
-        allowed_vals->datatype = LIBMTP_DATATYPE_INT64;
-        break;
-      case PTP_DTC_UINT64:
-        allowed_vals->u64vals = malloc(sizeof(uint64_t) * opd.FORM.Enum.NumberOfValues);
-        allowed_vals->datatype = LIBMTP_DATATYPE_UINT64;
-        break;
+    ret = ptp_mtp_getobjectpropdesc(device->params, map_libmtp_property_to_ptp_property(property), map_libmtp_type_to_ptp_type(filetype), &opd);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Allowed_Property_Values(): could not get property description.");
+        return -1;
     }
 
-    for (i = 0; i < opd.FORM.Enum.NumberOfValues; i++) {
-      switch (opd.DataType)
-      {
+    if (opd.FormFlag == PTP_OPFF_Enumeration) {
+        int i = 0;
+
+        allowed_vals->is_range = 0;
+        allowed_vals->num_entries = opd.FORM.Enum.NumberOfValues;
+
+        switch (opd.DataType) {
         case PTP_DTC_INT8:
-          allowed_vals->i8vals[i] = opd.FORM.Enum.SupportedValue[i].i8;
-          break;
+            allowed_vals->i8vals = malloc(sizeof(int8_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->datatype = LIBMTP_DATATYPE_INT8;
+            break;
         case PTP_DTC_UINT8:
-          allowed_vals->u8vals[i] = opd.FORM.Enum.SupportedValue[i].u8;
-          break;
+            allowed_vals->u8vals = malloc(sizeof(uint8_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->datatype = LIBMTP_DATATYPE_UINT8;
+            break;
         case PTP_DTC_INT16:
-          allowed_vals->i16vals[i] = opd.FORM.Enum.SupportedValue[i].i16;
-          break;
+            allowed_vals->i16vals = malloc(sizeof(int16_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->datatype = LIBMTP_DATATYPE_INT16;
+            break;
         case PTP_DTC_UINT16:
-          allowed_vals->u16vals[i] = opd.FORM.Enum.SupportedValue[i].u16;
-          break;
+            allowed_vals->u16vals = malloc(sizeof(uint16_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->datatype = LIBMTP_DATATYPE_UINT16;
+            break;
         case PTP_DTC_INT32:
-          allowed_vals->i32vals[i] = opd.FORM.Enum.SupportedValue[i].i32;
-          break;
+            allowed_vals->i32vals = malloc(sizeof(int32_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->datatype = LIBMTP_DATATYPE_INT32;
+            break;
         case PTP_DTC_UINT32:
-          allowed_vals->u32vals[i] = opd.FORM.Enum.SupportedValue[i].u32;
-          break;
+            allowed_vals->u32vals = malloc(sizeof(uint32_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->datatype = LIBMTP_DATATYPE_UINT32;
+            break;
         case PTP_DTC_INT64:
-          allowed_vals->i64vals[i] = opd.FORM.Enum.SupportedValue[i].i64;
-          break;
+            allowed_vals->i64vals = malloc(sizeof(int64_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->datatype = LIBMTP_DATATYPE_INT64;
+            break;
         case PTP_DTC_UINT64:
-          allowed_vals->u64vals[i] = opd.FORM.Enum.SupportedValue[i].u64;
-          break;
-      }
-    }
-    ptp_free_objectpropdesc(&opd);
-    return 0;
-  } else if (opd.FormFlag == PTP_OPFF_Range) {
-    allowed_vals->is_range = 1;
+            allowed_vals->u64vals = malloc(sizeof(uint64_t) * opd.FORM.Enum.NumberOfValues);
+            allowed_vals->datatype = LIBMTP_DATATYPE_UINT64;
+            break;
+        }
 
-    switch (opd.DataType)
-    {
-      case PTP_DTC_INT8:
-        allowed_vals->i8min = opd.FORM.Range.MinimumValue.i8;
-        allowed_vals->i8max = opd.FORM.Range.MaximumValue.i8;
-        allowed_vals->i8step = opd.FORM.Range.StepSize.i8;
-        allowed_vals->datatype = LIBMTP_DATATYPE_INT8;
-        break;
-      case PTP_DTC_UINT8:
-        allowed_vals->u8min = opd.FORM.Range.MinimumValue.u8;
-        allowed_vals->u8max = opd.FORM.Range.MaximumValue.u8;
-        allowed_vals->u8step = opd.FORM.Range.StepSize.u8;
-        allowed_vals->datatype = LIBMTP_DATATYPE_UINT8;
-        break;
-      case PTP_DTC_INT16:
-        allowed_vals->i16min = opd.FORM.Range.MinimumValue.i16;
-        allowed_vals->i16max = opd.FORM.Range.MaximumValue.i16;
-        allowed_vals->i16step = opd.FORM.Range.StepSize.i16;
-        allowed_vals->datatype = LIBMTP_DATATYPE_INT16;
-        break;
-      case PTP_DTC_UINT16:
-        allowed_vals->u16min = opd.FORM.Range.MinimumValue.u16;
-        allowed_vals->u16max = opd.FORM.Range.MaximumValue.u16;
-        allowed_vals->u16step = opd.FORM.Range.StepSize.u16;
-        allowed_vals->datatype = LIBMTP_DATATYPE_UINT16;
-        break;
-      case PTP_DTC_INT32:
-        allowed_vals->i32min = opd.FORM.Range.MinimumValue.i32;
-        allowed_vals->i32max = opd.FORM.Range.MaximumValue.i32;
-        allowed_vals->i32step = opd.FORM.Range.StepSize.i32;
-        allowed_vals->datatype = LIBMTP_DATATYPE_INT32;
-        break;
-      case PTP_DTC_UINT32:
-        allowed_vals->u32min = opd.FORM.Range.MinimumValue.u32;
-        allowed_vals->u32max = opd.FORM.Range.MaximumValue.u32;
-        allowed_vals->u32step = opd.FORM.Range.StepSize.u32;
-        allowed_vals->datatype = LIBMTP_DATATYPE_UINT32;
-        break;
-      case PTP_DTC_INT64:
-        allowed_vals->i64min = opd.FORM.Range.MinimumValue.i64;
-        allowed_vals->i64max = opd.FORM.Range.MaximumValue.i64;
-        allowed_vals->i64step = opd.FORM.Range.StepSize.i64;
-        allowed_vals->datatype = LIBMTP_DATATYPE_INT64;
-        break;
-      case PTP_DTC_UINT64:
-        allowed_vals->u64min = opd.FORM.Range.MinimumValue.u64;
-        allowed_vals->u64max = opd.FORM.Range.MaximumValue.u64;
-        allowed_vals->u64step = opd.FORM.Range.StepSize.u64;
-        allowed_vals->datatype = LIBMTP_DATATYPE_UINT64;
-        break;
-    }
-    return 0;
-  } else
-    return -1;
+        for (i = 0; i < opd.FORM.Enum.NumberOfValues; i++) {
+            switch (opd.DataType) {
+            case PTP_DTC_INT8:
+                allowed_vals->i8vals[i] = opd.FORM.Enum.SupportedValue[i].i8;
+                break;
+            case PTP_DTC_UINT8:
+                allowed_vals->u8vals[i] = opd.FORM.Enum.SupportedValue[i].u8;
+                break;
+            case PTP_DTC_INT16:
+                allowed_vals->i16vals[i] = opd.FORM.Enum.SupportedValue[i].i16;
+                break;
+            case PTP_DTC_UINT16:
+                allowed_vals->u16vals[i] = opd.FORM.Enum.SupportedValue[i].u16;
+                break;
+            case PTP_DTC_INT32:
+                allowed_vals->i32vals[i] = opd.FORM.Enum.SupportedValue[i].i32;
+                break;
+            case PTP_DTC_UINT32:
+                allowed_vals->u32vals[i] = opd.FORM.Enum.SupportedValue[i].u32;
+                break;
+            case PTP_DTC_INT64:
+                allowed_vals->i64vals[i] = opd.FORM.Enum.SupportedValue[i].i64;
+                break;
+            case PTP_DTC_UINT64:
+                allowed_vals->u64vals[i] = opd.FORM.Enum.SupportedValue[i].u64;
+                break;
+            }
+        }
+        ptp_free_objectpropdesc(&opd);
+        return 0;
+    } else if (opd.FormFlag == PTP_OPFF_Range) {
+        allowed_vals->is_range = 1;
+
+        switch (opd.DataType) {
+        case PTP_DTC_INT8:
+            allowed_vals->i8min = opd.FORM.Range.MinimumValue.i8;
+            allowed_vals->i8max = opd.FORM.Range.MaximumValue.i8;
+            allowed_vals->i8step = opd.FORM.Range.StepSize.i8;
+            allowed_vals->datatype = LIBMTP_DATATYPE_INT8;
+            break;
+        case PTP_DTC_UINT8:
+            allowed_vals->u8min = opd.FORM.Range.MinimumValue.u8;
+            allowed_vals->u8max = opd.FORM.Range.MaximumValue.u8;
+            allowed_vals->u8step = opd.FORM.Range.StepSize.u8;
+            allowed_vals->datatype = LIBMTP_DATATYPE_UINT8;
+            break;
+        case PTP_DTC_INT16:
+            allowed_vals->i16min = opd.FORM.Range.MinimumValue.i16;
+            allowed_vals->i16max = opd.FORM.Range.MaximumValue.i16;
+            allowed_vals->i16step = opd.FORM.Range.StepSize.i16;
+            allowed_vals->datatype = LIBMTP_DATATYPE_INT16;
+            break;
+        case PTP_DTC_UINT16:
+            allowed_vals->u16min = opd.FORM.Range.MinimumValue.u16;
+            allowed_vals->u16max = opd.FORM.Range.MaximumValue.u16;
+            allowed_vals->u16step = opd.FORM.Range.StepSize.u16;
+            allowed_vals->datatype = LIBMTP_DATATYPE_UINT16;
+            break;
+        case PTP_DTC_INT32:
+            allowed_vals->i32min = opd.FORM.Range.MinimumValue.i32;
+            allowed_vals->i32max = opd.FORM.Range.MaximumValue.i32;
+            allowed_vals->i32step = opd.FORM.Range.StepSize.i32;
+            allowed_vals->datatype = LIBMTP_DATATYPE_INT32;
+            break;
+        case PTP_DTC_UINT32:
+            allowed_vals->u32min = opd.FORM.Range.MinimumValue.u32;
+            allowed_vals->u32max = opd.FORM.Range.MaximumValue.u32;
+            allowed_vals->u32step = opd.FORM.Range.StepSize.u32;
+            allowed_vals->datatype = LIBMTP_DATATYPE_UINT32;
+            break;
+        case PTP_DTC_INT64:
+            allowed_vals->i64min = opd.FORM.Range.MinimumValue.i64;
+            allowed_vals->i64max = opd.FORM.Range.MaximumValue.i64;
+            allowed_vals->i64step = opd.FORM.Range.StepSize.i64;
+            allowed_vals->datatype = LIBMTP_DATATYPE_INT64;
+            break;
+        case PTP_DTC_UINT64:
+            allowed_vals->u64min = opd.FORM.Range.MinimumValue.u64;
+            allowed_vals->u64max = opd.FORM.Range.MaximumValue.u64;
+            allowed_vals->u64step = opd.FORM.Range.StepSize.u64;
+            allowed_vals->datatype = LIBMTP_DATATYPE_UINT64;
+            break;
+        }
+        return 0;
+    } else
+        return -1;
 }
 
 /**
