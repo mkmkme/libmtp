@@ -1268,38 +1268,37 @@ int LIBMTP_Set_Object_u8(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  *         use.
  */
 static char *get_string_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-				    uint16_t const attribute_id)
+                    uint16_t const attribute_id)
 {
-  PTPPropertyValue propval;
-  char *retstring = NULL;
-  PTPParams *params;
-  uint16_t ret;
-  MTPProperties *prop;
+    PTPPropertyValue propval;
+    char *retstring = NULL;
+    PTPParams *params;
+    uint16_t ret;
+    MTPProperties *prop;
 
-  if (!device || !object_id)
-    return NULL;
+    if (!device || !object_id)
+        return NULL;
 
-  params = (PTPParams *) device->params;
+    params = (PTPParams *) device->params;
 
-  prop = ptp_find_object_prop_in_cache(params, object_id, attribute_id);
-  if (prop) {
-    if (prop->propval.str != NULL)
-      return strdup(prop->propval.str);
-    else
-      return NULL;
-  }
-
-  ret = ptp_mtp_getobjectpropvalue(params, object_id, attribute_id, &propval, PTP_DTC_STR);
-  if (ret == PTP_RC_OK) {
-    if (propval.str != NULL) {
-      retstring = (char *) strdup(propval.str);
-      free(propval.str);
+    prop = ptp_find_object_prop_in_cache(params, object_id, attribute_id);
+    if (prop) {
+        if (prop->propval.str != NULL)
+            return strdup(prop->propval.str);
+        else
+            return NULL;
     }
-  } else {
-    add_ptp_error_to_errorstack(device, ret, "get_string_from_object(): could not get object string.");
-  }
 
-  return retstring;
+    ret = ptp_mtp_getobjectpropvalue(params, object_id, attribute_id, &propval, PTP_DTC_STR);
+    if (ret == PTP_RC_OK) {
+        if (propval.str != NULL) {
+            retstring = strdup(propval.str);
+            free(propval.str);
+        }
+    } else
+        add_ptp_error_to_errorstack(device, ret, "get_string_from_object(): could not get object string.");
+
+    return retstring;
 }
 
 /**
