@@ -491,8 +491,7 @@ static int register_property(char const * const description, LIBMTP_property_t c
         }
     // Update the existing entry
     } else {
-        if (current->description != NULL)
-            free(current->description);
+        free(current->description);
         current->description = NULL;
         if(description != NULL)
             current->description = strdup(description);
