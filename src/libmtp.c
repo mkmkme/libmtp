@@ -1162,9 +1162,9 @@ uint64_t LIBMTP_Get_u64_From_Object(LIBMTP_mtpdevice_t *device,uint32_t const ob
  * @return the value
  */
 uint32_t LIBMTP_Get_u32_From_Object(LIBMTP_mtpdevice_t *device,uint32_t const object_id,
-				    LIBMTP_property_t const attribute_id, uint32_t const value_default)
+                    LIBMTP_property_t const attribute_id, uint32_t const value_default)
 {
-  return get_u32_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
+    return get_u32_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
 }
 
 /**
@@ -1177,9 +1177,9 @@ uint32_t LIBMTP_Get_u32_From_Object(LIBMTP_mtpdevice_t *device,uint32_t const ob
  * @return a value
  */
 uint16_t LIBMTP_Get_u16_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-				    LIBMTP_property_t const attribute_id, uint16_t const value_default)
+                    LIBMTP_property_t const attribute_id, uint16_t const value_default)
 {
-  return get_u16_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
+    return get_u16_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
 }
 
 /**
@@ -1192,9 +1192,9 @@ uint16_t LIBMTP_Get_u16_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const o
  * @return a value
  */
 uint8_t LIBMTP_Get_u8_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-				  LIBMTP_property_t const attribute_id, uint8_t const value_default)
+                  LIBMTP_property_t const attribute_id, uint8_t const value_default)
 {
-  return get_u8_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
+    return get_u8_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
 }
 
 /**
@@ -1207,11 +1207,10 @@ uint8_t LIBMTP_Get_u8_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const obj
  * @return 0 on success, any other value means failure
  */
 int LIBMTP_Set_Object_String(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			     LIBMTP_property_t const attribute_id, char const * const string)
+                 LIBMTP_property_t const attribute_id, char const * const string)
 {
-  return set_object_string(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), string);
+    return set_object_string(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), string);
 }
-
 
 /**
  * Sets an object attribute from an unsigned 32-bit integer
@@ -1223,9 +1222,9 @@ int LIBMTP_Set_Object_String(LIBMTP_mtpdevice_t *device, uint32_t const object_i
  * @return 0 on success, any other value means failure
  */
 int LIBMTP_Set_Object_u32(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			  LIBMTP_property_t const attribute_id, uint32_t const value)
+              LIBMTP_property_t const attribute_id, uint32_t const value)
 {
-  return set_object_u32(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value);
+    return set_object_u32(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value);
 }
 
 /**
@@ -1238,9 +1237,9 @@ int LIBMTP_Set_Object_u32(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  * @return 0 on success, any other value means failure
  */
 int LIBMTP_Set_Object_u16(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			  LIBMTP_property_t const attribute_id, uint16_t const value)
+              LIBMTP_property_t const attribute_id, uint16_t const value)
 {
-  return set_object_u16(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value);
+    return set_object_u16(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value);
 }
 
 /**
@@ -1253,9 +1252,9 @@ int LIBMTP_Set_Object_u16(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  * @return 0 on success, any other value means failure
  */
 int LIBMTP_Set_Object_u8(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			 LIBMTP_property_t const attribute_id, uint8_t const value)
+             LIBMTP_property_t const attribute_id, uint8_t const value)
 {
-  return set_object_u8(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value);
+    return set_object_u8(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value);
 }
 
 /**
