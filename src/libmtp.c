@@ -1053,44 +1053,42 @@ int LIBMTP_Get_Allowed_Property_Values(LIBMTP_mtpdevice_t *device, LIBMTP_proper
  */
 void LIBMTP_destroy_allowed_values_t(LIBMTP_allowed_values_t *allowed_vals)
 {
-  if (!allowed_vals->is_range)
-  {
-    switch (allowed_vals->datatype)
-    {
-      case LIBMTP_DATATYPE_INT8:
+    if (allowed_vals->is_range)
+        return;
+    switch (allowed_vals->datatype) {
+    case LIBMTP_DATATYPE_INT8:
         if (allowed_vals->i8vals)
-          free(allowed_vals->i8vals);
+            free(allowed_vals->i8vals);
         break;
-      case LIBMTP_DATATYPE_UINT8:
+    case LIBMTP_DATATYPE_UINT8:
         if (allowed_vals->u8vals)
-          free(allowed_vals->u8vals);
+            free(allowed_vals->u8vals);
         break;
-      case LIBMTP_DATATYPE_INT16:
+    case LIBMTP_DATATYPE_INT16:
         if (allowed_vals->i16vals)
-          free(allowed_vals->i16vals);
+            free(allowed_vals->i16vals);
         break;
-      case LIBMTP_DATATYPE_UINT16:
+    case LIBMTP_DATATYPE_UINT16:
         if (allowed_vals->u16vals)
-          free(allowed_vals->u16vals);
+            free(allowed_vals->u16vals);
         break;
-      case LIBMTP_DATATYPE_INT32:
+    case LIBMTP_DATATYPE_INT32:
         if (allowed_vals->i32vals)
-          free(allowed_vals->i32vals);
+            free(allowed_vals->i32vals);
         break;
-      case LIBMTP_DATATYPE_UINT32:
+    case LIBMTP_DATATYPE_UINT32:
         if (allowed_vals->u32vals)
-          free(allowed_vals->u32vals);
+            free(allowed_vals->u32vals);
         break;
-      case LIBMTP_DATATYPE_INT64:
+    case LIBMTP_DATATYPE_INT64:
         if (allowed_vals->i64vals)
-          free(allowed_vals->i64vals);
+            free(allowed_vals->i64vals);
         break;
-      case LIBMTP_DATATYPE_UINT64:
+    case LIBMTP_DATATYPE_UINT64:
         if (allowed_vals->u64vals)
-          free(allowed_vals->u64vals);
+            free(allowed_vals->u64vals);
         break;
     }
-  }
 }
 
 /**
