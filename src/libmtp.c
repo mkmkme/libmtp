@@ -1458,30 +1458,30 @@ static uint8_t get_u8_from_object(LIBMTP_mtpdevice_t *device, uint32_t const obj
  * @return 0 on success, any other value means failure
  */
 static int set_object_string(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			     uint16_t const attribute_id, char const * const string)
+                 uint16_t const attribute_id, char const * const string)
 {
-  PTPPropertyValue propval;
-  PTPParams *params;
-  uint16_t ret;
+    PTPPropertyValue propval;
+    PTPParams *params;
+    uint16_t ret;
 
-  if (!device || !string)
-    return -1;
+    if (!device || !string)
+        return -1;
 
-  params = (PTPParams *) device->params;
+    params = (PTPParams *) device->params;
 
-  if (!ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "set_object_string(): could not set object string: "
-				"PTP_OC_MTP_SetObjectPropValue not supported.");
-    return -1;
-  }
-  propval.str = (char *) string;
-  ret = ptp_mtp_setobjectpropvalue(params, object_id, attribute_id, &propval, PTP_DTC_STR);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "set_object_string(): could not set object string.");
-    return -1;
-  }
+    if (!ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, 
+            "set_object_string(): could not set object string: PTP_OC_MTP_SetObjectPropValue not supported.");
+        return -1;
+    }
+    propval.str = (char *) string;
+    ret = ptp_mtp_setobjectpropvalue(params, object_id, attribute_id, &propval, PTP_DTC_STR);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "set_object_string(): could not set object string.");
+        return -1;
+    }
 
-  return 0;
+    return 0;
 }
 
 
