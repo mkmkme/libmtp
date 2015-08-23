@@ -1093,32 +1093,32 @@ void LIBMTP_destroy_allowed_values_t(LIBMTP_allowed_values_t *allowed_vals)
 int LIBMTP_Is_Property_Supported(LIBMTP_mtpdevice_t *device, LIBMTP_property_t const property,
             LIBMTP_filetype_t const filetype)
 {
-  uint16_t *props = NULL;
-  uint32_t propcnt = 0;
-  uint16_t ret = 0;
-  int i = 0;
-  int supported = 0;
-  uint16_t ptp_prop = map_libmtp_property_to_ptp_property(property);
+    uint16_t *props = NULL;
+    uint32_t propcnt = 0;
+    uint16_t ret = 0;
+    int i = 0;
+    int supported = 0;
+    uint16_t ptp_prop = map_libmtp_property_to_ptp_property(property);
 
-  if (!ptp_operation_issupported(device->params, PTP_OC_MTP_GetObjectPropsSupported))
-    return 0;
+    if (!ptp_operation_issupported(device->params, PTP_OC_MTP_GetObjectPropsSupported))
+        return 0;
 
-  ret = ptp_mtp_getobjectpropssupported(device->params, map_libmtp_type_to_ptp_type(filetype), &propcnt, &props);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Is_Property_Supported(): could not get properties supported.");
-    return -1;
-  }
-
-	for (i = 0; i < propcnt; i++) {
-    if (props[i] == ptp_prop) {
-      supported = 1;
-      break;
+    ret = ptp_mtp_getobjectpropssupported(device->params, map_libmtp_type_to_ptp_type(filetype), &propcnt, &props);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "LIBMTP_Is_Property_Supported(): could not get properties supported.");
+        return -1;
     }
-  }
 
-  free(props);
+    for (i = 0; i < propcnt; i++) {
+        if (props[i] == ptp_prop) {
+            supported = 1;
+            break;
+        }
+    }
 
-  return supported;
+    free(props);
+
+    return supported;
 }
 
 /**
