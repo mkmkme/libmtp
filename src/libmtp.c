@@ -886,14 +886,14 @@ static uint32_t adjust_u32(uint32_t val, PTPObjectPropDesc *opd)
  */
 static char *get_iso8601_stamp(void)
 {
-  time_t curtime;
-  struct tm *loctime;
-  char tmp[64];
+    time_t curtime;
+    struct tm *loctime;
+    char tmp[64];
 
-  curtime = time(NULL);
-  loctime = localtime(&curtime);
-  strftime (tmp, sizeof(tmp), "%Y%m%dT%H%M%S.0%z", loctime);
-  return strdup(tmp);
+    curtime = time(NULL);
+    loctime = localtime(&curtime);
+    strftime (tmp, sizeof(tmp), "%Y%m%dT%H%M%S.0%z", loctime);
+    return strdup(tmp);
 }
 
 /**
