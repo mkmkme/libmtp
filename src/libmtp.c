@@ -1310,35 +1310,31 @@ static char *get_string_from_object(LIBMTP_mtpdevice_t *device, uint32_t const o
  * @param value_default Default value to return on failure
  * @return the value
  */
-static uint64_t get_u64_from_object(LIBMTP_mtpdevice_t *device,uint32_t const object_id,
-                                    uint16_t const attribute_id, uint64_t const value_default)
+static uint64_t get_u64_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
+                    uint16_t const attribute_id, uint64_t const value_default)
 {
-  PTPPropertyValue propval;
-  uint64_t retval = value_default;
-  PTPParams *params;
-  uint16_t ret;
-  MTPProperties *prop;
+    PTPPropertyValue propval;
+    uint64_t retval = value_default;
+    PTPParams *params;
+    uint16_t ret;
+    MTPProperties *prop;
 
-  if (!device)
-    return value_default;
+    if (!device)
+        return value_default;
 
-  params = (PTPParams *) device->params;
+    params = (PTPParams *) device->params;
 
-  prop = ptp_find_object_prop_in_cache(params, object_id, attribute_id);
-  if (prop)
-    return prop->propval.u64;
+    prop = ptp_find_object_prop_in_cache(params, object_id, attribute_id);
+    if (prop)
+        return prop->propval.u64;
 
-  ret = ptp_mtp_getobjectpropvalue(params, object_id,
-                                   attribute_id,
-                                   &propval,
-                                   PTP_DTC_UINT64);
-  if (ret == PTP_RC_OK) {
-    retval = propval.u64;
-  } else {
-    add_ptp_error_to_errorstack(device, ret, "get_u64_from_object(): could not get unsigned 64bit integer from object.");
-  }
+    ret = ptp_mtp_getobjectpropvalue(params, object_id, attribute_id, &propval, PTP_DTC_UINT64);
+    if (ret == PTP_RC_OK)
+        retval = propval.u64;
+    else
+        add_ptp_error_to_errorstack(device, ret, "get_u64_from_object(): could not get unsigned 64bit integer from object.");
 
-  return retval;
+    return retval;
 }
 
 /**
