@@ -1420,36 +1420,32 @@ static uint16_t get_u16_from_object(LIBMTP_mtpdevice_t *device, uint32_t const o
  * @return a value
  */
 static uint8_t get_u8_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-				  uint16_t const attribute_id, uint8_t const value_default)
+                  uint16_t const attribute_id, uint8_t const value_default)
 {
-  PTPPropertyValue propval;
-  uint8_t retval = value_default;
-  PTPParams *params;
-  uint16_t ret;
-  MTPProperties *prop;
+    PTPPropertyValue propval;
+    uint8_t retval = value_default;
+    PTPParams *params;
+    uint16_t ret;
+    MTPProperties *prop;
 
-  if (!device)
-    return value_default;
+    if (!device)
+        return value_default;
 
-  params = (PTPParams *) device->params;
+    params = (PTPParams *) device->params;
 
-  // This O(n) search should not be used so often, since code
-  // using the cached properties don't usually call this function.
-  prop = ptp_find_object_prop_in_cache(params, object_id, attribute_id);
-  if (prop)
-    return prop->propval.u8;
+    // This O(n) search should not be used so often, since code
+    // using the cached properties don't usually call this function.
+    prop = ptp_find_object_prop_in_cache(params, object_id, attribute_id);
+    if (prop)
+        return prop->propval.u8;
 
-  ret = ptp_mtp_getobjectpropvalue(params, object_id,
-                                   attribute_id,
-                                   &propval,
-                                   PTP_DTC_UINT8);
-  if (ret == PTP_RC_OK) {
-    retval = propval.u8;
-  } else {
-    add_ptp_error_to_errorstack(device, ret, "get_u8_from_object(): could not get unsigned 8bit integer from object.");
-  }
+    ret = ptp_mtp_getobjectpropvalue(params, object_id, attribute_id, &propval, PTP_DTC_UINT8);
+    if (ret == PTP_RC_OK)
+        retval = propval.u8;
+    else
+        add_ptp_error_to_errorstack(device, ret, "get_u8_from_object(): could not get unsigned 8bit integer from object.");
 
-  return retval;
+    return retval;
 }
 
 /**
