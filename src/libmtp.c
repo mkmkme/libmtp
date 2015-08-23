@@ -702,18 +702,17 @@ static uint16_t map_libmtp_property_to_ptp_property(LIBMTP_property_t inproperty
  */
 static LIBMTP_property_t map_ptp_property_to_libmtp_property(uint16_t inproperty)
 {
-  propertymap_t *current;
+    propertymap_t *current;
 
-  current = g_propertymap;
+    current = g_propertymap;
 
-  while (current != NULL) {
-    if(current->ptp_id == inproperty) {
-      return current->id;
+    while (current != NULL) {
+        if(current->ptp_id == inproperty)
+            return current->id;
+        current = current->next;
     }
-    current = current->next;
-  }
-  // printf("map_ptp_type_to_libmtp_type: unknown filetype.\n");
-  return LIBMTP_PROPERTY_UNKNOWN;
+    // printf("map_ptp_type_to_libmtp_type: unknown filetype.\n");
+    return LIBMTP_PROPERTY_UNKNOWN;
 }
 
 
