@@ -680,17 +680,16 @@ static void init_propertymap()
  */
 static uint16_t map_libmtp_property_to_ptp_property(LIBMTP_property_t inproperty)
 {
-  propertymap_t *current;
+    propertymap_t *current;
 
-  current = g_propertymap;
+    current = g_propertymap;
 
-  while (current != NULL) {
-    if(current->id == inproperty) {
-      return current->ptp_id;
+    while (current != NULL) {
+        if(current->id == inproperty)
+            return current->ptp_id;
+        current = current->next;
     }
-    current = current->next;
-  }
-  return 0;
+    return 0;
 }
 
 
