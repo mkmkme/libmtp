@@ -47,82 +47,61 @@
    * and properties.
    */
   { "Creative", 0x041e, "ZEN Vision", 0x411f,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Creative", 0x041e, "Portable Media Center", 0x4123,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Creative", 0x041e, "ZEN Xtra (MTP mode)", 0x4128,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Dell", 0x041e, "DJ (2nd generation)", 0x412f,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Creative", 0x041e, "ZEN Micro (MTP mode)", 0x4130,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Creative", 0x041e, "ZEN Touch (MTP mode)", 0x4131,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Dell", 0x041e, "Dell Pocket DJ (MTP mode)", 0x4132,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
- { "Creative", 0x041e, "ZEN MicroPhoto (alternate version)", 0x4133,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
+  { "Creative", 0x041e, "ZEN MicroPhoto (alternate version)", 0x4133,
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Creative", 0x041e, "ZEN Sleek (MTP mode)", 0x4137,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Creative", 0x041e, "ZEN MicroPhoto", 0x413c,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Creative", 0x041e, "ZEN Sleek Photo", 0x413d,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Creative", 0x041e, "ZEN Vision:M", 0x413e,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   // Reported by marazm@o2.pl
   { "Creative", 0x041e, "ZEN V", 0x4150,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   // Reported by danielw@iinet.net.au
   // This version of the Vision:M needs the no release interface flag,
   // unclear whether the other version above need it too or not.
   { "Creative", 0x041e, "ZEN Vision:M (DVP-HD0004)", 0x4151,
       DEVICE_FLAG_NO_RELEASE_INTERFACE |
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   // Reported by Darel on the XNJB forums
   { "Creative", 0x041e, "ZEN V Plus", 0x4152,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   { "Creative", 0x041e, "ZEN Vision W", 0x4153,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   // Don't add 0x4155: this is a Zen Stone device which is not MTP
   // Reported by Paul Kurczaba <paul@kurczaba.com>
   { "Creative", 0x041e, "ZEN", 0x4157,
       DEVICE_FLAG_IGNORE_HEADER_ERRORS |
       DEVICE_FLAG_BROKEN_SET_SAMPLE_DIMENSIONS |
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   // Reported by Ringofan <mcroman@users.sourceforge.net>
   { "Creative", 0x041e, "ZEN V 2GB", 0x4158,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   // Reported by j norment <stormzen@gmail.com>
   { "Creative", 0x041e, "ZEN Mozaic", 0x4161,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   // Reported by Aaron F. Gonzalez <sub_tex@users.sourceforge.net>
   { "Creative", 0x041e, "ZEN X-Fi", 0x4162,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   // Reported by farmerstimuli <farmerstimuli@users.sourceforge.net>
   { "Creative", 0x041e, "ZEN X-Fi 3", 0x4169,
-      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL |
-      DEVICE_FLAG_BROKEN_GET_OBJECT_PROPVAL },
+      DEVICE_FLAG_BROKEN_MTPGETOBJPROPLIST_ALL },
   // Reported by Todor Gyumyushev <yodor1@users.sourceforge.net>
   { "ZiiLABS", 0x041e, "Zii EGG", 0x6000,
       DEVICE_FLAG_UNLOAD_DRIVER |
@@ -1763,6 +1742,8 @@
       DEVICE_FLAG_NONE },
   { "SONY", 0x0fce, "Xperia E3 MTP", 0x01bc,
       DEVICE_FLAG_NONE },
+  { "SONY", 0x0fce, "XPeria Z3+ MTP", 0x01c9,
+      DEVICE_FLAG_NONE },
   { "SONY", 0x0fce, "XPeria E4g MTP", 0x01cb,
       DEVICE_FLAG_NONE },
 
@@ -1839,6 +1820,8 @@
   { "SONY", 0x0fce, "Xperia Z3 Compact MTP+CDROM", 0x41bb,
       DEVICE_FLAG_NONE },
   { "SONY", 0x0fce, "Xperia E3 MTP+CDROM", 0x01bc,
+      DEVICE_FLAG_NONE },
+  { "SONY", 0x0fce, "XPeria Z3+ MTP+CDROM", 0x41c9,
       DEVICE_FLAG_NONE },
   { "SONY", 0x0fce, "XPeria E4g MTP+CDROM", 0x41cb,
       DEVICE_FLAG_NONE },
@@ -1941,6 +1924,8 @@
   { "SONY", 0x0fce, "Xperia Z3 Compact MTP+ADB", 0x51bb,
       DEVICE_FLAG_NONE },
   { "SONY", 0x0fce, "Xperia E3 MTP+ADB", 0x51bc,
+      DEVICE_FLAG_NONE },
+  { "SONY", 0x0fce, "XPeria Z3+ MTP+ADB", 0x51c9,
       DEVICE_FLAG_NONE },
   { "SONY", 0x0fce,  "XPeria E4g MTP+ADB", 0x51cb,
       DEVICE_FLAG_NONE },
@@ -2490,6 +2475,9 @@
       DEVICE_FLAGS_ANDROID_BUGS },
   /* https://sourceforge.net/p/libmtp/bugs/1155/ */
   { "Lenovo", 0x17ef, "Yoga Tablet 10 B8000-H", 0x76ff,
+      DEVICE_FLAGS_ANDROID_BUGS },
+  /*  https://sourceforge.net/p/libmtp/bugs/1391/ */
+  { "Lenovo", 0x17ef, "A7600-F", 0x7731,
       DEVICE_FLAGS_ANDROID_BUGS },
   /* https://sourceforge.net/p/libmtp/bugs/1291/ */
   { "Lenovo", 0x17ef, "A3500-F", 0x7737,
