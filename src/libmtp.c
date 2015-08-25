@@ -3684,44 +3684,42 @@ int LIBMTP_Get_Device_Certificate(LIBMTP_mtpdevice_t *device, char ** const devc
  * @see LIBMTP_Get_Filetype_Description()
  */
 int LIBMTP_Get_Supported_Filetypes(LIBMTP_mtpdevice_t *device, uint16_t ** const filetypes,
-				  uint16_t * const length)
+                    uint16_t * const length)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  uint16_t *localtypes;
-  uint16_t localtypelen;
-  uint32_t i;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    uint16_t *localtypes;
+    uint16_t localtypelen;
+    uint32_t i;
 
-  // This is more memory than needed if there are unknown types, but what the heck.
-  localtypes = (uint16_t *) malloc(params->deviceinfo.ImageFormats_len * sizeof(uint16_t));
-  localtypelen = 0;
+    /* This is more memory than needed if there are unknown types, but what the heck. */
+    localtypes = (uint16_t *) malloc(params->deviceinfo.ImageFormats_len * sizeof(uint16_t));
+    localtypelen = 0;
 
-  for (i=0;i<params->deviceinfo.ImageFormats_len;i++) {
-    uint16_t localtype = map_ptp_type_to_libmtp_type(params->deviceinfo.ImageFormats[i]);
-    if (localtype != LIBMTP_FILETYPE_UNKNOWN) {
-      localtypes[localtypelen] = localtype;
-      localtypelen++;
+    for (i = 0; i < params->deviceinfo.ImageFormats_len; i++) {
+        uint16_t localtype = map_ptp_type_to_libmtp_type(params->deviceinfo.ImageFormats[i]);
+        if (localtype != LIBMTP_FILETYPE_UNKNOWN) {
+            localtypes[localtypelen] = localtype;
+            localtypelen++;
+        }
     }
-  }
-  // The forgotten Ogg support on YP-10 and others...
-  if (FLAG_OGG_IS_UNKNOWN(ptp_usb)) {
-    localtypes = (uint16_t *) realloc(localtypes,
-		(params->deviceinfo.ImageFormats_len+1) * sizeof(uint16_t));
-    localtypes[localtypelen] = LIBMTP_FILETYPE_OGG;
-    localtypelen++;
-  }
-  // The forgotten FLAC support on Cowon iAudio S9 and others...
-  if (FLAG_FLAC_IS_UNKNOWN(ptp_usb)) {
-    localtypes = (uint16_t *) realloc(localtypes,
-		(params->deviceinfo.ImageFormats_len+1) * sizeof(uint16_t));
-    localtypes[localtypelen] = LIBMTP_FILETYPE_FLAC;
-    localtypelen++;
-  }
+    /* The forgotten Ogg support on YP-10 and others... */
+    if (FLAG_OGG_IS_UNKNOWN(ptp_usb)) {
+        localtypes = (uint16_t *) realloc(localtypes, (params->deviceinfo.ImageFormats_len + 1) * sizeof(uint16_t));
+        localtypes[localtypelen] = LIBMTP_FILETYPE_OGG;
+        localtypelen++;
+    }
+    /* The forgotten FLAC support on Cowon iAudio S9 and others... */
+    if (FLAG_FLAC_IS_UNKNOWN(ptp_usb)) {
+        localtypes = (uint16_t *) realloc(localtypes, (params->deviceinfo.ImageFormats_len + 1) * sizeof(uint16_t));
+        localtypes[localtypelen] = LIBMTP_FILETYPE_FLAC;
+        localtypelen++;
+    }
 
-  *filetypes = localtypes;
-  *length = localtypelen;
+    *filetypes = localtypes;
+    *length = localtypelen;
 
-  return 0;
+    return 0;
 }
 
 /**
