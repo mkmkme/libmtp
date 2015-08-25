@@ -3882,19 +3882,18 @@ int LIBMTP_Get_Storage(LIBMTP_mtpdevice_t *device, int const sortby)
  */
 LIBMTP_file_t *LIBMTP_new_file_t(void)
 {
-  LIBMTP_file_t *new = (LIBMTP_file_t *) malloc(sizeof(LIBMTP_file_t));
-  if (new == NULL) {
-    return NULL;
-  }
-  new->filename = NULL;
-  new->item_id = 0;
-  new->parent_id = 0;
-  new->storage_id = 0;
-  new->filesize = 0;
-  new->modificationdate = 0;
-  new->filetype = LIBMTP_FILETYPE_UNKNOWN;
-  new->next = NULL;
-  return new;
+    LIBMTP_file_t *new = (LIBMTP_file_t *) malloc(sizeof(LIBMTP_file_t));
+    if (new == NULL)
+        return NULL;
+    new->filename = NULL;
+    new->item_id = 0;
+    new->parent_id = 0;
+    new->storage_id = 0;
+    new->filesize = 0;
+    new->modificationdate = 0;
+    new->filetype = LIBMTP_FILETYPE_UNKNOWN;
+    new->next = NULL;
+    return new;
 }
 
 /**
