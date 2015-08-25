@@ -3416,25 +3416,21 @@ char *LIBMTP_Get_Friendlyname(LIBMTP_mtpdevice_t *device)
  * @see LIBMTP_Get_Friendlyname()
  */
 int LIBMTP_Set_Friendlyname(LIBMTP_mtpdevice_t *device,
-			 char const * const friendlyname)
+            char const * const friendlyname)
 {
-  PTPPropertyValue propval;
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPPropertyValue propval;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  if (!ptp_property_issupported(params, PTP_DPC_MTP_DeviceFriendlyName)) {
-    return -1;
-  }
-  propval.str = (char *) friendlyname;
-  ret = ptp_setdevicepropvalue(params,
-			       PTP_DPC_MTP_DeviceFriendlyName,
-			       &propval,
-			       PTP_DTC_STR);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "Error setting friendlyname.");
-    return -1;
-  }
-  return 0;
+    if (!ptp_property_issupported(params, PTP_DPC_MTP_DeviceFriendlyName))
+        return -1;
+    propval.str = (char *) friendlyname;
+    ret = ptp_setdevicepropvalue(params, PTP_DPC_MTP_DeviceFriendlyName, &propval, PTP_DTC_STR);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "Error setting friendlyname.");
+        return -1;
+    }
+    return 0;
 }
 
 /**
