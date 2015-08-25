@@ -2368,8 +2368,7 @@ void LIBMTP_Clear_Errorstack(LIBMTP_mtpdevice_t *device)
         while (tmp != NULL) {
             LIBMTP_error_t *tmp2;
 
-            if (tmp->error_text != NULL)
-                free(tmp->error_text);
+            free(tmp->error_text);
             tmp2 = tmp;
             tmp = tmp->next;
             free(tmp2);
