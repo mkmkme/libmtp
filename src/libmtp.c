@@ -4101,51 +4101,48 @@ LIBMTP_file_t *LIBMTP_Get_Filelisting_With_Callback(LIBMTP_mtpdevice_t *device,
                                                     LIBMTP_progressfunc_t const callback,
                                                     void const * const data)
 {
-  uint32_t i = 0;
-  LIBMTP_file_t *retfiles = NULL;
-  LIBMTP_file_t *curfile = NULL;
-  PTPParams *params = (PTPParams *) device->params;
+    uint32_t i = 0;
+    LIBMTP_file_t *retfiles = NULL;
+    LIBMTP_file_t *curfile = NULL;
+    PTPParams *params = (PTPParams *) device->params;
 
-  // Get all the handles if we haven't already done that
-  if (params->nrofobjects == 0) {
-    flush_handles(device);
-  }
+    /* Get all the handles if we haven't already done that */
+    if (params->nrofobjects == 0)
+        flush_handles(device);
 
-  for (i = 0; i < params->nrofobjects; i++) {
-    LIBMTP_file_t *file;
-    PTPObject *ob;
+    for (i = 0; i < params->nrofobjects; i++) {
+        LIBMTP_file_t *file;
+        PTPObject *ob;
 
-    if (callback != NULL)
-      callback(i, params->nrofobjects, data);
+        if (callback != NULL)
+            callback(i, params->nrofobjects, data);
 
-    ob = &params->objects[i];
+        ob = &params->objects[i];
 
-    if (ob->oi.ObjectFormat == PTP_OFC_Association) {
-      // MTP use this object format for folders which means
-      // these "files" will turn up on a folder listing instead.
-      continue;
-    }
+        if (ob->oi.ObjectFormat == PTP_OFC_Association)
+            /* MTP use this object format for folders which means
+             * these "files" will turn up on a folder listing instead. */
+            continue;
 
-    // Look up metadata
-    file = obj2file(device, ob);
-    if (file == NULL) {
-      continue;
-    }
+        /* Look up metadata */
+        file = obj2file(device, ob);
+        if (file == NULL)
+            continue;
 
-    // Add track to a list that will be returned afterwards.
-    if (retfiles == NULL) {
-      retfiles = file;
-      curfile = file;
-    } else {
-      curfile->next = file;
-      curfile = file;
-    }
+        /* Add track to a list that will be returned afterwards. */
+        if (retfiles == NULL) {
+            retfiles = file;
+            curfile = file;
+        } else {
+            curfile->next = file;
+            curfile = file;
+        }
 
-    // Call listing callback
-    // double progressPercent = (double)i*(double)100.0 / (double)params->handles.n;
+        /* Call listing callback */
+        /* double progressPercent = (double)i*(double)100.0 / (double)params->handles.n; */
 
-  } // Handle counting loop
-  return retfiles;
+    } /* Handle counting loop */
+    return retfiles;
 }
 
 /**
