@@ -3349,13 +3349,12 @@ char *LIBMTP_Get_Modelname(LIBMTP_mtpdevice_t *device)
  */
 char *LIBMTP_Get_Serialnumber(LIBMTP_mtpdevice_t *device)
 {
-  char *retnumber = NULL;
-  PTPParams *params = (PTPParams *) device->params;
+    char *retnumber = NULL;
+    PTPParams *params = (PTPParams *) device->params;
 
-  if (params->deviceinfo.SerialNumber != NULL) {
-    retnumber = strdup(params->deviceinfo.SerialNumber);
-  }
-  return retnumber;
+    if (params->deviceinfo.SerialNumber != NULL)
+        retnumber = strdup(params->deviceinfo.SerialNumber);
+    return retnumber;
 }
 
 /**
