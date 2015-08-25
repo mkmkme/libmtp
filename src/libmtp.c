@@ -3463,7 +3463,6 @@ char *LIBMTP_Get_Syncpartner(LIBMTP_mtpdevice_t *device)
     return retstring;
 }
 
-
 /**
  * Sets the synchronization partner of an MTP device. Note that
  * we have no idea what the effect of setting this to "foobar"
@@ -3476,25 +3475,21 @@ char *LIBMTP_Get_Syncpartner(LIBMTP_mtpdevice_t *device)
  * @see LIBMTP_Get_Syncpartner()
  */
 int LIBMTP_Set_Syncpartner(LIBMTP_mtpdevice_t *device,
-			 char const * const syncpartner)
+            char const * const syncpartner)
 {
-  PTPPropertyValue propval;
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPPropertyValue propval;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  if (!ptp_property_issupported(params, PTP_DPC_MTP_SynchronizationPartner)) {
-    return -1;
-  }
-  propval.str = (char *) syncpartner;
-  ret = ptp_setdevicepropvalue(params,
-			       PTP_DPC_MTP_SynchronizationPartner,
-			       &propval,
-			       PTP_DTC_STR);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "Error setting syncpartner.");
-    return -1;
-  }
-  return 0;
+    if (!ptp_property_issupported(params, PTP_DPC_MTP_SynchronizationPartner))
+        return -1;
+    propval.str = (char *) syncpartner;
+    ret = ptp_setdevicepropvalue(params, PTP_DPC_MTP_SynchronizationPartner, &propval, PTP_DTC_STR);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "Error setting syncpartner.");
+        return -1;
+    }
+    return 0;
 }
 
 /**
