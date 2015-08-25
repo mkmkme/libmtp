@@ -2344,11 +2344,11 @@ static void add_ptp_error_to_errorstack(LIBMTP_mtpdevice_t *device,
  */
 LIBMTP_error_t *LIBMTP_Get_Errorstack(LIBMTP_mtpdevice_t *device)
 {
-  if (device == NULL) {
-    LIBMTP_ERROR("LIBMTP PANIC: Trying to get the error stack of a NULL device!\n");
-    return NULL;
-  }
-  return device->errorstack;
+    if (device == NULL) {
+        LIBMTP_ERROR("LIBMTP PANIC: Trying to get the error stack of a NULL device!\n");
+        return NULL;
+    }
+    return device->errorstack;
 }
 
 /**
