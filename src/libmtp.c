@@ -2874,42 +2874,40 @@ static int get_suggested_storage_id(LIBMTP_mtpdevice_t *device,
  * in this variable.
  */
 static int get_storage_freespace(LIBMTP_mtpdevice_t *device,
-				 LIBMTP_devicestorage_t *storage,
-				 uint64_t *freespace)
+                 LIBMTP_devicestorage_t *storage,
+                 uint64_t *freespace)
 {
-  PTPParams *params = (PTPParams *) device->params;
+    PTPParams *params = (PTPParams *) device->params;
 
-  // Always query the device about this, since some models explicitly
-  // needs that. We flush all data on queries storage here.
-  if (ptp_operation_issupported(params,PTP_OC_GetStorageInfo)) {
-    PTPStorageInfo storageInfo;
-    uint16_t ret;
+    /* Always query the device about this, since some models explicitly
+     * needs that. We flush all data on queries storage here. */
+    if (ptp_operation_issupported(params,PTP_OC_GetStorageInfo)) {
+        PTPStorageInfo storageInfo;
+        uint16_t ret;
 
-    ret = ptp_getstorageinfo(params, storage->id, &storageInfo);
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret,
-		"get_storage_freespace(): could not get storage info.");
-      return -1;
+        ret = ptp_getstorageinfo(params, storage->id, &storageInfo);
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret,
+            "get_storage_freespace(): could not get storage info.");
+            return -1;
+        }
+        if (storage->StorageDescription != NULL)
+            free(storage->StorageDescription);
+        if (storage->VolumeIdentifier != NULL)
+            free(storage->VolumeIdentifier);
+        storage->StorageType = storageInfo.StorageType;
+        storage->FilesystemType = storageInfo.FilesystemType;
+        storage->AccessCapability = storageInfo.AccessCapability;
+        storage->MaxCapacity = storageInfo.MaxCapability;
+        storage->FreeSpaceInBytes = storageInfo.FreeSpaceInBytes;
+        storage->FreeSpaceInObjects = storageInfo.FreeSpaceInImages;
+        storage->StorageDescription = storageInfo.StorageDescription;
+        storage->VolumeIdentifier = storageInfo.VolumeLabel;
     }
-    if (storage->StorageDescription != NULL) {
-      free(storage->StorageDescription);
-    }
-    if (storage->VolumeIdentifier != NULL) {
-      free(storage->VolumeIdentifier);
-    }
-    storage->StorageType = storageInfo.StorageType;
-    storage->FilesystemType = storageInfo.FilesystemType;
-    storage->AccessCapability = storageInfo.AccessCapability;
-    storage->MaxCapacity = storageInfo.MaxCapability;
-    storage->FreeSpaceInBytes = storageInfo.FreeSpaceInBytes;
-    storage->FreeSpaceInObjects = storageInfo.FreeSpaceInImages;
-    storage->StorageDescription = storageInfo.StorageDescription;
-    storage->VolumeIdentifier = storageInfo.VolumeLabel;
-  }
-  if(storage->FreeSpaceInBytes == (uint64_t) -1)
-    return -1;
-  *freespace = storage->FreeSpaceInBytes;
-  return 0;
+    if(storage->FreeSpaceInBytes == (uint64_t) -1)
+        return -1;
+    *freespace = storage->FreeSpaceInBytes;
+    return 0;
 }
 
 /**
