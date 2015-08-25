@@ -2149,28 +2149,28 @@ int LIBMTP_Read_Event(LIBMTP_mtpdevice_t *device, LIBMTP_event_t *event, uint32_
  */
 static LIBMTP_mtpdevice_t * create_usb_mtp_devices(LIBMTP_raw_device_t *devices, int numdevs)
 {
-  uint8_t i;
-  LIBMTP_mtpdevice_t *mtp_device_list = NULL;
-  LIBMTP_mtpdevice_t *current_device = NULL;
+    uint8_t i;
+    LIBMTP_mtpdevice_t *mtp_device_list = NULL;
+    LIBMTP_mtpdevice_t *current_device = NULL;
 
-  for (i=0; i < numdevs; i++) {
-    LIBMTP_mtpdevice_t *mtp_device;
-    mtp_device = LIBMTP_Open_Raw_Device(&devices[i]);
+    for (i = 0; i < numdevs; i++) {
+        LIBMTP_mtpdevice_t *mtp_device;
+        mtp_device = LIBMTP_Open_Raw_Device(&devices[i]);
 
-    /* On error, try next device */
-    if (mtp_device == NULL)
-      continue;
+        /* On error, try next device */
+        if (mtp_device == NULL)
+            continue;
 
-    /* Add the device to the list */
-    mtp_device->next = NULL;
-    if (mtp_device_list == NULL) {
-      mtp_device_list = current_device = mtp_device;
-    } else {
-      current_device->next = mtp_device;
-      current_device = mtp_device;
+        /* Add the device to the list */
+        mtp_device->next = NULL;
+        if (mtp_device_list == NULL)
+            mtp_device_list = current_device = mtp_device;
+        else {
+            current_device->next = mtp_device;
+            current_device = mtp_device;
+        }
     }
-  }
-  return mtp_device_list;
+    return mtp_device_list;
 }
 
 /**
