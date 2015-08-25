@@ -2699,24 +2699,20 @@ static void flush_handles(LIBMTP_mtpdevice_t *device)
  */
 static void free_storage_list(LIBMTP_mtpdevice_t *device)
 {
-  LIBMTP_devicestorage_t *storage;
-  LIBMTP_devicestorage_t *tmp;
+    LIBMTP_devicestorage_t *storage;
+    LIBMTP_devicestorage_t *tmp;
 
-  storage = device->storage;
-  while(storage != NULL) {
-    if (storage->StorageDescription != NULL) {
-      free(storage->StorageDescription);
+    storage = device->storage;
+    while(storage != NULL) {
+        if (storage->StorageDescription != NULL)
+            free(storage->StorageDescription);
+        if (storage->VolumeIdentifier != NULL)
+            free(storage->VolumeIdentifier);
+        tmp = storage;
+        storage = storage->next;
+        free(tmp);
     }
-    if (storage->VolumeIdentifier != NULL) {
-      free(storage->VolumeIdentifier);
-    }
-    tmp = storage;
-    storage = storage->next;
-    free(tmp);
-  }
-  device->storage = NULL;
-
-  return;
+    device->storage = NULL;
 }
 
 /**
