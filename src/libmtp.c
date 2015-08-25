@@ -2794,51 +2794,48 @@ static uint32_t get_writeable_storageid(LIBMTP_mtpdevice_t *device,
                     uint64_t fitsize)
 {
     LIBMTP_devicestorage_t *storage;
-    uint32_t store = 0x00000000; /* Should this be 0xffffffffu instead? */
     int subcall_ret;
 
     /* See if there is some storage we can fit this file on. */
     storage = device->storage;
     if (storage == NULL)
         /* Sometimes the storage just cannot be detected. */
-        store = 0x00000000U;
-    else {
-        while(storage != NULL) {
-            /* These storages cannot be used. */
-            if (storage->StorageType == PTP_ST_FixedROM ||
-                storage->StorageType == PTP_ST_RemovableROM) {
-                storage = storage->next;
-                continue;
-            }
-            /* Storage IDs with the lower 16 bits 0x0000 are not supposed
-             * to be writeable. */
-            if ((storage->id & 0x0000FFFFU) == 0x00000000U) {
-                storage = storage->next;
-                continue;
-            }
-            /* Also check the access capability to avoid e.g. deletable only storages */
-            if (storage->AccessCapability == PTP_AC_ReadOnly ||
-                storage->AccessCapability == PTP_AC_ReadOnly_with_Object_Deletion) {
-                storage = storage->next;
-                continue;
-            }
-            /* Then see if we can fit the file. */
-            subcall_ret = check_if_file_fits(device, storage, fitsize);
-            if (subcall_ret != 0)
-                storage = storage->next;
-            else
-                /* We found a storage that is writable and can fit the file! */
-                break;
+        return 0x00000000U;
+
+    while(storage != NULL) {
+        /* These storages cannot be used. */
+        if (storage->StorageType == PTP_ST_FixedROM ||
+            storage->StorageType == PTP_ST_RemovableROM) {
+            storage = storage->next;
+            continue;
         }
-        if (storage == NULL) {
-            add_error_to_errorstack(device, LIBMTP_ERROR_STORAGE_FULL,
-                "get_writeable_storageid(): all device storage is full or corrupt.");
-            return -1;
+        /* Storage IDs with the lower 16 bits 0x0000 are not supposed
+         * to be writeable. */
+        if ((storage->id & 0x0000FFFFU) == 0x00000000U) {
+            storage = storage->next;
+            continue;
         }
-        store = storage->id;
+        /* Also check the access capability to avoid e.g. deletable only storages */
+        if (storage->AccessCapability == PTP_AC_ReadOnly ||
+            storage->AccessCapability == PTP_AC_ReadOnly_with_Object_Deletion) {
+            storage = storage->next;
+            continue;
+        }
+        /* Then see if we can fit the file. */
+        subcall_ret = check_if_file_fits(device, storage, fitsize);
+        if (subcall_ret != 0)
+            storage = storage->next;
+        else
+            /* We found a storage that is writable and can fit the file! */
+            break;
+    }
+    if (storage == NULL) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_STORAGE_FULL,
+            "get_writeable_storageid(): all device storage is full or corrupt.");
+        return -1;
     }
 
-    return store;
+    return storage->id;
 }
 
 /**
