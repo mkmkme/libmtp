@@ -2001,38 +2001,37 @@ LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device_Uncached(LIBMTP_raw_device_t *rawdevi
 
 LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device(LIBMTP_raw_device_t *rawdevice)
 {
-  LIBMTP_mtpdevice_t *mtp_device = LIBMTP_Open_Raw_Device_Uncached(rawdevice);
+    LIBMTP_mtpdevice_t *mtp_device = LIBMTP_Open_Raw_Device_Uncached(rawdevice);
 
-  if (mtp_device == NULL)
-    return NULL;
+    if (mtp_device == NULL)
+        return NULL;
 
-  /* Check for MTPZ devices. */
-  if (use_mtpz) {
-    LIBMTP_device_extension_t *tmpext = mtp_device->extensions;
+    /* Check for MTPZ devices. */
+    if (use_mtpz) {
+        LIBMTP_device_extension_t *tmpext = mtp_device->extensions;
 
-    while (tmpext != NULL) {
-      if (!strcmp(tmpext->name, "microsoft.com/MTPZ")) {
-	LIBMTP_INFO("MTPZ device detected. Authenticating...\n");
-        if (PTP_RC_OK == ptp_mtpz_handshake(mtp_device->params)) {
-	  LIBMTP_INFO ("(MTPZ) Successfully authenticated with device.\n");
-        } else {
-          LIBMTP_INFO ("(MTPZ) Failure - could not authenticate with device.\n");
+        while (tmpext != NULL) {
+            if (strcmp(tmpext->name, "microsoft.com/MTPZ") == 0) {
+                LIBMTP_INFO("MTPZ device detected. Authenticating...\n");
+                if (PTP_RC_OK == ptp_mtpz_handshake(mtp_device->params))
+                    LIBMTP_INFO ("(MTPZ) Successfully authenticated with device.\n");
+                else
+                    LIBMTP_INFO ("(MTPZ) Failure - could not authenticate with device.\n");
+                break;
+            }
+        tmpext = tmpext->next;
         }
-	break;
-      }
-      tmpext = tmpext->next;
     }
-  }
 
-  // Set up this device as cached
-  mtp_device->cached = 1;
-  /*
-   * Then get the handles and try to locate the default folders.
-   * This has the desired side effect of caching all handles from
-   * the device which speeds up later operations.
-   */
-  flush_handles(mtp_device);
-  return mtp_device;
+    // Set up this device as cached
+    mtp_device->cached = 1;
+    /*
+     * Then get the handles and try to locate the default folders.
+     * This has the desired side effect of caching all handles from
+     * the device which speeds up later operations.
+     */
+    flush_handles(mtp_device);
+    return mtp_device;
 }
 
 /**
