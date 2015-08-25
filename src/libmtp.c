@@ -2916,398 +2916,369 @@ static int get_storage_freespace(LIBMTP_mtpdevice_t *device,
  */
 void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
 {
-  int i;
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  LIBMTP_devicestorage_t *storage = device->storage;
-  LIBMTP_device_extension_t *tmpext = device->extensions;
+    int i;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    LIBMTP_devicestorage_t *storage = device->storage;
+    LIBMTP_device_extension_t *tmpext = device->extensions;
 
-  printf("USB low-level info:\n");
-  dump_usbinfo(ptp_usb);
-  /* Print out some verbose information */
-  printf("Device info:\n");
-  printf("   Manufacturer: %s\n", params->deviceinfo.Manufacturer);
-  printf("   Model: %s\n", params->deviceinfo.Model);
-  printf("   Device version: %s\n", params->deviceinfo.DeviceVersion);
-  printf("   Serial number: %s\n", params->deviceinfo.SerialNumber);
-  printf("   Vendor extension ID: 0x%08x\n",
-	 params->deviceinfo.VendorExtensionID);
-  printf("   Vendor extension description: %s\n",
-	 params->deviceinfo.VendorExtensionDesc);
-  printf("   Detected object size: %d bits\n",
-	 device->object_bitsize);
-  printf("   Extensions:\n");
-  while (tmpext != NULL) {
-    printf("        %s: %d.%d\n",
-           tmpext->name,
-           tmpext->major,
-           tmpext->minor);
-    tmpext = tmpext->next;
-  }
-  printf("Supported operations:\n");
-  for (i=0;i<params->deviceinfo.OperationsSupported_len;i++) {
-    char txt[256];
-
-    (void) ptp_render_opcode(params, params->deviceinfo.OperationsSupported[i],
-			     sizeof(txt), txt);
-    printf("   %04x: %s\n", params->deviceinfo.OperationsSupported[i], txt);
-  }
-  printf("Events supported:\n");
-  if (params->deviceinfo.EventsSupported_len == 0) {
-    printf("   None.\n");
-  } else {
-    for (i=0;i<params->deviceinfo.EventsSupported_len;i++) {
-      printf("   0x%04x\n", params->deviceinfo.EventsSupported[i]);
+    printf("USB low-level info:\n");
+    dump_usbinfo(ptp_usb);
+    /* Print out some verbose information */
+    printf("Device info:\n");
+    printf("   Manufacturer: %s\n", params->deviceinfo.Manufacturer);
+    printf("   Model: %s\n", params->deviceinfo.Model);
+    printf("   Device version: %s\n", params->deviceinfo.DeviceVersion);
+    printf("   Serial number: %s\n", params->deviceinfo.SerialNumber);
+    printf("   Vendor extension ID: 0x%08x\n", params->deviceinfo.VendorExtensionID);
+    printf("   Vendor extension description: %s\n", params->deviceinfo.VendorExtensionDesc);
+    printf("   Detected object size: %d bits\n", device->object_bitsize);
+    printf("   Extensions:\n");
+    while (tmpext != NULL) {
+        printf("        %s: %d.%d\n", tmpext->name, tmpext->major, tmpext->minor);
+        tmpext = tmpext->next;
     }
-  }
-  printf("Device Properties Supported:\n");
-  for (i=0;i<params->deviceinfo.DevicePropertiesSupported_len;i++) {
-    char const *propdesc = ptp_get_property_description(params,
-			params->deviceinfo.DevicePropertiesSupported[i]);
-
-    if (propdesc != NULL) {
-      printf("   0x%04x: %s\n",
-	     params->deviceinfo.DevicePropertiesSupported[i], propdesc);
-    } else {
-      uint16_t prop = params->deviceinfo.DevicePropertiesSupported[i];
-      printf("   0x%04x: Unknown property\n", prop);
+    printf("Supported operations:\n");
+    for (i = 0; i < params->deviceinfo.OperationsSupported_len; i++) {
+        char txt[256];
+        ptp_render_opcode(params, params->deviceinfo.OperationsSupported[i], sizeof(txt), txt);
+        printf("   %04x: %s\n", params->deviceinfo.OperationsSupported[i], txt);
     }
-  }
+    printf("Events supported:\n");
+    if (params->deviceinfo.EventsSupported_len == 0)
+        printf("   None.\n");
+    else
+        for (i = 0; i < params->deviceinfo.EventsSupported_len; i++)
+            printf("   0x%04x\n", params->deviceinfo.EventsSupported[i]);
+    printf("Device Properties Supported:\n");
+    for (i = 0; i < params->deviceinfo.DevicePropertiesSupported_len; i++) {
+        char const *propdesc = ptp_get_property_description(params,
+            params->deviceinfo.DevicePropertiesSupported[i]);
 
-  if (ptp_operation_issupported(params,PTP_OC_MTP_GetObjectPropsSupported)) {
-    printf("Playable File (Object) Types and Object Properties Supported:\n");
-    for (i=0;i<params->deviceinfo.ImageFormats_len;i++) {
-      char txt[256];
-      uint16_t ret;
-      uint16_t *props = NULL;
-      uint32_t propcnt = 0;
-      int j;
-
-      (void) ptp_render_ofc (params, params->deviceinfo.ImageFormats[i],
-			     sizeof(txt), txt);
-      printf("   %04x: %s\n", params->deviceinfo.ImageFormats[i], txt);
-
-      ret = ptp_mtp_getobjectpropssupported (params,
-			params->deviceinfo.ImageFormats[i], &propcnt, &props);
-      if (ret != PTP_RC_OK) {
-	add_ptp_error_to_errorstack(device, ret, "LIBMTP_Dump_Device_Info(): "
-				    "error on query for object properties.");
-      } else {
-	for (j=0;j<propcnt;j++) {
-	  PTPObjectPropDesc opd;
-	  int k;
-
-	  printf("      %04x: %s", props[j],
-		 LIBMTP_Get_Property_Description(map_ptp_property_to_libmtp_property(props[j])));
-	  // Get a more verbose description
-	  ret = ptp_mtp_getobjectpropdesc(params, props[j],
-					  params->deviceinfo.ImageFormats[i],
-					  &opd);
-	  if (ret != PTP_RC_OK) {
-	    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-				    "LIBMTP_Dump_Device_Info(): "
-				    "could not get property description.");
-	    break;
-	  }
-
-	  if (opd.DataType == PTP_DTC_STR) {
-	    printf(" STRING data type");
-	    switch (opd.FormFlag) {
-	    case PTP_OPFF_DateTime:
-	      printf(" DATETIME FORM");
-	      break;
-	    case PTP_OPFF_RegularExpression:
-	      printf(" REGULAR EXPRESSION FORM");
-	      break;
-	    case PTP_OPFF_LongString:
-	      printf(" LONG STRING FORM");
-	      break;
-	    default:
-	      break;
-	    }
-	  } else {
-	    if (opd.DataType & PTP_DTC_ARRAY_MASK) {
-	      printf(" array of");
-	    }
-
-	    switch (opd.DataType & (~PTP_DTC_ARRAY_MASK)) {
-
-	    case PTP_DTC_UNDEF:
-	      printf(" UNDEFINED data type");
-	      break;
-	    case PTP_DTC_INT8:
-	      printf(" INT8 data type");
-	      switch (opd.FormFlag) {
-	      case PTP_OPFF_Range:
-		printf(" range: MIN %d, MAX %d, STEP %d",
-		       opd.FORM.Range.MinimumValue.i8,
-		       opd.FORM.Range.MaximumValue.i8,
-		       opd.FORM.Range.StepSize.i8);
-		break;
-	      case PTP_OPFF_Enumeration:
-		printf(" enumeration: ");
-		for(k=0;k<opd.FORM.Enum.NumberOfValues;k++) {
-		  printf("%d, ", opd.FORM.Enum.SupportedValue[k].i8);
-		}
-		break;
-	      case PTP_OPFF_ByteArray:
-		printf(" byte array: ");
-		break;
-	      default:
-		printf(" ANY 8BIT VALUE form");
-		break;
-	      }
-	      break;
-
-	    case PTP_DTC_UINT8:
-	      printf(" UINT8 data type");
-	      switch (opd.FormFlag) {
-	      case PTP_OPFF_Range:
-		printf(" range: MIN %d, MAX %d, STEP %d",
-		       opd.FORM.Range.MinimumValue.u8,
-		       opd.FORM.Range.MaximumValue.u8,
-		       opd.FORM.Range.StepSize.u8);
-		break;
-	      case PTP_OPFF_Enumeration:
-		printf(" enumeration: ");
-		for(k=0;k<opd.FORM.Enum.NumberOfValues;k++) {
-		  printf("%d, ", opd.FORM.Enum.SupportedValue[k].u8);
-		}
-		break;
-	      case PTP_OPFF_ByteArray:
-		printf(" byte array: ");
-		break;
-	      default:
-		printf(" ANY 8BIT VALUE form");
-		break;
-	      }
-	      break;
-
-	    case PTP_DTC_INT16:
-	      printf(" INT16 data type");
-	      switch (opd.FormFlag) {
-	      case PTP_OPFF_Range:
-	      printf(" range: MIN %d, MAX %d, STEP %d",
-		     opd.FORM.Range.MinimumValue.i16,
-		     opd.FORM.Range.MaximumValue.i16,
-		     opd.FORM.Range.StepSize.i16);
-	      break;
-	      case PTP_OPFF_Enumeration:
-		printf(" enumeration: ");
-		for(k=0;k<opd.FORM.Enum.NumberOfValues;k++) {
-		  printf("%d, ", opd.FORM.Enum.SupportedValue[k].i16);
-		}
-		break;
-	      default:
-		printf(" ANY 16BIT VALUE form");
-		break;
-	      }
-	      break;
-
-	    case PTP_DTC_UINT16:
-	      printf(" UINT16 data type");
-	      switch (opd.FormFlag) {
-	      case PTP_OPFF_Range:
-		printf(" range: MIN %d, MAX %d, STEP %d",
-		       opd.FORM.Range.MinimumValue.u16,
-		       opd.FORM.Range.MaximumValue.u16,
-		       opd.FORM.Range.StepSize.u16);
-		break;
-	      case PTP_OPFF_Enumeration:
-		printf(" enumeration: ");
-		for(k=0;k<opd.FORM.Enum.NumberOfValues;k++) {
-		  printf("%d, ", opd.FORM.Enum.SupportedValue[k].u16);
-		}
-		break;
-	      default:
-		printf(" ANY 16BIT VALUE form");
-		break;
-	      }
-	      break;
-
-	    case PTP_DTC_INT32:
-	      printf(" INT32 data type");
-	      switch (opd.FormFlag) {
-	      case PTP_OPFF_Range:
-		printf(" range: MIN %d, MAX %d, STEP %d",
-		       opd.FORM.Range.MinimumValue.i32,
-		       opd.FORM.Range.MaximumValue.i32,
-		       opd.FORM.Range.StepSize.i32);
-		break;
-	      case PTP_OPFF_Enumeration:
-		printf(" enumeration: ");
-		for(k=0;k<opd.FORM.Enum.NumberOfValues;k++) {
-		  printf("%d, ", opd.FORM.Enum.SupportedValue[k].i32);
-		}
-		break;
-	      default:
-		printf(" ANY 32BIT VALUE form");
-		break;
-	      }
-	      break;
-
-	    case PTP_DTC_UINT32:
-	      printf(" UINT32 data type");
-	      switch (opd.FormFlag) {
-	      case PTP_OPFF_Range:
-		printf(" range: MIN %d, MAX %d, STEP %d",
-		       opd.FORM.Range.MinimumValue.u32,
-		       opd.FORM.Range.MaximumValue.u32,
-		       opd.FORM.Range.StepSize.u32);
-		break;
-	      case PTP_OPFF_Enumeration:
-		// Special pretty-print for FOURCC codes
-		if (params->deviceinfo.ImageFormats[i] == PTP_OPC_VideoFourCCCodec) {
-		  printf(" enumeration of u32 casted FOURCC: ");
-		  for (k=0;k<opd.FORM.Enum.NumberOfValues;k++) {
-		    if (opd.FORM.Enum.SupportedValue[k].u32 == 0) {
-		      printf("ANY, ");
-		    } else {
-		      char fourcc[6];
-		      fourcc[0] = (opd.FORM.Enum.SupportedValue[k].u32 >> 24) & 0xFFU;
-		      fourcc[1] = (opd.FORM.Enum.SupportedValue[k].u32 >> 16) & 0xFFU;
-		      fourcc[2] = (opd.FORM.Enum.SupportedValue[k].u32 >> 8) & 0xFFU;
-		      fourcc[3] = opd.FORM.Enum.SupportedValue[k].u32 & 0xFFU;
-		      fourcc[4] = '\n';
-		      fourcc[5] = '\0';
-		      printf("\"%s\", ", fourcc);
-		    }
-		  }
-		} else {
-		  printf(" enumeration: ");
-		  for(k=0;k<opd.FORM.Enum.NumberOfValues;k++) {
-		    printf("%d, ", opd.FORM.Enum.SupportedValue[k].u32);
-		  }
-		}
-		break;
-	      default:
-		printf(" ANY 32BIT VALUE form");
-		break;
-	      }
-	      break;
-
-	    case PTP_DTC_INT64:
-	      printf(" INT64 data type");
-	      break;
-
-	    case PTP_DTC_UINT64:
-	      printf(" UINT64 data type");
-	      break;
-
-	    case PTP_DTC_INT128:
-	      printf(" INT128 data type");
-	      break;
-
-	    case PTP_DTC_UINT128:
-	      printf(" UINT128 data type");
-	      break;
-
-	    default:
-	      printf(" UNKNOWN data type");
-	      break;
-	    }
-	  }
-	  if (opd.GetSet) {
-	    printf(" GET/SET");
-	  } else {
-	    printf(" READ ONLY");
-	  }
-	  printf("\n");
-	  ptp_free_objectpropdesc(&opd);
-	}
-	free(props);
-      }
+        if (propdesc != NULL)
+            printf("   0x%04x: %s\n", params->deviceinfo.DevicePropertiesSupported[i], propdesc);
+        else {
+            uint16_t prop = params->deviceinfo.DevicePropertiesSupported[i];
+            printf("   0x%04x: Unknown property\n", prop);
+        }
     }
-  }
 
-  if(storage != NULL &&
-     ptp_operation_issupported(params,PTP_OC_GetStorageInfo)) {
-    printf("Storage Devices:\n");
-    while(storage != NULL) {
-      printf("   StorageID: 0x%08x\n",storage->id);
-      printf("      StorageType: 0x%04x ",storage->StorageType);
-      switch (storage->StorageType) {
-      case PTP_ST_Undefined:
-	printf("(undefined)\n");
-	break;
-      case PTP_ST_FixedROM:
-	printf("fixed ROM storage\n");
-	break;
-      case PTP_ST_RemovableROM:
-	printf("removable ROM storage\n");
-	break;
-      case PTP_ST_FixedRAM:
-	printf("fixed RAM storage\n");
-	break;
-      case PTP_ST_RemovableRAM:
-	printf("removable RAM storage\n");
-	break;
-      default:
-	printf("UNKNOWN storage\n");
-	break;
-      }
-      printf("      FilesystemType: 0x%04x ",storage->FilesystemType);
-      switch(storage->FilesystemType) {
-      case PTP_FST_Undefined:
-	printf("(undefined)\n");
-	break;
-      case PTP_FST_GenericFlat:
-	printf("generic flat filesystem\n");
-	break;
-      case PTP_FST_GenericHierarchical:
-	printf("generic hierarchical\n");
-	break;
-      case PTP_FST_DCF:
-	printf("DCF\n");
-	break;
-      default:
-	printf("UNKNONWN filesystem type\n");
-	break;
-      }
-      printf("      AccessCapability: 0x%04x ",storage->AccessCapability);
-      switch(storage->AccessCapability) {
-      case PTP_AC_ReadWrite:
-	printf("read/write\n");
-	break;
-      case PTP_AC_ReadOnly:
-	printf("read only\n");
-	break;
-      case PTP_AC_ReadOnly_with_Object_Deletion:
-	printf("read only + object deletion\n");
-	break;
-      default:
-	printf("UNKNOWN access capability\n");
-	break;
-      }
-      printf("      MaxCapacity: %llu\n",
-	     (long long unsigned int) storage->MaxCapacity);
-      printf("      FreeSpaceInBytes: %llu\n",
-	     (long long unsigned int) storage->FreeSpaceInBytes);
-      printf("      FreeSpaceInObjects: %llu\n",
-	     (long long unsigned int) storage->FreeSpaceInObjects);
-      printf("      StorageDescription: %s\n",storage->StorageDescription);
-      printf("      VolumeIdentifier: %s\n",storage->VolumeIdentifier);
-      storage = storage->next;
+    if (ptp_operation_issupported(params,PTP_OC_MTP_GetObjectPropsSupported)) {
+        printf("Playable File (Object) Types and Object Properties Supported:\n");
+        for (i = 0; i < params->deviceinfo.ImageFormats_len; i++) {
+            char txt[256];
+            uint16_t ret;
+            uint16_t *props = NULL;
+            uint32_t propcnt = 0;
+            int j;
+
+            ptp_render_ofc(params, params->deviceinfo.ImageFormats[i], sizeof(txt), txt);
+            printf("   %04x: %s\n", params->deviceinfo.ImageFormats[i], txt);
+
+            ret = ptp_mtp_getobjectpropssupported (params, 
+                params->deviceinfo.ImageFormats[i], &propcnt, &props);
+            if (ret != PTP_RC_OK) {
+                add_ptp_error_to_errorstack(device, ret,
+                    "LIBMTP_Dump_Device_Info(): error on query for object properties.");
+                free(props);
+                continue;
+            }
+
+            for (j = 0; j < propcnt; j++) {
+                PTPObjectPropDesc opd;
+                int k;
+
+                printf("      %04x: %s", props[j],
+                LIBMTP_Get_Property_Description(map_ptp_property_to_libmtp_property(props[j])));
+                /* Get a more verbose description */
+                ret = ptp_mtp_getobjectpropdesc(params, props[j], params->deviceinfo.ImageFormats[i], &opd);
+                if (ret != PTP_RC_OK) {
+                    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                        "LIBMTP_Dump_Device_Info(): could not get property description.");
+                    break;
+                }
+
+                if (opd.DataType == PTP_DTC_STR) {
+                    printf(" STRING data type");
+                    switch (opd.FormFlag) {
+                    case PTP_OPFF_DateTime:
+                        printf(" DATETIME FORM");
+                        break;
+                    case PTP_OPFF_RegularExpression:
+                        printf(" REGULAR EXPRESSION FORM");
+                        break;
+                    case PTP_OPFF_LongString:
+                        printf(" LONG STRING FORM");
+                        break;
+                    default:
+                        break;
+                    }
+                } else if (opd.DataType & PTP_DTC_ARRAY_MASK)
+                    printf(" array of");
+
+                switch (opd.DataType & (~PTP_DTC_ARRAY_MASK)) {
+
+                case PTP_DTC_UNDEF:
+                    printf(" UNDEFINED data type");
+                    break;
+
+                case PTP_DTC_INT8:
+                    printf(" INT8 data type");
+                    switch (opd.FormFlag) {
+                    case PTP_OPFF_Range:
+                        printf(" range: MIN %d, MAX %d, STEP %d",
+                            opd.FORM.Range.MinimumValue.i8,
+                            opd.FORM.Range.MaximumValue.i8,
+                            opd.FORM.Range.StepSize.i8);
+                        break;
+                    case PTP_OPFF_Enumeration:
+                        printf(" enumeration: ");
+                        for (k = 0; k < opd.FORM.Enum.NumberOfValues; k++)
+                            printf("%d, ", opd.FORM.Enum.SupportedValue[k].i8);
+                        break;
+                    case PTP_OPFF_ByteArray:
+                        printf(" byte array: ");
+                        break;
+                    default:
+                        printf(" ANY 8BIT VALUE form");
+                        break;
+                    }
+                    break;
+
+                case PTP_DTC_UINT8:
+                    printf(" UINT8 data type");
+                    switch (opd.FormFlag) {
+                    case PTP_OPFF_Range:
+                        printf(" range: MIN %d, MAX %d, STEP %d",
+                            opd.FORM.Range.MinimumValue.u8,
+                            opd.FORM.Range.MaximumValue.u8,
+                            opd.FORM.Range.StepSize.u8);
+                        break;
+                    case PTP_OPFF_Enumeration:
+                        printf(" enumeration: ");
+                        for (k = 0; k < opd.FORM.Enum.NumberOfValues; k++)
+                            printf("%d, ", opd.FORM.Enum.SupportedValue[k].u8);
+                        break;
+                    case PTP_OPFF_ByteArray:
+                        printf(" byte array: ");
+                        break;
+                    default:
+                        printf(" ANY 8BIT VALUE form");
+                        break;
+                    }
+                    break;
+
+                case PTP_DTC_INT16:
+                    printf(" INT16 data type");
+                    switch (opd.FormFlag) {
+                    case PTP_OPFF_Range:
+                        printf(" range: MIN %d, MAX %d, STEP %d",
+                            opd.FORM.Range.MinimumValue.i16,
+                            opd.FORM.Range.MaximumValue.i16,
+                            opd.FORM.Range.StepSize.i16);
+                        break;
+                    case PTP_OPFF_Enumeration:
+                        printf(" enumeration: ");
+                        for (k = 0; k < opd.FORM.Enum.NumberOfValues; k++)
+                            printf("%d, ", opd.FORM.Enum.SupportedValue[k].i16);
+                        break;
+                    default:
+                        printf(" ANY 16BIT VALUE form");
+                        break;
+                    }
+                    break;
+
+                case PTP_DTC_UINT16:
+                    printf(" UINT16 data type");
+                    switch (opd.FormFlag) {
+                    case PTP_OPFF_Range:
+                        printf(" range: MIN %d, MAX %d, STEP %d",
+                            opd.FORM.Range.MinimumValue.u16,
+                            opd.FORM.Range.MaximumValue.u16,
+                            opd.FORM.Range.StepSize.u16);
+                        break;
+                    case PTP_OPFF_Enumeration:
+                        printf(" enumeration: ");
+                        for (k = 0; k < opd.FORM.Enum.NumberOfValues; k++)
+                            printf("%d, ", opd.FORM.Enum.SupportedValue[k].u16);
+                        break;
+                    default:
+                        printf(" ANY 16BIT VALUE form");
+                        break;
+                    }
+                    break;
+
+                case PTP_DTC_INT32:
+                    printf(" INT32 data type");
+                    switch (opd.FormFlag) {
+                    case PTP_OPFF_Range:
+                        printf(" range: MIN %d, MAX %d, STEP %d",
+                            opd.FORM.Range.MinimumValue.i32,
+                            opd.FORM.Range.MaximumValue.i32,
+                            opd.FORM.Range.StepSize.i32);
+                        break;
+                    case PTP_OPFF_Enumeration:
+                        printf(" enumeration: ");
+                        for (k = 0; k < opd.FORM.Enum.NumberOfValues; k++)
+                            printf("%d, ", opd.FORM.Enum.SupportedValue[k].i32);
+                        break;
+                    default:
+                        printf(" ANY 32BIT VALUE form");
+                        break;
+                    }
+                    break;
+
+                case PTP_DTC_UINT32:
+                    printf(" UINT32 data type");
+                    switch (opd.FormFlag) {
+                    case PTP_OPFF_Range:
+                        printf(" range: MIN %d, MAX %d, STEP %d",
+                            opd.FORM.Range.MinimumValue.u32,
+                            opd.FORM.Range.MaximumValue.u32,
+                            opd.FORM.Range.StepSize.u32);
+                        break;
+                    case PTP_OPFF_Enumeration:
+                        /* Special pretty-print for FOURCC codes */
+                        if (params->deviceinfo.ImageFormats[i] == PTP_OPC_VideoFourCCCodec) {
+                            printf(" enumeration of u32 casted FOURCC: ");
+                            for (k = 0; k < opd.FORM.Enum.NumberOfValues; k++) {
+                                if (opd.FORM.Enum.SupportedValue[k].u32 == 0)
+                                    printf("ANY, ");
+                                else {
+                                    char fourcc[6];
+                                    fourcc[0] = (opd.FORM.Enum.SupportedValue[k].u32 >> 24) & 0xFFU;
+                                    fourcc[1] = (opd.FORM.Enum.SupportedValue[k].u32 >> 16) & 0xFFU;
+                                    fourcc[2] = (opd.FORM.Enum.SupportedValue[k].u32 >> 8) & 0xFFU;
+                                    fourcc[3] = opd.FORM.Enum.SupportedValue[k].u32 & 0xFFU;
+                                    fourcc[4] = '\n';
+                                    fourcc[5] = '\0';
+                                    printf("\"%s\", ", fourcc);
+                                }
+                            }
+                        } else {
+                            printf(" enumeration: ");
+                            for (k = 0; k < opd.FORM.Enum.NumberOfValues; k++)
+                                printf("%d, ", opd.FORM.Enum.SupportedValue[k].u32);
+                        }
+                        break;
+                    default:
+                        printf(" ANY 32BIT VALUE form");
+                        break;
+                    }
+                    break;
+
+                case PTP_DTC_INT64:
+                    printf(" INT64 data type");
+                    break;
+
+                case PTP_DTC_UINT64:
+                    printf(" UINT64 data type");
+                    break;
+
+                case PTP_DTC_INT128:
+                    printf(" INT128 data type");
+                    break;
+
+                case PTP_DTC_UINT128:
+                    printf(" UINT128 data type");
+                    break;
+
+                default:
+                    printf(" UNKNOWN data type");
+                    break;
+
+                }
+                if (opd.GetSet)
+                    printf(" GET/SET\n");
+                else
+                    printf(" READ ONLY\n");
+                ptp_free_objectpropdesc(&opd);
+            }
+            free(props);
+        }
     }
-  }
 
-  printf("Special directories:\n");
-  printf("   Default music folder: 0x%08x\n",
-	 device->default_music_folder);
-  printf("   Default playlist folder: 0x%08x\n",
-	 device->default_playlist_folder);
-  printf("   Default picture folder: 0x%08x\n",
-	 device->default_picture_folder);
-  printf("   Default video folder: 0x%08x\n",
-	 device->default_video_folder);
-  printf("   Default organizer folder: 0x%08x\n",
-	 device->default_organizer_folder);
-  printf("   Default zencast folder: 0x%08x\n",
-	 device->default_zencast_folder);
-  printf("   Default album folder: 0x%08x\n",
-	 device->default_album_folder);
-  printf("   Default text folder: 0x%08x\n",
-	 device->default_text_folder);
+    if (storage != NULL &&
+        ptp_operation_issupported(params,PTP_OC_GetStorageInfo)) {
+        printf("Storage Devices:\n");
+        while(storage != NULL) {
+            printf("   StorageID: 0x%08x\n",storage->id);
+            
+            printf("      StorageType: 0x%04x ",storage->StorageType);
+            switch (storage->StorageType) {
+            case PTP_ST_Undefined:
+                printf("(undefined)\n");
+                break;
+            case PTP_ST_FixedROM:
+                printf("fixed ROM storage\n");
+                break;
+            case PTP_ST_RemovableROM:
+                printf("removable ROM storage\n");
+                break;
+            case PTP_ST_FixedRAM:
+                printf("fixed RAM storage\n");
+                break;
+            case PTP_ST_RemovableRAM:
+                printf("removable RAM storage\n");
+                break;
+            default:
+                printf("UNKNOWN storage\n");
+                break;
+            }
+            
+            printf("      FilesystemType: 0x%04x ",storage->FilesystemType);
+            switch (storage->FilesystemType) {
+            case PTP_FST_Undefined:
+                printf("(undefined)\n");
+                break;
+            case PTP_FST_GenericFlat:
+                printf("generic flat filesystem\n");
+                break;
+            case PTP_FST_GenericHierarchical:
+                printf("generic hierarchical\n");
+                break;
+            case PTP_FST_DCF:
+                printf("DCF\n");
+                break;
+            default:
+                printf("UNKNOWN filesystem type\n");
+                break;
+            }
+            
+            printf("      AccessCapability: 0x%04x ",storage->AccessCapability);
+            switch (storage->AccessCapability) {
+            case PTP_AC_ReadWrite:
+                printf("read/write\n");
+                break;
+            case PTP_AC_ReadOnly:
+                printf("read only\n");
+                break;
+            case PTP_AC_ReadOnly_with_Object_Deletion:
+                printf("read only + object deletion\n");
+                break;
+            default:
+                printf("UNKNOWN access capability\n");
+                break;
+            }
+            
+            printf("      MaxCapacity: %llu\n", (long long unsigned int) storage->MaxCapacity);
+            printf("      FreeSpaceInBytes: %llu\n", (long long unsigned int) storage->FreeSpaceInBytes);
+            printf("      FreeSpaceInObjects: %llu\n", (long long unsigned int) storage->FreeSpaceInObjects);
+            printf("      StorageDescription: %s\n",storage->StorageDescription);
+            printf("      VolumeIdentifier: %s\n",storage->VolumeIdentifier);
+            storage = storage->next;
+        }
+    }
+
+    printf("Special directories:\n");
+    printf("   Default music folder: 0x%08x\n", device->default_music_folder);
+    printf("   Default playlist folder: 0x%08x\n", device->default_playlist_folder);
+    printf("   Default picture folder: 0x%08x\n", device->default_picture_folder);
+    printf("   Default video folder: 0x%08x\n", device->default_video_folder);
+    printf("   Default organizer folder: 0x%08x\n", device->default_organizer_folder);
+    printf("   Default zencast folder: 0x%08x\n", device->default_zencast_folder);
+    printf("   Default album folder: 0x%08x\n", device->default_album_folder);
+    printf("   Default text folder: 0x%08x\n", device->default_text_folder);
 }
 
 /**
