@@ -3917,100 +3917,94 @@ void LIBMTP_destroy_file_t(LIBMTP_file_t *file)
  */
 static LIBMTP_file_t *obj2file(LIBMTP_mtpdevice_t *device, PTPObject *ob)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  LIBMTP_file_t *file;
-  int i;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    LIBMTP_file_t *file;
+    int i;
 
-  // Allocate a new file type
-  file = LIBMTP_new_file_t();
+    /* Allocate a new file type */
+    file = LIBMTP_new_file_t();
 
-  file->parent_id = ob->oi.ParentObject;
-  file->storage_id = ob->oi.StorageID;
+    file->parent_id = ob->oi.ParentObject;
+    file->storage_id = ob->oi.StorageID;
 
-  // Set the filetype
-  file->filetype = map_ptp_type_to_libmtp_type(ob->oi.ObjectFormat);
+    /* Set the filetype */
+    file->filetype = map_ptp_type_to_libmtp_type(ob->oi.ObjectFormat);
 
-  /*
-   * A special quirk for devices that doesn't quite
-   * remember that some files marked as "unknown" type are
-   * actually OGG or FLAC files. We look at the filename extension
-   * and see if it happens that this was atleast named "ogg" or "flac"
-   * and fall back on this heuristic approach in that case,
-   * for these bugged devices only.
-   */
-  if (file->filetype == LIBMTP_FILETYPE_UNKNOWN) {
-    if ((FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) ||
-	 FLAG_OGG_IS_UNKNOWN(ptp_usb)) &&
-        has_ogg_extension(file->filename)) {
-      file->filetype = LIBMTP_FILETYPE_OGG;
+    /*
+     * A special quirk for devices that doesn't quite
+     * remember that some files marked as "unknown" type are
+     * actually OGG or FLAC files. We look at the filename extension
+     * and see if it happens that this was atleast named "ogg" or "flac"
+     * and fall back on this heuristic approach in that case,
+     * for these bugged devices only.
+     */
+    if (file->filetype == LIBMTP_FILETYPE_UNKNOWN) {
+        if ((FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) || FLAG_OGG_IS_UNKNOWN(ptp_usb)) &&
+            has_ogg_extension(file->filename))
+            file->filetype = LIBMTP_FILETYPE_OGG;
+
+        if (FLAG_FLAC_IS_UNKNOWN(ptp_usb) && has_flac_extension(file->filename))
+            file->filetype = LIBMTP_FILETYPE_FLAC;
     }
 
-    if (FLAG_FLAC_IS_UNKNOWN(ptp_usb) && has_flac_extension(file->filename)) {
-        file->filetype = LIBMTP_FILETYPE_FLAC;
+    /* Set the modification date */
+    file->modificationdate = ob->oi.ModificationDate;
+
+    /* We only have 32-bit file size here; later we use the PTP_OPC_ObjectSize property */
+    file->filesize = ob->oi.ObjectCompressedSize;
+    if (ob->oi.Filename != NULL)
+        file->filename = strdup(ob->oi.Filename);
+
+    /* This is a unique ID so we can keep track of the file. */
+    file->item_id = ob->oid;
+
+    /*
+     * If we have a cached, large set of metadata, then use it!
+     */
+    if (ob->mtpprops) {
+        MTPProperties *prop = ob->mtpprops;
+
+        for (i = 0; i < ob->nrofmtpprops; i++, prop++) {
+            /* Pick ObjectSize here... */
+            if (prop->property == PTP_OPC_ObjectSize) {
+                /* This may already be set, but this 64bit precision value
+                 * is better than the PTP 32bit value, so let it override. */
+                if (device->object_bitsize == 64)
+                    file->filesize = prop->propval.u64;
+                else
+                    file->filesize = prop->propval.u32;
+                break;
+            }
+        }
+    } else if (ptp_operation_issupported(params,PTP_OC_MTP_GetObjectPropsSupported)) {
+        uint16_t *props = NULL;
+        uint32_t propcnt = 0;
+        int ret;
+
+        /* First see which properties can be retrieved for this object format */
+        ret = ptp_mtp_getobjectpropssupported(params, map_libmtp_type_to_ptp_type(file->filetype), &propcnt, &props);
+        if (ret != PTP_RC_OK)
+            add_ptp_error_to_errorstack(device, ret, "obj2file: call to ptp_mtp_getobjectpropssupported() failed.");
+            /* Silently fall through. */
+        else {
+            for (i = 0; i < propcnt; i++) {
+                switch (props[i]) {
+                case PTP_OPC_ObjectSize:
+                    if (device->object_bitsize == 64)
+                        file->filesize = get_u64_from_object(device, file->item_id, PTP_OPC_ObjectSize, 0);
+                    else
+                        file->filesize = get_u32_from_object(device, file->item_id, PTP_OPC_ObjectSize, 0);
+                    break;
+                default:
+                    break;
+                }
+            }
+            free(props);
+        }
     }
-  }
 
-  // Set the modification date
-  file->modificationdate = ob->oi.ModificationDate;
-
-  // We only have 32-bit file size here; later we use the PTP_OPC_ObjectSize property
-  file->filesize = ob->oi.ObjectCompressedSize;
-  if (ob->oi.Filename != NULL) {
-    file->filename = strdup(ob->oi.Filename);
-  }
-
-  // This is a unique ID so we can keep track of the file.
-  file->item_id = ob->oid;
-
-  /*
-   * If we have a cached, large set of metadata, then use it!
-   */
-  if (ob->mtpprops) {
-    MTPProperties *prop = ob->mtpprops;
-
-    for (i=0; i < ob->nrofmtpprops; i++, prop++) {
-      // Pick ObjectSize here...
-      if (prop->property == PTP_OPC_ObjectSize) {
-	// This may already be set, but this 64bit precision value
-	// is better than the PTP 32bit value, so let it override.
-	if (device->object_bitsize == 64) {
-	  file->filesize = prop->propval.u64;
-	} else {
-	  file->filesize = prop->propval.u32;
-	}
-	break;
-      }
-    }
-  } else if (ptp_operation_issupported(params,PTP_OC_MTP_GetObjectPropsSupported)) {
-    uint16_t *props = NULL;
-    uint32_t propcnt = 0;
-    int ret;
-
-    // First see which properties can be retrieved for this object format
-    ret = ptp_mtp_getobjectpropssupported(params, map_libmtp_type_to_ptp_type(file->filetype), &propcnt, &props);
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "obj2file: call to ptp_mtp_getobjectpropssupported() failed.");
-      // Silently fall through.
-    } else {
-      for (i = 0; i < propcnt; i++) {
-	switch (props[i]) {
-	case PTP_OPC_ObjectSize:
-	  if (device->object_bitsize == 64) {
-	    file->filesize = get_u64_from_object(device, file->item_id, PTP_OPC_ObjectSize, 0);
-	  } else {
-	    file->filesize = get_u32_from_object(device, file->item_id, PTP_OPC_ObjectSize, 0);
-	  }
-	  break;
-	default:
-	  break;
-	}
-      }
-      free(props);
-    }
-  }
-
-  return file;
+    return file;
 }
 
 
