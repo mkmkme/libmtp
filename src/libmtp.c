@@ -3443,28 +3443,24 @@ int LIBMTP_Set_Friendlyname(LIBMTP_mtpdevice_t *device,
  */
 char *LIBMTP_Get_Syncpartner(LIBMTP_mtpdevice_t *device)
 {
-  PTPPropertyValue propval;
-  char *retstring = NULL;
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPPropertyValue propval;
+    char *retstring = NULL;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  if (!ptp_property_issupported(params, PTP_DPC_MTP_SynchronizationPartner)) {
-    return NULL;
-  }
+    if (!ptp_property_issupported(params, PTP_DPC_MTP_SynchronizationPartner))
+        return NULL;
 
-  ret = ptp_getdevicepropvalue(params,
-			       PTP_DPC_MTP_SynchronizationPartner,
-			       &propval,
-			       PTP_DTC_STR);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "Error getting syncpartner.");
-    return NULL;
-  }
-  if (propval.str != NULL) {
-    retstring = strdup(propval.str);
-    free(propval.str);
-  }
-  return retstring;
+    ret = ptp_getdevicepropvalue(params, PTP_DPC_MTP_SynchronizationPartner, &propval, PTP_DTC_STR);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "Error getting syncpartner.");
+        return NULL;
+    }
+    if (propval.str != NULL) {
+        retstring = strdup(propval.str);
+        free(propval.str);
+    }
+    return retstring;
 }
 
 
