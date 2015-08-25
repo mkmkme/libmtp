@@ -2312,13 +2312,13 @@ static void add_error_to_errorstack(LIBMTP_mtpdevice_t *device,
  * Adds an error from the PTP layer to the error stack.
  */
 static void add_ptp_error_to_errorstack(LIBMTP_mtpdevice_t *device,
-					uint16_t ptp_error,
-					char const * const error_text)
+                    uint16_t ptp_error,
+                    char const * const error_text)
 {
-  if (device == NULL) {
-    LIBMTP_ERROR("LIBMTP PANIC: Trying to add PTP error to a NULL device!\n");
-    return;
-  } else {
+    if (device == NULL) {
+        LIBMTP_ERROR("LIBMTP PANIC: Trying to add PTP error to a NULL device!\n");
+        return;
+    }
     char outstr[256];
     snprintf(outstr, sizeof(outstr), "PTP Layer error %04x: %s", ptp_error, error_text);
     outstr[sizeof(outstr)-1] = '\0';
@@ -2327,7 +2327,6 @@ static void add_ptp_error_to_errorstack(LIBMTP_mtpdevice_t *device,
     snprintf(outstr, sizeof(outstr), "Error %04x: %s", ptp_error, ptp_strerror(ptp_error));
     outstr[sizeof(outstr)-1] = '\0';
     add_error_to_errorstack(device, LIBMTP_ERROR_PTP_LAYER, outstr);
-  }
 }
 
 /**
