@@ -2233,15 +2233,12 @@ LIBMTP_error_number_t LIBMTP_Get_Connected_Devices(LIBMTP_mtpdevice_t **device_l
  */
 void LIBMTP_Release_Device_List(LIBMTP_mtpdevice_t *device)
 {
-  if(device != NULL)
-  {
-    if(device->next != NULL)
-    {
-      LIBMTP_Release_Device_List(device->next);
-    }
+    if(device != NULL) {
+        if(device->next != NULL)
+            LIBMTP_Release_Device_List(device->next);
 
-    LIBMTP_Release_Device(device);
-  }
+        LIBMTP_Release_Device(device);
+    }
 }
 
 /**
