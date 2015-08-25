@@ -3565,7 +3565,6 @@ int LIBMTP_Get_Batterylevel(LIBMTP_mtpdevice_t *device,
     return 0;
 }
 
-
 /**
  * Formats device storage (if the device supports the operation).
  * WARNING: This WILL delete all data from the device. Make sure you've
@@ -3576,24 +3575,23 @@ int LIBMTP_Get_Batterylevel(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Format_Storage(LIBMTP_mtpdevice_t *device,
-			  LIBMTP_devicestorage_t *storage)
+                LIBMTP_devicestorage_t *storage)
 {
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
 
-  if (!ptp_operation_issupported(params,PTP_OC_FormatStore)) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-			    "LIBMTP_Format_Storage(): "
-			    "device does not support formatting storage.");
-    return -1;
-  }
-  ret = ptp_formatstore(params, storage->id);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Format_Storage(): "
-				"failed to format storage.");
-    return -1;
-  }
-  return 0;
+    if (!ptp_operation_issupported(params,PTP_OC_FormatStore)) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "LIBMTP_Format_Storage(): device does not support formatting storage.");
+        return -1;
+    }
+    ret = ptp_formatstore(params, storage->id);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret,
+            "LIBMTP_Format_Storage(): failed to format storage.");
+        return -1;
+    }
+    return 0;
 }
 
 /**
