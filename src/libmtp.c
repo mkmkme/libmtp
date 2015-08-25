@@ -3289,21 +3289,20 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
  */
 int LIBMTP_Reset_Device(LIBMTP_mtpdevice_t *device)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  if (!ptp_operation_issupported(params,PTP_OC_ResetDevice)) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-			    "LIBMTP_Reset_Device(): "
-			    "device does not support resetting.");
-    return -1;
-  }
-  ret = ptp_resetdevice(params);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "Error resetting.");
-    return -1;
-  }
-  return 0;
+    if (!ptp_operation_issupported(params,PTP_OC_ResetDevice)) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "LIBMTP_Reset_Device(): device does not support resetting.");
+        return -1;
+    }
+    ret = ptp_resetdevice(params);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "Error resetting.");
+        return -1;
+    }
+    return 0;
 }
 
 /**
