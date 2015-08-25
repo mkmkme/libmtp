@@ -2721,67 +2721,67 @@ static void free_storage_list(LIBMTP_mtpdevice_t *device)
  */
 static int sort_storage_by(LIBMTP_mtpdevice_t *device,int const sortby)
 {
-  LIBMTP_devicestorage_t *oldhead, *ptr1, *ptr2, *newlist;
+    LIBMTP_devicestorage_t *oldhead, *ptr1, *ptr2, *newlist;
 
-  if (device->storage == NULL)
-    return -1;
-  if (sortby == LIBMTP_STORAGE_SORTBY_NOTSORTED)
+    if (device->storage == NULL)
+        return -1;
+    if (sortby == LIBMTP_STORAGE_SORTBY_NOTSORTED)
+        return 0;
+
+    oldhead = ptr1 = ptr2 = device->storage;
+
+    newlist = NULL;
+
+    while(oldhead != NULL) {
+        ptr1 = ptr2 = oldhead;
+        while(ptr1 != NULL) {
+
+            if (sortby == LIBMTP_STORAGE_SORTBY_FREESPACE && ptr1->FreeSpaceInBytes > ptr2->FreeSpaceInBytes)
+                ptr2 = ptr1;
+            if (sortby == LIBMTP_STORAGE_SORTBY_MAXSPACE && ptr1->FreeSpaceInBytes > ptr2->FreeSpaceInBytes)
+                ptr2 = ptr1;
+
+            ptr1 = ptr1->next;
+        }
+
+        /* Make our previous entries next point to our next */
+        if(ptr2->prev != NULL) {
+            ptr1 = ptr2->prev;
+            ptr1->next = ptr2->next;
+        } else {
+            oldhead = ptr2->next;
+            if(oldhead != NULL)
+                oldhead->prev = NULL;
+        }
+
+        /* Make our next entries previous point to our previous */
+        ptr1 = ptr2->next;
+        if(ptr1 != NULL)
+            ptr1->prev = ptr2->prev;
+        else {
+            ptr1 = ptr2->prev;
+            if(ptr1 != NULL)
+                ptr1->next = NULL;
+        }
+
+        if(newlist == NULL) {
+            newlist = ptr2;
+            newlist->prev = NULL;
+        } else {
+            ptr2->prev = newlist;
+            newlist->next = ptr2;
+            newlist = newlist->next;
+        }
+    }
+
+    if (newlist != NULL) {
+        newlist->next = NULL;
+        while(newlist->prev != NULL)
+            newlist = newlist->prev;
+        device->storage = newlist;
+    }
+
     return 0;
-
-  oldhead = ptr1 = ptr2 = device->storage;
-
-  newlist = NULL;
-
-  while(oldhead != NULL) {
-    ptr1 = ptr2 = oldhead;
-    while(ptr1 != NULL) {
-
-      if (sortby == LIBMTP_STORAGE_SORTBY_FREESPACE && ptr1->FreeSpaceInBytes > ptr2->FreeSpaceInBytes)
-        ptr2 = ptr1;
-      if (sortby == LIBMTP_STORAGE_SORTBY_MAXSPACE && ptr1->FreeSpaceInBytes > ptr2->FreeSpaceInBytes)
-        ptr2 = ptr1;
-
-      ptr1 = ptr1->next;
-    }
-
-    // Make our previous entries next point to our next
-    if(ptr2->prev != NULL) {
-      ptr1 = ptr2->prev;
-      ptr1->next = ptr2->next;
-    } else {
-      oldhead = ptr2->next;
-      if(oldhead != NULL)
-        oldhead->prev = NULL;
-    }
-
-    // Make our next entries previous point to our previous
-    ptr1 = ptr2->next;
-    if(ptr1 != NULL) {
-      ptr1->prev = ptr2->prev;
-    } else {
-      ptr1 = ptr2->prev;
-      if(ptr1 != NULL)
-        ptr1->next = NULL;
-    }
-
-    if(newlist == NULL) {
-      newlist = ptr2;
-      newlist->prev = NULL;
-    } else {
-      ptr2->prev = newlist;
-      newlist->next = ptr2;
-      newlist = newlist->next;
-    }
-  }
-
-  if (newlist != NULL) {
-    newlist->next = NULL;
-    while(newlist->prev != NULL)
-      newlist = newlist->prev;
-    device->storage = newlist;
-  }
-
-  return 0;
 }
 
 /**
