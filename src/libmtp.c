@@ -2360,23 +2360,22 @@ LIBMTP_error_t *LIBMTP_Get_Errorstack(LIBMTP_mtpdevice_t *device)
  */
 void LIBMTP_Clear_Errorstack(LIBMTP_mtpdevice_t *device)
 {
-  if (device == NULL) {
-    LIBMTP_ERROR("LIBMTP PANIC: Trying to clear the error stack of a NULL device!\n");
-  } else {
-    LIBMTP_error_t *tmp = device->errorstack;
+    if (device == NULL)
+        LIBMTP_ERROR("LIBMTP PANIC: Trying to clear the error stack of a NULL device!\n");
+    else {
+        LIBMTP_error_t *tmp = device->errorstack;
 
-    while (tmp != NULL) {
-      LIBMTP_error_t *tmp2;
+        while (tmp != NULL) {
+            LIBMTP_error_t *tmp2;
 
-      if (tmp->error_text != NULL) {
-	free(tmp->error_text);
-      }
-      tmp2 = tmp;
-      tmp = tmp->next;
-      free(tmp2);
+            if (tmp->error_text != NULL)
+                free(tmp->error_text);
+            tmp2 = tmp;
+            tmp = tmp->next;
+            free(tmp2);
+        }
+        device->errorstack = NULL;
     }
-    device->errorstack = NULL;
-  }
 }
 
 /**
