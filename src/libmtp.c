@@ -3314,13 +3314,12 @@ int LIBMTP_Reset_Device(LIBMTP_mtpdevice_t *device)
  */
 char *LIBMTP_Get_Manufacturername(LIBMTP_mtpdevice_t *device)
 {
-  char *retmanuf = NULL;
-  PTPParams *params = (PTPParams *) device->params;
+    char *retmanuf = NULL;
+    PTPParams *params = (PTPParams *) device->params;
 
-  if (params->deviceinfo.Manufacturer != NULL) {
-    retmanuf = strdup(params->deviceinfo.Manufacturer);
-  }
-  return retmanuf;
+    if (params->deviceinfo.Manufacturer != NULL)
+        retmanuf = strdup(params->deviceinfo.Manufacturer);
+    return retmanuf;
 }
 
 /**
