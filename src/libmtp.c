@@ -4160,80 +4160,72 @@ LIBMTP_file_t *LIBMTP_Get_Filelisting_With_Callback(LIBMTP_mtpdevice_t *device,
  * @param parent the parent folder id.
  */
 LIBMTP_file_t * LIBMTP_Get_Files_And_Folders(LIBMTP_mtpdevice_t *device,
-			     uint32_t const storage,
-			     uint32_t const parent)
+                uint32_t const storage,
+                uint32_t const parent)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  LIBMTP_file_t *retfiles = NULL;
-  LIBMTP_file_t *curfile = NULL;
-  PTPObjectHandles currentHandles;
-  uint32_t storageid;
-  uint16_t ret;
-  int i = 0;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    LIBMTP_file_t *retfiles = NULL;
+    LIBMTP_file_t *curfile = NULL;
+    PTPObjectHandles currentHandles;
+    uint32_t storageid;
+    uint16_t ret;
+    int i = 0;
 
-  if (device->cached) {
-    // This function is only supposed to be used by devices
-    // opened as uncached!
-    LIBMTP_ERROR("tried to use %s on a cached device!\n",
-		 __func__);
-    return NULL;
-  }
-
-  if (FLAG_BROKEN_GET_OBJECT_PROPVAL(ptp_usb)) {
-    // These devices cannot handle the commands needed for
-    // Uncached access!
-    LIBMTP_ERROR("tried to use %s on an unsupported device, "
-		 "this command does not work on all devices "
-		 "due to missing low-level support to read "
-		 "information on individual tracks\n",
-		 __func__);
-    return NULL;
-  }
-
-  if (storage == 0)
-    storageid = PTP_GOH_ALL_STORAGE;
-  else
-    storageid = storage;
-
-  ret = ptp_getobjecthandles(params,
-			     storageid,
-			     PTP_GOH_ALL_FORMATS,
-			     parent,
-			     &currentHandles);
-
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret,
-		"LIBMTP_Get_Files_And_Folders(): could not get object handles.");
-    return NULL;
-  }
-
-  if (currentHandles.Handler == NULL || currentHandles.n == 0)
-    return NULL;
-
-  for (i = 0; i < currentHandles.n; i++) {
-    LIBMTP_file_t *file;
-
-    // Get metadata for one file, if it fails, try next file
-    file = LIBMTP_Get_Filemetadata(device, currentHandles.Handler[i]);
-    if (file == NULL)
-      continue;
-
-    // Add track to a list that will be returned afterwards.
-    if (curfile == NULL) {
-      curfile = file;
-      retfiles = file;
-    } else {
-      curfile->next = file;
-      curfile = file;
+    if (device->cached) {
+        /* This function is only supposed to be used by devices
+         * opened as uncached! */
+        LIBMTP_ERROR("tried to use %s on a cached device!\n",  __func__);
+        return NULL;
     }
-  }
 
-  free(currentHandles.Handler);
+    if (FLAG_BROKEN_GET_OBJECT_PROPVAL(ptp_usb)) {
+        /* These devices cannot handle the commands needed for
+         * Uncached access! */
+        LIBMTP_ERROR("tried to use %s on an unsupported device, this command does not work on all devices "
+                    "due to missing low-level support to read information on individual tracks\n", __func__);
+        return NULL;
+    }
 
-  // Return a pointer to the original first file
-  // in the big list.
-  return retfiles;
+    if (storage == 0)
+        storageid = PTP_GOH_ALL_STORAGE;
+    else
+        storageid = storage;
+
+    ret = ptp_getobjecthandles(params, storageid, PTP_GOH_ALL_FORMATS, parent, &currentHandles);
+
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret,
+            "LIBMTP_Get_Files_And_Folders(): could not get object handles.");
+        return NULL;
+    }
+
+    if (currentHandles.Handler == NULL || currentHandles.n == 0)
+        return NULL;
+
+    for (i = 0; i < currentHandles.n; i++) {
+        LIBMTP_file_t *file;
+
+        /* Get metadata for one file, if it fails, try next file */
+        file = LIBMTP_Get_Filemetadata(device, currentHandles.Handler[i]);
+        if (file == NULL)
+            continue;
+
+        /* Add track to a list that will be returned afterwards. */
+        if (curfile == NULL) {
+            curfile = file;
+            retfiles = file;
+        } else {
+            curfile->next = file;
+            curfile = file;
+        }
+    }
+
+    free(currentHandles.Handler);
+
+    /* Return a pointer to the original first file
+     * in the big list. */
+    return retfiles;
 }
 
 
