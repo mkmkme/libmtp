@@ -2385,20 +2385,19 @@ void LIBMTP_Clear_Errorstack(LIBMTP_mtpdevice_t *device)
  */
 void LIBMTP_Dump_Errorstack(LIBMTP_mtpdevice_t *device)
 {
-  if (device == NULL) {
-    LIBMTP_ERROR("LIBMTP PANIC: Trying to dump the error stack of a NULL device!\n");
-  } else {
-    LIBMTP_error_t *tmp = device->errorstack;
+    if (device == NULL)
+        LIBMTP_ERROR("LIBMTP PANIC: Trying to dump the error stack of a NULL device!\n");
+    else {
+        LIBMTP_error_t *tmp = device->errorstack;
 
-    while (tmp != NULL) {
-      if (tmp->error_text != NULL) {
-	LIBMTP_ERROR("Error %d: %s\n", tmp->errornumber, tmp->error_text);
-      } else {
-	LIBMTP_ERROR("Error %d: (unknown)\n", tmp->errornumber);
-      }
-      tmp = tmp->next;
+        while (tmp != NULL) {
+            if (tmp->error_text != NULL)
+                LIBMTP_ERROR("Error %d: %s\n", tmp->errornumber, tmp->error_text);
+            else
+                LIBMTP_ERROR("Error %d: (unknown)\n", tmp->errornumber);
+            tmp = tmp->next;
+        }
     }
-  }
 }
 
 /**
