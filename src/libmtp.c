@@ -2181,12 +2181,12 @@ static LIBMTP_mtpdevice_t * create_usb_mtp_devices(LIBMTP_raw_device_t *devices,
  */
 uint32_t LIBMTP_Number_Devices_In_List(LIBMTP_mtpdevice_t *device_list)
 {
-  uint32_t numdevices = 0;
-  LIBMTP_mtpdevice_t *iter;
-  for(iter = device_list; iter != NULL; iter = iter->next)
-    numdevices++;
+    uint32_t numdevices = 0;
+    LIBMTP_mtpdevice_t *iter;
+    for(iter = device_list; iter != NULL; iter = iter->next)
+        numdevices++;
 
-  return numdevices;
+    return numdevices;
 }
 
 /**
