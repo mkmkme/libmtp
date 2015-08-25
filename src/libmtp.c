@@ -4028,21 +4028,20 @@ static LIBMTP_file_t *obj2file(LIBMTP_mtpdevice_t *device, PTPObject *ob)
  */
 LIBMTP_file_t *LIBMTP_Get_Filemetadata(LIBMTP_mtpdevice_t *device, uint32_t const fileid)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
-  PTPObject *ob;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
+    PTPObject *ob;
 
-  // Get all the handles if we haven't already done that
-  // (Only on cached devices.)
-  if (device->cached && params->nrofobjects == 0) {
-    flush_handles(device);
-  }
+    /* Get all the handles if we haven't already done that
+     * (Only on cached devices.) */
+    if (device->cached && params->nrofobjects == 0)
+        flush_handles(device);
 
-  ret = ptp_object_want(params, fileid, PTPOBJECT_OBJECTINFO_LOADED|PTPOBJECT_MTPPROPLIST_LOADED, &ob);
-  if (ret != PTP_RC_OK)
-    return NULL;
+    ret = ptp_object_want(params, fileid, PTPOBJECT_OBJECTINFO_LOADED|PTPOBJECT_MTPPROPLIST_LOADED, &ob);
+    if (ret != PTP_RC_OK)
+        return NULL;
 
-  return obj2file(device, ob);
+    return obj2file(device, ob);
 }
 
 /**
