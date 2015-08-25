@@ -2591,121 +2591,104 @@ static void get_handles_recursively(LIBMTP_mtpdevice_t *device,
  */
 static void flush_handles(LIBMTP_mtpdevice_t *device)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  int ret;
-  uint32_t i;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    int ret;
+    uint32_t i;
 
-  if (!device->cached) {
-    return;
-  }
+    if (!device->cached)
+        return;
 
-  if (params->objects != NULL) {
-    for (i=0;i<params->nrofobjects;i++)
-      ptp_free_object (&params->objects[i]);
-    free(params->objects);
-    params->objects = NULL;
-    params->nrofobjects = 0;
-  }
+    if (params->objects != NULL) {
+        for (i = 0; i < params->nrofobjects; i++)
+            ptp_free_object(&params->objects[i]);
+        free(params->objects);
+        params->objects = NULL;
+        params->nrofobjects = 0;
+    }
 
-  if (ptp_operation_issupported(params,PTP_OC_MTP_GetObjPropList)
-      && !FLAG_BROKEN_MTPGETOBJPROPLIST(ptp_usb)
-      && !FLAG_BROKEN_MTPGETOBJPROPLIST_ALL(ptp_usb)) {
-    // Use the fast method. Ignore return value for now.
-    ret = get_all_metadata_fast(device);
-  }
+    if (ptp_operation_issupported(params,PTP_OC_MTP_GetObjPropList)
+        && !FLAG_BROKEN_MTPGETOBJPROPLIST(ptp_usb)
+        && !FLAG_BROKEN_MTPGETOBJPROPLIST_ALL(ptp_usb))
+        /* Use the fast method. Ignore return value for now. */
+        ret = get_all_metadata_fast(device);
 
-  // If the previous failed or returned no objects, use classic
-  // methods instead.
-  if (params->nrofobjects == 0) {
-    // Get all the handles using just standard commands.
-    if (device->storage == NULL) {
-      get_handles_recursively(device, params,
-			      PTP_GOH_ALL_STORAGE,
-			      PTP_GOH_ROOT_PARENT);
-    } else {
-      // Get handles for each storage in turn.
-      LIBMTP_devicestorage_t *storage = device->storage;
-      while(storage != NULL) {
-	get_handles_recursively(device, params,
-				storage->id,
-				PTP_GOH_ROOT_PARENT);
-	storage = storage->next;
-      }
+    /* If the previous failed or returned no objects, use classic
+     * methods instead. */
+    if (params->nrofobjects == 0) {
+        /* Get all the handles using just standard commands. */
+        if (device->storage == NULL)
+            get_handles_recursively(device, params, PTP_GOH_ALL_STORAGE, PTP_GOH_ROOT_PARENT);
+        else {
+            /* Get handles for each storage in turn. */
+            LIBMTP_devicestorage_t *storage = device->storage;
+            while(storage != NULL) {
+                get_handles_recursively(device, params, storage->id, PTP_GOH_ROOT_PARENT);
+                storage = storage->next;
+            }
+        }
     }
-  }
 
-  /*
-   * Loop over the handles, fix up any NULL filenames or
-   * keywords, then attempt to locate some default folders
-   * in the root directory of the primary storage.
-   */
-  for(i = 0; i < params->nrofobjects; i++) {
-    PTPObject *ob, *xob;
+    /*
+     * Loop over the handles, fix up any NULL filenames or
+     * keywords, then attempt to locate some default folders
+     * in the root directory of the primary storage.
+     */
+    for (i = 0; i < params->nrofobjects; i++) {
+        PTPObject *ob, *xob;
 
-    ob = &params->objects[i];
-    ret = ptp_object_want(params,params->objects[i].oid,
-			  PTPOBJECT_OBJECTINFO_LOADED, &xob);
-    if (ret != PTP_RC_OK) {
-	LIBMTP_ERROR("broken! %x not found\n", params->objects[i].oid);
-    }
-    if (ob->oi.Filename == NULL)
-      ob->oi.Filename = strdup("<null>");
-    if (ob->oi.Keywords == NULL)
-      ob->oi.Keywords = strdup("<null>");
+        ob = &params->objects[i];
+        ret = ptp_object_want(params,params->objects[i].oid, PTPOBJECT_OBJECTINFO_LOADED, &xob);
+        if (ret != PTP_RC_OK)
+            LIBMTP_ERROR("broken! %x not found\n", params->objects[i].oid);
+        if (ob->oi.Filename == NULL)
+            ob->oi.Filename = strdup("<null>");
+        if (ob->oi.Keywords == NULL)
+            ob->oi.Keywords = strdup("<null>");
 
-    /* Ignore handles that point to non-folders */
-    if(ob->oi.ObjectFormat != PTP_OFC_Association)
-      continue;
-    /* Only look in the root folder */
-    if (ob->oi.ParentObject == 0xffffffffU) {
-      LIBMTP_ERROR("object %x has parent 0xffffffff (-1) continuing anyway\n",
-		   ob->oid);
-    } else if (ob->oi.ParentObject != 0x00000000U)
-      continue;
-    /* Only look in the primary storage */
-    if (device->storage != NULL && ob->oi.StorageID != device->storage->id)
-      continue;
+        /* Ignore handles that point to non-folders */
+        if(ob->oi.ObjectFormat != PTP_OFC_Association)
+            continue;
+        /* Only look in the root folder */
+        if (ob->oi.ParentObject == 0xffffffffU)
+            LIBMTP_ERROR("object %x has parent 0xffffffff (-1) continuing anyway\n", ob->oid);
+        else if (ob->oi.ParentObject != 0x00000000U)
+            continue;
+        /* Only look in the primary storage */
+        if (device->storage != NULL && ob->oi.StorageID != device->storage->id)
+            continue;
 
-    /* Is this the Music Folder */
-    if (!strcasecmp(ob->oi.Filename, "My Music") ||
-	!strcasecmp(ob->oi.Filename, "My_Music") ||
-	!strcasecmp(ob->oi.Filename, "Music")) {
-      device->default_music_folder = ob->oid;
+        /* Is this the Music Folder */
+        if (!strcasecmp(ob->oi.Filename, "My Music") ||
+            !strcasecmp(ob->oi.Filename, "My_Music") ||
+            !strcasecmp(ob->oi.Filename, "Music"))
+            device->default_music_folder = ob->oid;
+        else if (!strcasecmp(ob->oi.Filename, "My Playlists") ||
+                !strcasecmp(ob->oi.Filename, "My_Playlists") ||
+                !strcasecmp(ob->oi.Filename, "Playlists"))
+            device->default_playlist_folder = ob->oid;
+        else if (!strcasecmp(ob->oi.Filename, "My Pictures") ||
+                !strcasecmp(ob->oi.Filename, "My_Pictures") ||
+                !strcasecmp(ob->oi.Filename, "Pictures"))
+            device->default_picture_folder = ob->oid;
+        else if (!strcasecmp(ob->oi.Filename, "My Video") ||
+                !strcasecmp(ob->oi.Filename, "My_Video") ||
+                !strcasecmp(ob->oi.Filename, "Video"))
+            device->default_video_folder = ob->oid;
+        else if (!strcasecmp(ob->oi.Filename, "My Organizer") ||
+                !strcasecmp(ob->oi.Filename, "My_Organizer"))
+            device->default_organizer_folder = ob->oid;
+        else if (!strcasecmp(ob->oi.Filename, "ZENcast") ||
+                !strcasecmp(ob->oi.Filename, "Datacasts"))
+            device->default_zencast_folder = ob->oid;
+        else if (!strcasecmp(ob->oi.Filename, "My Albums") ||
+                !strcasecmp(ob->oi.Filename, "My_Albums") ||
+                !strcasecmp(ob->oi.Filename, "Albums"))
+            device->default_album_folder = ob->oid;
+        else if (!strcasecmp(ob->oi.Filename, "Text") ||
+                !strcasecmp(ob->oi.Filename, "Texts"))
+            device->default_text_folder = ob->oid;
     }
-    else if (!strcasecmp(ob->oi.Filename, "My Playlists") ||
-	     !strcasecmp(ob->oi.Filename, "My_Playlists") ||
-	     !strcasecmp(ob->oi.Filename, "Playlists")) {
-      device->default_playlist_folder = ob->oid;
-    }
-    else if (!strcasecmp(ob->oi.Filename, "My Pictures") ||
-	     !strcasecmp(ob->oi.Filename, "My_Pictures") ||
-	     !strcasecmp(ob->oi.Filename, "Pictures")) {
-      device->default_picture_folder = ob->oid;
-    }
-    else if (!strcasecmp(ob->oi.Filename, "My Video") ||
-	     !strcasecmp(ob->oi.Filename, "My_Video") ||
-	     !strcasecmp(ob->oi.Filename, "Video")) {
-	device->default_video_folder = ob->oid;
-    }
-    else if (!strcasecmp(ob->oi.Filename, "My Organizer") ||
-	     !strcasecmp(ob->oi.Filename, "My_Organizer")) {
-      device->default_organizer_folder = ob->oid;
-    }
-    else if (!strcasecmp(ob->oi.Filename, "ZENcast") ||
-	     !strcasecmp(ob->oi.Filename, "Datacasts")) {
-      device->default_zencast_folder = ob->oid;
-    }
-    else if (!strcasecmp(ob->oi.Filename, "My Albums") ||
-	     !strcasecmp(ob->oi.Filename, "My_Albums") ||
-	     !strcasecmp(ob->oi.Filename, "Albums")) {
-      device->default_album_folder = ob->oid;
-    }
-    else if (!strcasecmp(ob->oi.Filename, "Text") ||
-	     !strcasecmp(ob->oi.Filename, "Texts")) {
-      device->default_text_folder = ob->oid;
-    }
-  }
 }
 
 /**
