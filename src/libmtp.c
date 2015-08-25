@@ -3332,13 +3332,12 @@ char *LIBMTP_Get_Manufacturername(LIBMTP_mtpdevice_t *device)
  */
 char *LIBMTP_Get_Modelname(LIBMTP_mtpdevice_t *device)
 {
-  char *retmodel = NULL;
-  PTPParams *params = (PTPParams *) device->params;
+    char *retmodel = NULL;
+    PTPParams *params = (PTPParams *) device->params;
 
-  if (params->deviceinfo.Model != NULL) {
-    retmodel = strdup(params->deviceinfo.Model);
-  }
-  return retmodel;
+    if (params->deviceinfo.Model != NULL)
+        retmodel = strdup(params->deviceinfo.Model);
+    return retmodel;
 }
 
 /**
