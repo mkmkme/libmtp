@@ -2552,42 +2552,34 @@ static int get_all_metadata_fast(LIBMTP_mtpdevice_t *device)
  * for all objects.
  */
 static void get_handles_recursively(LIBMTP_mtpdevice_t *device,
-				    PTPParams *params,
-				    uint32_t storageid,
-				    uint32_t parent)
+                    PTPParams *params,
+                    uint32_t storageid,
+                    uint32_t parent)
 {
-  PTPObjectHandles currentHandles;
-  int i = 0;
-  uint16_t ret = ptp_getobjecthandles(params,
-                                      storageid,
-                                      PTP_GOH_ALL_FORMATS,
-                                      parent,
-                                      &currentHandles);
+    PTPObjectHandles currentHandles;
+    int i = 0;
+    uint16_t ret = ptp_getobjecthandles(params, storageid, PTP_GOH_ALL_FORMATS, parent, &currentHandles);
 
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "get_handles_recursively(): could not get object handles.");
-    return;
-  }
-
-  if (currentHandles.Handler == NULL || currentHandles.n == 0)
-    return;
-
-  // Now descend into any subdirectories found
-  for (i = 0; i < currentHandles.n; i++) {
-    PTPObject *ob;
-    ret = ptp_object_want(params,currentHandles.Handler[i],
-			  PTPOBJECT_OBJECTINFO_LOADED, &ob);
-    if (ret == PTP_RC_OK) {
-      if (ob->oi.ObjectFormat == PTP_OFC_Association)
-        get_handles_recursively(device, params,
-				storageid, currentHandles.Handler[i]);
-    } else {
-      add_error_to_errorstack(device,
-			      LIBMTP_ERROR_CONNECTING,
-			      "Found a bad handle, trying to ignore it.");
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "get_handles_recursively(): could not get object handles.");
+        return;
     }
-  }
-  free(currentHandles.Handler);
+
+    if (currentHandles.Handler == NULL || currentHandles.n == 0)
+        return;
+
+    /* Now descend into any subdirectories found */
+    for (i = 0; i < currentHandles.n; i++) {
+        PTPObject *ob;
+        ret = ptp_object_want(params,currentHandles.Handler[i], PTPOBJECT_OBJECTINFO_LOADED, &ob);
+        if (ret == PTP_RC_OK) {
+            if (ob->oi.ObjectFormat == PTP_OFC_Association)
+                get_handles_recursively(device, params, storageid, currentHandles.Handler[i]);
+        } else
+            add_error_to_errorstack(device, LIBMTP_ERROR_CONNECTING, 
+                "Found a bad handle, trying to ignore it.");
+    }
+    free(currentHandles.Handler);
 }
 
 /**
