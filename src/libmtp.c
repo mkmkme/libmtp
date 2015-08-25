@@ -2411,138 +2411,135 @@ void LIBMTP_Dump_Errorstack(LIBMTP_mtpdevice_t *device)
  */
 static int get_all_metadata_fast(LIBMTP_mtpdevice_t *device)
 {
-  PTPParams      *params = (PTPParams *) device->params;
-  int		 cnt = 0;
-  int            i, j, nrofprops;
-  uint32_t	 lasthandle = 0xffffffff;
-  MTPProperties  *props = NULL;
-  MTPProperties  *prop;
-  uint16_t       ret;
-  int            oldtimeout;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    PTPParams *params = (PTPParams *) device->params;
+    int cnt = 0;
+    int i, j, nrofprops;
+    uint32_t lasthandle = 0xffffffff;
+    MTPProperties *props = NULL;
+    MTPProperties *prop;
+    uint16_t ret;
+    int oldtimeout;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
 
-  /*
-   * The follow request causes the device to generate
-   * a list of every file on the device and return it
-   * in a single response.
-   *
-   * Some slow devices as well as devices with very
-   * large file systems can easily take longer then
-   * the standard timeout value before it is able
-   * to return a response.
-   *
-   * Temporarly set timeout to allow working with
-   * widest range of devices.
-   */
-  get_usb_device_timeout(ptp_usb, &oldtimeout);
-  set_usb_device_timeout(ptp_usb, 60000);
+    /*
+     * The follow request causes the device to generate
+     * a list of every file on the device and return it
+     * in a single response.
+     *
+     * Some slow devices as well as devices with very
+     * large file systems can easily take longer then
+     * the standard timeout value before it is able
+     * to return a response.
+     *
+     * Temporarly set timeout to allow working with
+     * widest range of devices.
+     */
+    get_usb_device_timeout(ptp_usb, &oldtimeout);
+    set_usb_device_timeout(ptp_usb, 60000);
 
-  ret = ptp_mtp_getobjectproplist(params, 0xffffffff, &props, &nrofprops);
-  set_usb_device_timeout(ptp_usb, oldtimeout);
+    ret = ptp_mtp_getobjectproplist(params, 0xffffffff, &props, &nrofprops);
+    set_usb_device_timeout(ptp_usb, oldtimeout);
 
-  if (ret == PTP_RC_MTP_Specification_By_Group_Unsupported) {
-    // What's the point in the device implementing this command if
-    // you cannot use it to get all props for AT LEAST one object?
-    // Well, whatever...
-    add_ptp_error_to_errorstack(device, ret, "get_all_metadata_fast(): "
-    "cannot retrieve all metadata for an object on this device.");
-    return -1;
-  }
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "get_all_metadata_fast(): "
-    "could not get proplist of all objects.");
-    return -1;
-  }
-  if (props == NULL && nrofprops != 0) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-			    "get_all_metadata_fast(): "
-			    "call to ptp_mtp_getobjectproplist() returned "
-			    "inconsistent results.");
-    return -1;
-  }
-  /*
-   * We count the number of objects by counting the ObjectHandle
-   * references, whenever it changes we get a new object, when it's
-   * the same, it is just different properties of the same object.
-   */
-  prop = props;
-  for (i=0;i<nrofprops;i++) {
-      if (lasthandle != prop->ObjectHandle) {
-	cnt++;
-	lasthandle = prop->ObjectHandle;
-      }
-      prop++;
-  }
-  lasthandle = 0xffffffff;
-  params->objects = calloc (sizeof(PTPObject),cnt);
-  prop = props;
-  i = -1;
-  for (j=0;j<nrofprops;j++) {
-    if (lasthandle != prop->ObjectHandle) {
-      if (i >= 0) {
-        params->objects[i].flags |= PTPOBJECT_OBJECTINFO_LOADED;
-	if (!params->objects[i].oi.Filename) {
-	  /* I have one such file on my Creative (Marcus) */
-	  params->objects[i].oi.Filename = strdup("<null>");
-	}
-      }
-      i++;
-      lasthandle = prop->ObjectHandle;
-      params->objects[i].oid = prop->ObjectHandle;
+    if (ret == PTP_RC_MTP_Specification_By_Group_Unsupported) {
+        /* What's the point in the device implementing this command if
+         * you cannot use it to get all props for AT LEAST one object?
+         * Well, whatever... */
+        add_ptp_error_to_errorstack(device, ret, "get_all_metadata_fast(): "
+        "cannot retrieve all metadata for an object on this device.");
+        return -1;
     }
-    switch (prop->property) {
-    case PTP_OPC_ParentObject:
-      params->objects[i].oi.ParentObject = prop->propval.u32;
-      params->objects[i].flags |= PTPOBJECT_PARENTOBJECT_LOADED;
-      break;
-    case PTP_OPC_ObjectFormat:
-      params->objects[i].oi.ObjectFormat = prop->propval.u16;
-      break;
-    case PTP_OPC_ObjectSize:
-      // We loose precision here, up to 32 bits! However the commands that
-      // retrieve metadata for files and tracks will make sure that the
-      // PTP_OPC_ObjectSize is read in and duplicated again.
-      if (device->object_bitsize == 64) {
-	params->objects[i].oi.ObjectCompressedSize = (uint32_t) prop->propval.u64;
-      } else {
-	params->objects[i].oi.ObjectCompressedSize = prop->propval.u32;
-      }
-      break;
-    case PTP_OPC_StorageID:
-      params->objects[i].oi.StorageID = prop->propval.u32;
-      params->objects[i].flags |= PTPOBJECT_STORAGEID_LOADED;
-      break;
-    case PTP_OPC_ObjectFileName:
-      if (prop->propval.str != NULL)
-        params->objects[i].oi.Filename = strdup(prop->propval.str);
-      break;
-    default: {
-      MTPProperties *newprops;
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "get_all_metadata_fast(): "
+        "could not get proplist of all objects.");
+        return -1;
+    }
+    if (props == NULL && nrofprops != 0) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+        "get_all_metadata_fast(): call to ptp_mtp_getobjectproplist() returned "
+        "inconsistent results.");
+        return -1;
+    }
+    /*
+     * We count the number of objects by counting the ObjectHandle
+     * references, whenever it changes we get a new object, when it's
+     * the same, it is just different properties of the same object.
+     */
+    prop = props;
+    for (i = 0; i < nrofprops; i++) {
+        if (lasthandle != prop->ObjectHandle) {
+            cnt++;
+            lasthandle = prop->ObjectHandle;
+        }
+        prop++;
+    }
+    lasthandle = 0xffffffff;
+    params->objects = calloc(cnt, sizeof(PTPObject));
+    prop = props;
+    i = -1;
+    for (j = 0; j < nrofprops; j++) {
+        if (lasthandle != prop->ObjectHandle) {
+            if (i >= 0) {
+                params->objects[i].flags |= PTPOBJECT_OBJECTINFO_LOADED;
+                if (!params->objects[i].oi.Filename)
+                    /* I have one such file on my Creative (Marcus) */
+                    params->objects[i].oi.Filename = strdup("<null>");
+            }
+            i++;
+            lasthandle = prop->ObjectHandle;
+            params->objects[i].oid = prop->ObjectHandle;
+        }
+        switch (prop->property) {
+        case PTP_OPC_ParentObject:
+            params->objects[i].oi.ParentObject = prop->propval.u32;
+            params->objects[i].flags |= PTPOBJECT_PARENTOBJECT_LOADED;
+            break;
+        case PTP_OPC_ObjectFormat:
+            params->objects[i].oi.ObjectFormat = prop->propval.u16;
+            break;
+        case PTP_OPC_ObjectSize:
+            /* We loose precision here, up to 32 bits! However the commands that
+             * retrieve metadata for files and tracks will make sure that the
+             * PTP_OPC_ObjectSize is read in and duplicated again. */
+            if (device->object_bitsize == 64)
+                params->objects[i].oi.ObjectCompressedSize = (uint32_t) prop->propval.u64;
+            else
+                params->objects[i].oi.ObjectCompressedSize = prop->propval.u32;
+            break;
+        case PTP_OPC_StorageID:
+            params->objects[i].oi.StorageID = prop->propval.u32;
+            params->objects[i].flags |= PTPOBJECT_STORAGEID_LOADED;
+            break;
+        case PTP_OPC_ObjectFileName:
+            if (prop->propval.str != NULL)
+                params->objects[i].oi.Filename = strdup(prop->propval.str);
+            break;
+        default: {
+            MTPProperties *newprops;
 
-      /* Copy all of the other MTP oprierties into the per-object proplist */
-      if (params->objects[i].nrofmtpprops) {
-        newprops = realloc(params->objects[i].mtpprops,
-		(params->objects[i].nrofmtpprops+1)*sizeof(MTPProperties));
-      } else {
-        newprops = calloc(sizeof(MTPProperties),1);
-      }
-      if (!newprops) return 0; /* FIXME: error handling? */
-      params->objects[i].mtpprops = newprops;
-      memcpy(&params->objects[i].mtpprops[params->objects[i].nrofmtpprops],
-	     &props[j],sizeof(props[j]));
-      params->objects[i].nrofmtpprops++;
-      params->objects[i].flags |= PTPOBJECT_MTPPROPLIST_LOADED;
-      break;
+            /* Copy all of the other MTP oprierties into the per-object proplist */
+            if (params->objects[i].nrofmtpprops) {
+                newprops = realloc(params->objects[i].mtpprops,
+                (params->objects[i].nrofmtpprops+1)*sizeof(MTPProperties));
+            } else
+                newprops = calloc(1, sizeof(MTPProperties));
+            if (!newprops)
+                return 0; /* FIXME: error handling? */
+            params->objects[i].mtpprops = newprops;
+            memcpy(&params->objects[i].mtpprops[params->objects[i].nrofmtpprops],
+                    &props[j],sizeof(props[j]));
+            params->objects[i].nrofmtpprops++;
+            params->objects[i].flags |= PTPOBJECT_MTPPROPLIST_LOADED;
+            break;
+        }
+        }
+        prop++;
     }
-    }
-    prop++;
-  }
-  /* mark last entry also */
-  params->objects[i].flags |= PTPOBJECT_OBJECTINFO_LOADED;
-  params->nrofobjects = i+1;
-  /* The device might not give the list in linear ascending order */
-  ptp_objects_sort (params);
-  return 0;
+    /* mark last entry also */
+    params->objects[i].flags |= PTPOBJECT_OBJECTINFO_LOADED;
+    params->nrofobjects = i+1;
+    /* The device might not give the list in linear ascending order */
+    ptp_objects_sort (params);
+    return 0;
 }
 
 /**
