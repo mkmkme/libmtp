@@ -3651,7 +3651,7 @@ static int get_device_unicode_property(LIBMTP_mtpdevice_t *device,
  */
 int LIBMTP_Get_Secure_Time(LIBMTP_mtpdevice_t *device, char ** const sectime)
 {
-  return get_device_unicode_property(device, sectime, PTP_DPC_MTP_SecureTime);
+    return get_device_unicode_property(device, sectime, PTP_DPC_MTP_SecureTime);
 }
 
 /**
@@ -3665,8 +3665,7 @@ int LIBMTP_Get_Secure_Time(LIBMTP_mtpdevice_t *device, char ** const sectime)
  */
 int LIBMTP_Get_Device_Certificate(LIBMTP_mtpdevice_t *device, char ** const devcert)
 {
-  return get_device_unicode_property(device, devcert,
-				     PTP_DPC_MTP_DeviceCertificate);
+    return get_device_unicode_property(device, devcert, PTP_DPC_MTP_DeviceCertificate);
 }
 
 /**
