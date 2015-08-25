@@ -3782,91 +3782,85 @@ int LIBMTP_Check_Capability(LIBMTP_mtpdevice_t *device, LIBMTP_devicecap_t cap)
  */
 int LIBMTP_Get_Storage(LIBMTP_mtpdevice_t *device, int const sortby)
 {
-  uint32_t i = 0;
-  PTPStorageInfo storageInfo;
-  PTPParams *params = (PTPParams *) device->params;
-  PTPStorageIDs storageIDs;
-  LIBMTP_devicestorage_t *storage = NULL;
-  LIBMTP_devicestorage_t *storageprev = NULL;
+    uint32_t i = 0;
+    PTPStorageInfo storageInfo;
+    PTPParams *params = (PTPParams *) device->params;
+    PTPStorageIDs storageIDs;
+    LIBMTP_devicestorage_t *storage = NULL;
+    LIBMTP_devicestorage_t *storageprev = NULL;
 
-  if (device->storage != NULL)
-    free_storage_list(device);
+    if (device->storage != NULL)
+        free_storage_list(device);
 
-  // if (!ptp_operation_issupported(params,PTP_OC_GetStorageIDs))
-  //   return -1;
-  if (ptp_getstorageids (params, &storageIDs) != PTP_RC_OK)
-    return -1;
-  if (storageIDs.n < 1)
-    return -1;
+    if (ptp_getstorageids (params, &storageIDs) != PTP_RC_OK)
+        return -1;
+    if (storageIDs.n < 1)
+        return -1;
 
-  if (!ptp_operation_issupported(params,PTP_OC_GetStorageInfo)) {
-    for (i = 0; i < storageIDs.n; i++) {
+    if (!ptp_operation_issupported(params,PTP_OC_GetStorageInfo)) {
+        for (i = 0; i < storageIDs.n; i++) {
+            storage = (LIBMTP_devicestorage_t *) malloc(sizeof(LIBMTP_devicestorage_t));
+            storage->prev = storageprev;
+            if (storageprev != NULL)
+                storageprev->next = storage;
+            if (device->storage == NULL)
+                device->storage = storage;
 
-      storage = (LIBMTP_devicestorage_t *)
-	malloc(sizeof(LIBMTP_devicestorage_t));
-      storage->prev = storageprev;
-      if (storageprev != NULL)
-        storageprev->next = storage;
-      if (device->storage == NULL)
-        device->storage = storage;
+            storage->id = storageIDs.Storage[i];
+            storage->StorageType = PTP_ST_Undefined;
+            storage->FilesystemType = PTP_FST_Undefined;
+            storage->AccessCapability = PTP_AC_ReadWrite;
+            storage->MaxCapacity = (uint64_t) -1;
+            storage->FreeSpaceInBytes = (uint64_t) -1;
+            storage->FreeSpaceInObjects = (uint64_t) -1;
+            storage->StorageDescription = strdup("Unknown storage");
+            storage->VolumeIdentifier = strdup("Unknown volume");
+            storage->next = NULL;
 
-      storage->id = storageIDs.Storage[i];
-      storage->StorageType = PTP_ST_Undefined;
-      storage->FilesystemType = PTP_FST_Undefined;
-      storage->AccessCapability = PTP_AC_ReadWrite;
-      storage->MaxCapacity = (uint64_t) -1;
-      storage->FreeSpaceInBytes = (uint64_t) -1;
-      storage->FreeSpaceInObjects = (uint64_t) -1;
-      storage->StorageDescription = strdup("Unknown storage");
-      storage->VolumeIdentifier = strdup("Unknown volume");
-      storage->next = NULL;
+            storageprev = storage;
+        }
+        free(storageIDs.Storage);
+        return 1;
+    } else {
+        for (i = 0; i < storageIDs.n; i++) {
+            uint16_t ret;
+            ret = ptp_getstorageinfo(params, storageIDs.Storage[i], &storageInfo);
+            if (ret != PTP_RC_OK) {
+                add_ptp_error_to_errorstack(device, ret, 
+                    "LIBMTP_Get_Storage(): Could not get storage info.");
+                if (device->storage != NULL)
+                    free_storage_list(device);
+                return -1;
+            }
 
-      storageprev = storage;
+            storage = (LIBMTP_devicestorage_t *) malloc(sizeof(LIBMTP_devicestorage_t));
+            storage->prev = storageprev;
+            if (storageprev != NULL)
+                storageprev->next = storage;
+            if (device->storage == NULL)
+                device->storage = storage;
+
+            storage->id = storageIDs.Storage[i];
+            storage->StorageType = storageInfo.StorageType;
+            storage->FilesystemType = storageInfo.FilesystemType;
+            storage->AccessCapability = storageInfo.AccessCapability;
+            storage->MaxCapacity = storageInfo.MaxCapability;
+            storage->FreeSpaceInBytes = storageInfo.FreeSpaceInBytes;
+            storage->FreeSpaceInObjects = storageInfo.FreeSpaceInImages;
+            storage->StorageDescription = storageInfo.StorageDescription;
+            storage->VolumeIdentifier = storageInfo.VolumeLabel;
+            storage->next = NULL;
+
+            storageprev = storage;
+        }
+
+        if (storage != NULL)
+            storage->next = NULL;
+
+        sort_storage_by(device,sortby);
+        free(storageIDs.Storage);
+        return 0;
     }
-    free(storageIDs.Storage);
-    return 1;
-  } else {
-    for (i = 0; i < storageIDs.n; i++) {
-      uint16_t ret;
-      ret = ptp_getstorageinfo(params, storageIDs.Storage[i], &storageInfo);
-      if (ret != PTP_RC_OK) {
-	add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Storage(): "
-				    "Could not get storage info.");
-	if (device->storage != NULL) {
-          free_storage_list(device);
-	}
-	return -1;
-      }
-
-      storage = (LIBMTP_devicestorage_t *)
-	malloc(sizeof(LIBMTP_devicestorage_t));
-      storage->prev = storageprev;
-      if (storageprev != NULL)
-        storageprev->next = storage;
-      if (device->storage == NULL)
-        device->storage = storage;
-
-      storage->id = storageIDs.Storage[i];
-      storage->StorageType = storageInfo.StorageType;
-      storage->FilesystemType = storageInfo.FilesystemType;
-      storage->AccessCapability = storageInfo.AccessCapability;
-      storage->MaxCapacity = storageInfo.MaxCapability;
-      storage->FreeSpaceInBytes = storageInfo.FreeSpaceInBytes;
-      storage->FreeSpaceInObjects = storageInfo.FreeSpaceInImages;
-      storage->StorageDescription = storageInfo.StorageDescription;
-      storage->VolumeIdentifier = storageInfo.VolumeLabel;
-      storage->next = NULL;
-
-      storageprev = storage;
-    }
-
-    if (storage != NULL)
-      storage->next = NULL;
-
-    sort_storage_by(device,sortby);
-    free(storageIDs.Storage);
-    return 0;
-  }
 }
 
 /**
