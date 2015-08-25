@@ -3733,32 +3733,26 @@ int LIBMTP_Get_Supported_Filetypes(LIBMTP_mtpdevice_t *device, uint16_t ** const
  */
 int LIBMTP_Check_Capability(LIBMTP_mtpdevice_t *device, LIBMTP_devicecap_t cap)
 {
-  switch (cap) {
-  case LIBMTP_DEVICECAP_GetPartialObject:
-    return (ptp_operation_issupported(device->params,
-				      PTP_OC_GetPartialObject) ||
-	    ptp_operation_issupported(device->params,
-				      PTP_OC_ANDROID_GetPartialObject64));
-  case LIBMTP_DEVICECAP_SendPartialObject:
-    return ptp_operation_issupported(device->params,
-				     PTP_OC_ANDROID_SendPartialObject);
-  case LIBMTP_DEVICECAP_EditObjects:
-    return (ptp_operation_issupported(device->params,
-				      PTP_OC_ANDROID_TruncateObject) &&
-	    ptp_operation_issupported(device->params,
-				      PTP_OC_ANDROID_BeginEditObject) &&
-	    ptp_operation_issupported(device->params,
-				      PTP_OC_ANDROID_EndEditObject));
-  /*
-   * Handle other capabilities here, this is also a good place to
-   * blacklist some advanced operations on specific devices if need
-   * be.
-   */
+    switch (cap) {
+    case LIBMTP_DEVICECAP_GetPartialObject:
+        return  ptp_operation_issupported(device->params, PTP_OC_GetPartialObject) ||
+                ptp_operation_issupported(device->params, PTP_OC_ANDROID_GetPartialObject64);
+    case LIBMTP_DEVICECAP_SendPartialObject:
+        return ptp_operation_issupported(device->params, PTP_OC_ANDROID_SendPartialObject);
+    case LIBMTP_DEVICECAP_EditObjects:
+        return  ptp_operation_issupported(device->params, PTP_OC_ANDROID_TruncateObject) &&
+                ptp_operation_issupported(device->params, PTP_OC_ANDROID_BeginEditObject) &&
+                ptp_operation_issupported(device->params, PTP_OC_ANDROID_EndEditObject);
+    /*
+     * Handle other capabilities here, this is also a good place to
+     * blacklist some advanced operations on specific devices if need
+     * be.
+     */
 
-  default:
-    break;
-  }
-  return 0;
+    default:
+        break;
+    }
+    return 0;
 }
 
 /**
