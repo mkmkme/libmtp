@@ -4051,9 +4051,9 @@ LIBMTP_file_t *LIBMTP_Get_Filemetadata(LIBMTP_mtpdevice_t *device, uint32_t cons
  */
 LIBMTP_file_t *LIBMTP_Get_Filelisting(LIBMTP_mtpdevice_t *device)
 {
-  LIBMTP_INFO("WARNING: LIBMTP_Get_Filelisting() is deprecated.\n");
-  LIBMTP_INFO("WARNING: please update your code to use LIBMTP_Get_Filelisting_With_Callback()\n");
-  return LIBMTP_Get_Filelisting_With_Callback(device, NULL, NULL);
+    LIBMTP_INFO("WARNING: LIBMTP_Get_Filelisting() is deprecated.\n");
+    LIBMTP_INFO("WARNING: please update your code to use LIBMTP_Get_Filelisting_With_Callback()\n");
+    return LIBMTP_Get_Filelisting_With_Callback(device, NULL, NULL);
 }
 
 /**
