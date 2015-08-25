@@ -2360,21 +2360,22 @@ LIBMTP_error_t *LIBMTP_Get_Errorstack(LIBMTP_mtpdevice_t *device)
  */
 void LIBMTP_Clear_Errorstack(LIBMTP_mtpdevice_t *device)
 {
-    if (device == NULL)
+    if (device == NULL) {
         LIBMTP_ERROR("LIBMTP PANIC: Trying to clear the error stack of a NULL device!\n");
-    else {
-        LIBMTP_error_t *tmp = device->errorstack;
-
-        while (tmp != NULL) {
-            LIBMTP_error_t *tmp2;
-
-            free(tmp->error_text);
-            tmp2 = tmp;
-            tmp = tmp->next;
-            free(tmp2);
-        }
-        device->errorstack = NULL;
+        return;
     }
+
+    LIBMTP_error_t *tmp = device->errorstack;
+
+    while (tmp != NULL) {
+        LIBMTP_error_t *tmp2;
+
+        free(tmp->error_text);
+        tmp2 = tmp;
+        tmp = tmp->next;
+        free(tmp2);
+    }
+    device->errorstack = NULL;
 }
 
 /**
@@ -2385,18 +2386,19 @@ void LIBMTP_Clear_Errorstack(LIBMTP_mtpdevice_t *device)
  */
 void LIBMTP_Dump_Errorstack(LIBMTP_mtpdevice_t *device)
 {
-    if (device == NULL)
+    if (device == NULL) {
         LIBMTP_ERROR("LIBMTP PANIC: Trying to dump the error stack of a NULL device!\n");
-    else {
-        LIBMTP_error_t *tmp = device->errorstack;
+        return;
+    }
 
-        while (tmp != NULL) {
-            if (tmp->error_text != NULL)
-                LIBMTP_ERROR("Error %d: %s\n", tmp->errornumber, tmp->error_text);
-            else
-                LIBMTP_ERROR("Error %d: (unknown)\n", tmp->errornumber);
-            tmp = tmp->next;
-        }
+    LIBMTP_error_t *tmp = device->errorstack;
+
+    while (tmp != NULL) {
+        if (tmp->error_text != NULL)
+            LIBMTP_ERROR("Error %d: %s\n", tmp->errornumber, tmp->error_text);
+        else
+            LIBMTP_ERROR("Error %d: (unknown)\n", tmp->errornumber);
+        tmp = tmp->next;
     }
 }
 
