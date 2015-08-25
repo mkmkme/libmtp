@@ -3605,47 +3605,39 @@ int LIBMTP_Format_Storage(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 static int get_device_unicode_property(LIBMTP_mtpdevice_t *device,
-				       char **unicstring, uint16_t property)
+                        char **unicstring, uint16_t property)
 {
-  PTPPropertyValue propval;
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t *tmp;
-  uint16_t ret;
-  int i;
+    PTPPropertyValue propval;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t *tmp;
+    uint16_t ret;
+    int i;
 
-  if (!ptp_property_issupported(params, property)) {
-    return -1;
-  }
+    if (!ptp_property_issupported(params, property))
+        return -1;
 
-  // Unicode strings are 16bit unsigned integer arrays.
-  ret = ptp_getdevicepropvalue(params,
-			       property,
-			       &propval,
-			       PTP_DTC_AUINT16);
-  if (ret != PTP_RC_OK) {
-    // TODO: add a note on WHICH property that we failed to get.
-    *unicstring = NULL;
-    add_ptp_error_to_errorstack(device, ret,
-				"get_device_unicode_property(): "
-				"failed to get unicode property.");
-    return -1;
-  }
+    /* Unicode strings are 16bit unsigned integer arrays. */
+    ret = ptp_getdevicepropvalue(params, property, &propval, PTP_DTC_AUINT16);
+    if (ret != PTP_RC_OK) {
+        /* TODO: add a note on WHICH property that we failed to get. */
+        *unicstring = NULL;
+        add_ptp_error_to_errorstack(device, ret,
+            "get_device_unicode_property(): failed to get unicode property.");
+        return -1;
+    }
 
-  // Extract the actual array.
-  // printf("Array of %d elements\n", propval.a.count);
-  tmp = malloc((propval.a.count + 1)*sizeof(uint16_t));
-  for (i = 0; i < propval.a.count; i++) {
-    tmp[i] = propval.a.v[i].u16;
-    // printf("%04x ", tmp[i]);
-  }
-  tmp[propval.a.count] = 0x0000U;
-  free(propval.a.v);
+    /* Extract the actual array. */
+    tmp = malloc((propval.a.count + 1)*sizeof(uint16_t));
+    for (i = 0; i < propval.a.count; i++)
+        tmp[i] = propval.a.v[i].u16;
+    tmp[propval.a.count] = 0x0000U;
+    free(propval.a.v);
 
-  *unicstring = utf16_to_utf8(device, tmp);
+    *unicstring = utf16_to_utf8(device, tmp);
 
-  free(tmp);
+    free(tmp);
 
-  return 0;
+    return 0;
 }
 
 /**
