@@ -2247,33 +2247,33 @@ void LIBMTP_Release_Device_List(LIBMTP_mtpdevice_t *device)
  */
 void LIBMTP_Release_Device(LIBMTP_mtpdevice_t *device)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
 
-  close_device(ptp_usb, params);
-  // Clear error stack
-  LIBMTP_Clear_Errorstack(device);
-  // Free iconv() converters...
-  iconv_close(params->cd_locale_to_ucs2);
-  iconv_close(params->cd_ucs2_to_locale);
-  free(ptp_usb);
-  ptp_free_params(params);
-  free(params);
-  free_storage_list(device);
-  // Free extension list...
-  if (device->extensions != NULL) {
-    LIBMTP_device_extension_t *tmp = device->extensions;
+    close_device(ptp_usb, params);
+    /* Clear error stack */
+    LIBMTP_Clear_Errorstack(device);
+    /* Free iconv() converters... */
+    iconv_close(params->cd_locale_to_ucs2);
+    iconv_close(params->cd_ucs2_to_locale);
+    free(ptp_usb);
+    ptp_free_params(params);
+    free(params);
+    free_storage_list(device);
+    /* Free extension list... */
+    if (device->extensions != NULL) {
+        LIBMTP_device_extension_t *tmp = device->extensions;
 
-    while (tmp != NULL) {
-      LIBMTP_device_extension_t *next = tmp->next;
+        while (tmp != NULL) {
+            LIBMTP_device_extension_t *next = tmp->next;
 
-      if (tmp->name)
-        free(tmp->name);
-      free(tmp);
-      tmp = next;
+            if (tmp->name)
+                free(tmp->name);
+            free(tmp);
+            tmp = next;
+        }
     }
-  }
-  free(device);
+    free(device);
 }
 
 /**
