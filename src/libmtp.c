@@ -3524,7 +3524,6 @@ static int check_if_file_fits(LIBMTP_mtpdevice_t *device,
     return 0;
 }
 
-
 /**
  * This function retrieves the current battery level on the device.
  * @param device a pointer to the device to get the battery level for.
@@ -3538,35 +3537,32 @@ static int check_if_file_fits(LIBMTP_mtpdevice_t *device,
  *        the device does not support the battery level property.
  */
 int LIBMTP_Get_Batterylevel(LIBMTP_mtpdevice_t *device,
-			    uint8_t * const maximum_level,
-			    uint8_t * const current_level)
+                uint8_t * const maximum_level,
+                uint8_t * const current_level)
 {
-  PTPPropertyValue propval;
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    PTPPropertyValue propval;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
 
-  *maximum_level = 0;
-  *current_level = 0;
+    *maximum_level = 0;
+    *current_level = 0;
 
-  if (FLAG_BROKEN_BATTERY_LEVEL(ptp_usb) ||
-      !ptp_property_issupported(params, PTP_DPC_BatteryLevel)) {
-    return -1;
-  }
+    if (FLAG_BROKEN_BATTERY_LEVEL(ptp_usb) ||
+        !ptp_property_issupported(params, PTP_DPC_BatteryLevel))
+        return -1;
 
-  ret = ptp_getdevicepropvalue(params, PTP_DPC_BatteryLevel,
-			       &propval, PTP_DTC_UINT8);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret,
-				"LIBMTP_Get_Batterylevel(): "
-				"could not get device property value.");
-    return -1;
-  }
+    ret = ptp_getdevicepropvalue(params, PTP_DPC_BatteryLevel, &propval, PTP_DTC_UINT8);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret,
+                "LIBMTP_Get_Batterylevel(): could not get device property value.");
+        return -1;
+    }
 
-  *maximum_level = device->maximum_battery_level;
-  *current_level = propval.u8;
+    *maximum_level = device->maximum_battery_level;
+    *current_level = propval.u8;
 
-  return 0;
+    return 0;
 }
 
 
