@@ -2846,22 +2846,21 @@ static uint32_t get_writeable_storageid(LIBMTP_mtpdevice_t *device,
  * @ret storageID
  */
 static int get_suggested_storage_id(LIBMTP_mtpdevice_t *device,
-				    uint64_t fitsize,
-				    uint32_t parent_id)
+                    uint64_t fitsize,
+                    uint32_t parent_id)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  PTPObject *ob;
-  uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    PTPObject *ob;
+    uint16_t ret;
 
-  ret = ptp_object_want(params, parent_id, PTPOBJECT_MTPPROPLIST_LOADED, &ob);
-  if ((ret != PTP_RC_OK) || (ob->oi.StorageID == 0)) {
-    add_ptp_error_to_errorstack(device, ret, "get_suggested_storage_id(): "
-				"could not get storage id from parent id.");
-    return get_writeable_storageid(device, fitsize);
-  } else {
+    ret = ptp_object_want(params, parent_id, PTPOBJECT_MTPPROPLIST_LOADED, &ob);
+    if ((ret != PTP_RC_OK) || (ob->oi.StorageID == 0)) {
+        add_ptp_error_to_errorstack(device, ret, "get_suggested_storage_id(): "
+            "could not get storage id from parent id.");
+        return get_writeable_storageid(device, fitsize);
+    }
     /* OK we know the parent storage, then use that */
     return ob->oi.StorageID;
-  }
 }
 
 /**
