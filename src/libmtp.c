@@ -3905,13 +3905,11 @@ LIBMTP_file_t *LIBMTP_new_file_t(void)
  */
 void LIBMTP_destroy_file_t(LIBMTP_file_t *file)
 {
-  if (file == NULL) {
-    return;
-  }
-  if (file->filename != NULL)
-    free(file->filename);
-  free(file);
-  return;
+    if (file == NULL)
+        return;
+    if (file->filename != NULL)
+        free(file->filename);
+    free(file);
 }
 
 /**
