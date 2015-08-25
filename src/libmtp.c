@@ -3367,13 +3367,12 @@ char *LIBMTP_Get_Serialnumber(LIBMTP_mtpdevice_t *device)
  */
 char *LIBMTP_Get_Deviceversion(LIBMTP_mtpdevice_t *device)
 {
-  char *retversion = NULL;
-  PTPParams *params = (PTPParams *) device->params;
+    char *retversion = NULL;
+    PTPParams *params = (PTPParams *) device->params;
 
-  if (params->deviceinfo.DeviceVersion != NULL) {
-    retversion = strdup(params->deviceinfo.DeviceVersion);
-  }
-  return retversion;
+    if (params->deviceinfo.DeviceVersion != NULL)
+        retversion = strdup(params->deviceinfo.DeviceVersion);
+    return retversion;
 }
 
 
