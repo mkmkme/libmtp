@@ -2704,10 +2704,8 @@ static void free_storage_list(LIBMTP_mtpdevice_t *device)
 
     storage = device->storage;
     while(storage != NULL) {
-        if (storage->StorageDescription != NULL)
-            free(storage->StorageDescription);
-        if (storage->VolumeIdentifier != NULL)
-            free(storage->VolumeIdentifier);
+        free(storage->StorageDescription);
+        free(storage->VolumeIdentifier);
         tmp = storage;
         storage = storage->next;
         free(tmp);
