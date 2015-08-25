@@ -2199,32 +2199,32 @@ uint32_t LIBMTP_Number_Devices_In_List(LIBMTP_mtpdevice_t *device_list)
  */
 LIBMTP_error_number_t LIBMTP_Get_Connected_Devices(LIBMTP_mtpdevice_t **device_list)
 {
-  LIBMTP_raw_device_t *devices;
-  int numdevs;
-  LIBMTP_error_number_t ret;
+    LIBMTP_raw_device_t *devices;
+    int numdevs;
+    LIBMTP_error_number_t ret;
 
-  ret = LIBMTP_Detect_Raw_Devices(&devices, &numdevs);
-  if (ret != LIBMTP_ERROR_NONE) {
-    *device_list = NULL;
-    return ret;
-  }
+    ret = LIBMTP_Detect_Raw_Devices(&devices, &numdevs);
+    if (ret != LIBMTP_ERROR_NONE) {
+        *device_list = NULL;
+        return ret;
+    }
 
-  /* Assign linked list of devices */
-  if (devices == NULL || numdevs == 0) {
-    *device_list = NULL;
-    return LIBMTP_ERROR_NO_DEVICE_ATTACHED;
-  }
+    /* Assign linked list of devices */
+    if (devices == NULL || numdevs == 0) {
+        *device_list = NULL;
+        return LIBMTP_ERROR_NO_DEVICE_ATTACHED;
+    }
 
-  *device_list = create_usb_mtp_devices(devices, numdevs);
-  free(devices);
+    *device_list = create_usb_mtp_devices(devices, numdevs);
+    free(devices);
 
-  /* TODO: Add wifi device access here */
+    /* TODO: Add wifi device access here */
 
-  /* We have found some devices but create failed */
-  if (*device_list == NULL)
-    return LIBMTP_ERROR_CONNECTING;
+    /* We have found some devices but create failed */
+    if (*device_list == NULL)
+        return LIBMTP_ERROR_CONNECTING;
 
-  return LIBMTP_ERROR_NONE;
+    return LIBMTP_ERROR_NONE;
 }
 
 /**
