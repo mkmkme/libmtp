@@ -2891,10 +2891,8 @@ static int get_storage_freespace(LIBMTP_mtpdevice_t *device,
             "get_storage_freespace(): could not get storage info.");
             return -1;
         }
-        if (storage->StorageDescription != NULL)
-            free(storage->StorageDescription);
-        if (storage->VolumeIdentifier != NULL)
-            free(storage->VolumeIdentifier);
+        free(storage->StorageDescription);
+        free(storage->VolumeIdentifier);
         storage->StorageType = storageInfo.StorageType;
         storage->FilesystemType = storageInfo.FilesystemType;
         storage->AccessCapability = storageInfo.AccessCapability;
