@@ -3501,29 +3501,27 @@ int LIBMTP_Set_Syncpartner(LIBMTP_mtpdevice_t *device,
  * @return 0 if the file fits, any other value means failure.
  */
 static int check_if_file_fits(LIBMTP_mtpdevice_t *device,
-			      LIBMTP_devicestorage_t *storage,
-			      uint64_t const filesize) {
-  PTPParams *params = (PTPParams *) device->params;
-  uint64_t freebytes;
-  int ret;
+                    LIBMTP_devicestorage_t *storage,
+                    uint64_t const filesize)
+{
+    PTPParams *params = (PTPParams *) device->params;
+    uint64_t freebytes;
+    int ret;
 
-  // If we cannot check the storage, no big deal.
-  if (!ptp_operation_issupported(params,PTP_OC_GetStorageInfo)) {
-    return 0;
-  }
+    /* If we cannot check the storage, no big deal. */
+    if (!ptp_operation_issupported(params,PTP_OC_GetStorageInfo))
+        return 0;
 
-  ret = get_storage_freespace(device, storage, &freebytes);
-  if (ret != 0) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-			    "check_if_file_fits(): error checking free storage.");
-    return -1;
-  } else {
-    // See if it fits.
-    if (filesize > freebytes) {
-      return -1;
+    ret = get_storage_freespace(device, storage, &freebytes);
+    if (ret != 0) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "check_if_file_fits(): error checking free storage.");
+        return -1;
     }
-  }
-  return 0;
+    /* See if it fits. */
+    if (filesize > freebytes)
+      return -1;
+    return 0;
 }
 
 
