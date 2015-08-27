@@ -4859,7 +4859,11 @@ int LIBMTP_Get_File_To_File(LIBMTP_mtpdevice_t *device, uint32_t const id,
     ret = LIBMTP_Get_File_To_File_Descriptor(device, id, fd, callback, data);
 
     /* Close file */
+#ifdef USE_WINDOWS_IO_H
+    _close(fd);
+#else
     close(fd);
+#endif
 
     /* Delete partial file. */
     if (ret == -1)
@@ -5456,13 +5460,13 @@ int LIBMTP_Send_File_From_File(LIBMTP_mtpdevice_t *device,
         return -1;
     }
 
-  ret = LIBMTP_Send_File_From_File_Descriptor(device, fd, filedata, callback, data);
+    ret = LIBMTP_Send_File_From_File_Descriptor(device, fd, filedata, callback, data);
 
-  // Close file.
+    /* Close file. */
 #ifdef USE_WINDOWS_IO_H
-  _close(fd);
+    _close(fd);
 #else
-  close(fd);
+    close(fd);
 #endif
 
   return ret;
