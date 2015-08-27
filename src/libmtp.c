@@ -5178,17 +5178,15 @@ int LIBMTP_Send_Track_From_File(LIBMTP_mtpdevice_t *device,
  */
 static int check_filename_exists(PTPParams* params, char const * const filename)
 {
-  int i;
+    int i;
 
-  for (i = 0; i < params->nrofobjects; i++) {
-    char *fname = params->objects[i].oi.Filename;
-    if ((fname != NULL) && (strcmp(filename, fname) == 0))
-    {
-      return -1;
+    for (i = 0; i < params->nrofobjects; i++) {
+        char *fname = params->objects[i].oi.Filename;
+        if ((fname != NULL) && (strcmp(filename, fname) == 0))
+            return -1;
     }
-  }
 
-  return 0;
+    return 0;
 }
 
 /**
