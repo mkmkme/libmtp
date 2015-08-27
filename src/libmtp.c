@@ -5346,70 +5346,51 @@ int LIBMTP_Send_Track_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_Track_From_Handler(LIBMTP_mtpdevice_t *device,
-			 MTPDataGetFunc get_func, void * priv, LIBMTP_track_t * const metadata,
-                         LIBMTP_progressfunc_t const callback,
-			 void const * const data)
+                    MTPDataGetFunc get_func, void * priv, LIBMTP_track_t * const metadata,
+                    LIBMTP_progressfunc_t const callback,
+                    void const * const data)
 {
-  int subcall_ret;
-  LIBMTP_file_t filedata;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  PTPParams *params = (PTPParams *) device->params;
+    int subcall_ret;
+    LIBMTP_file_t filedata;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    PTPParams *params = (PTPParams *) device->params;
 
-  // Sanity check, is this really a track?
-  if (!LIBMTP_FILETYPE_IS_TRACK(metadata->filetype)) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-			    "LIBMTP_Send_Track_From_Handler(): "
-			    "I don't think this is actually a track, strange filetype...");
-  }
+    /* Sanity check, is this really a track? */
+    if (!LIBMTP_FILETYPE_IS_TRACK(metadata->filetype))
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "LIBMTP_Send_Track_From_Handler(): I don't think this is actually a track, strange filetype...");
 
-  // Wrap around the file transfer function
-  filedata.item_id = metadata->item_id;
-  filedata.parent_id = metadata->parent_id;
-  filedata.storage_id = metadata->storage_id;
-  if FLAG_UNIQUE_FILENAMES(ptp_usb) {
-    filedata.filename = generate_unique_filename(params, metadata->filename);
-  }
-  else {
-    filedata.filename = metadata->filename;
-  }
-  filedata.filesize = metadata->filesize;
-  filedata.filetype = metadata->filetype;
-  filedata.next = NULL;
+    /* Wrap around the file transfer function */
+    filedata.item_id = metadata->item_id;
+    filedata.parent_id = metadata->parent_id;
+    filedata.storage_id = metadata->storage_id;
+    if FLAG_UNIQUE_FILENAMES(ptp_usb)
+        filedata.filename = generate_unique_filename(params, metadata->filename);
+    else
+        filedata.filename = metadata->filename;
+    filedata.filesize = metadata->filesize;
+    filedata.filetype = metadata->filetype;
+    filedata.next = NULL;
 
-  subcall_ret = LIBMTP_Send_File_From_Handler(device,
-					      get_func,
-					      priv,
-					      &filedata,
-					      callback,
-					      data);
+    subcall_ret = LIBMTP_Send_File_From_Handler(device, get_func, priv, &filedata, callback, data);
 
-  if (subcall_ret != 0) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-			    "LIBMTP_Send_Track_From_Handler(): "
-			    "subcall to LIBMTP_Send_File_From_Handler failed.");
-    // We used to delete the file here, but don't... It might be OK after all.
-    // (void) LIBMTP_Delete_Object(device, metadata->item_id);
-    return -1;
-  }
+    if (subcall_ret != 0) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "LIBMTP_Send_Track_From_Handler(): subcall to LIBMTP_Send_File_From_Handler failed.");
+        return -1;
+    }
 
-  // Pick up new item (and parent, storage) ID
-  metadata->item_id = filedata.item_id;
-  metadata->parent_id = filedata.parent_id;
-  metadata->storage_id = filedata.storage_id;
+    /* Pick up new item (and parent, storage) ID */
+    metadata->item_id = filedata.item_id;
+    metadata->parent_id = filedata.parent_id;
+    metadata->storage_id = filedata.storage_id;
 
-  // Set track metadata for the new fine track
-  subcall_ret = LIBMTP_Update_Track_Metadata(device, metadata);
-  if (subcall_ret != 0) {
-    // Subcall will add error to errorstack
-    // We used to delete the file here, but don't... It might be OK after all.
-    // (void) LIBMTP_Delete_Object(device, metadata->item_id);
-    return -1;
-  }
+    /* Set track metadata for the new fine track */
+    subcall_ret = LIBMTP_Update_Track_Metadata(device, metadata);
+    if (subcall_ret != 0)
+        return -1;
 
-  // note we don't need to update the cache here because LIBMTP_Send_File_From_File_Descriptor
-  // has added the object handle and LIBMTP_Update_Track_Metadata has added the metadata.
-
-  return 0;
+    return 0;
 }
 
 /**
