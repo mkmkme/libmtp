@@ -4829,43 +4829,43 @@ static uint16_t put_func_wrapper(PTPParams* params, void* priv, unsigned long se
  * @see LIBMTP_Get_File_To_File_Descriptor()
  */
 int LIBMTP_Get_File_To_File(LIBMTP_mtpdevice_t *device, uint32_t const id,
-			 char const * const path, LIBMTP_progressfunc_t const callback,
-			 void const * const data)
+            char const * const path, LIBMTP_progressfunc_t const callback,
+            void const * const data)
 {
-  int fd = -1;
-  int ret;
+    int fd = -1;
+    int ret;
 
-  // Sanity check
-  if (path == NULL) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Get_File_To_File(): Bad arguments, path was NULL.");
-    return -1;
-  }
+    /* Sanity check */
+    if (path == NULL) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Get_File_To_File(): Bad arguments, path was NULL.");
+        return -1;
+    }
 
-  // Open file
+    /* Open file */
 #ifdef __WIN32__
 #ifdef USE_WINDOWS_IO_H
-  if ( (fd = _open(path, O_RDWR|O_CREAT|O_TRUNC|O_BINARY,_S_IREAD)) == -1 ) {
+    fd = _open(path, O_RDWR | O_CREAT | O_TRUNC | O_BINARY, _S_IREAD);
 #else
-  if ( (fd = open(path, O_RDWR|O_CREAT|O_TRUNC|O_BINARY,S_IRWXU)) == -1 ) {
+    fd = open(path, O_RDWR|O_CREAT|O_TRUNC|O_BINARY,S_IRWXU);
 #endif
 #else
-  if ( (fd = open(path, O_RDWR|O_CREAT|O_TRUNC,S_IRWXU|S_IRGRP)) == -1) {
+    fd = open(path, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU | S_IRGRP);
 #endif
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Get_File_To_File(): Could not create file.");
-    return -1;
-  }
+    if (fd == -1) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Get_File_To_File(): Could not create file.");
+        return -1;
+    }
 
-  ret = LIBMTP_Get_File_To_File_Descriptor(device, id, fd, callback, data);
+    ret = LIBMTP_Get_File_To_File_Descriptor(device, id, fd, callback, data);
 
-  // Close file
-  close(fd);
+    /* Close file */
+    close(fd);
 
-  // Delete partial file.
-  if (ret == -1) {
-    unlink(path);
-  }
+    /* Delete partial file. */
+    if (ret == -1)
+        unlink(path);
 
-  return ret;
+    return ret;
 }
 
 /**
