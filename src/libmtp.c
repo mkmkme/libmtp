@@ -5196,30 +5196,27 @@ static int check_filename_exists(PTPParams* params, char const * const filename)
  */
 static char *generate_unique_filename(PTPParams* params, char const * const filename)
 {
-  int suffix;
-  char * extension_position;
+    int suffix;
+    char *extension_position;
 
-  if (check_filename_exists(params, filename))
-  {
-    extension_position = strrchr(filename,'.');
+    if (check_filename_exists(params, filename)) {
+        extension_position = strrchr(filename,'.');
 
-    char basename[extension_position - filename + 1];
-    strncpy(basename, filename, extension_position - filename);
-    basename[extension_position - filename] = '\0';
+        char basename[extension_position - filename + 1];
+        strncpy(basename, filename, extension_position - filename);
+        basename[extension_position - filename] = '\0';
 
-    suffix = 1;
-    char newname[ strlen(basename) + 6 + strlen(extension_position)];
-    sprintf(newname, "%s_%d%s", basename, suffix, extension_position);
-    while ((check_filename_exists(params, newname)) && (suffix < 1000000)) {
-      suffix++;
-      sprintf(newname, "%s_%d%s", basename, suffix, extension_position);
+        suffix = 1;
+        char newname[ strlen(basename) + 6 + strlen(extension_position)];
+        sprintf(newname, "%s_%d%s", basename, suffix, extension_position);
+        while ((check_filename_exists(params, newname)) && (suffix < 1000000)) {
+            suffix++;
+            sprintf(newname, "%s_%d%s", basename, suffix, extension_position);
+        }
+        return strdup(newname);
     }
-  return strdup(newname);
-  }
-  else
-  {
-    return strdup(filename);
-  }
+    else
+        return strdup(filename);
 }
 
 /**
