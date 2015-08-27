@@ -4303,81 +4303,80 @@ void LIBMTP_destroy_track_t(LIBMTP_track_t *track)
  */
 static void pick_property_to_track_metadata(LIBMTP_mtpdevice_t *device, MTPProperties *prop, LIBMTP_track_t *track)
 {
-  switch (prop->property) {
-  case PTP_OPC_Name:
-    if (prop->propval.str != NULL)
-      track->title = strdup(prop->propval.str);
-    else
-      track->title = NULL;
-    break;
-  case PTP_OPC_Artist:
-    if (prop->propval.str != NULL)
-      track->artist = strdup(prop->propval.str);
-    else
-      track->artist = NULL;
-    break;
-  case PTP_OPC_Composer:
-    if (prop->propval.str != NULL)
-      track->composer = strdup(prop->propval.str);
-    else
-      track->composer = NULL;
-    break;
-  case PTP_OPC_Duration:
-    track->duration = prop->propval.u32;
-    break;
-  case PTP_OPC_Track:
-    track->tracknumber = prop->propval.u16;
-    break;
-  case PTP_OPC_Genre:
-    if (prop->propval.str != NULL)
-      track->genre = strdup(prop->propval.str);
-    else
-      track->genre = NULL;
-    break;
-  case PTP_OPC_AlbumName:
-    if (prop->propval.str != NULL)
-      track->album = strdup(prop->propval.str);
-    else
-      track->album = NULL;
-    break;
-  case PTP_OPC_OriginalReleaseDate:
-    if (prop->propval.str != NULL)
-      track->date = strdup(prop->propval.str);
-    else
-      track->date = NULL;
-    break;
-    // These are, well not so important.
-  case PTP_OPC_SampleRate:
-    track->samplerate = prop->propval.u32;
-    break;
-  case PTP_OPC_NumberOfChannels:
-    track->nochannels = prop->propval.u16;
-    break;
-  case PTP_OPC_AudioWAVECodec:
-    track->wavecodec = prop->propval.u32;
-    break;
-  case PTP_OPC_AudioBitRate:
-    track->bitrate = prop->propval.u32;
-    break;
-  case PTP_OPC_BitRateType:
-    track->bitratetype = prop->propval.u16;
-    break;
-  case PTP_OPC_Rating:
-    track->rating = prop->propval.u16;
-    break;
-  case PTP_OPC_UseCount:
-    track->usecount = prop->propval.u32;
-    break;
-  case PTP_OPC_ObjectSize:
-    if (device->object_bitsize == 64) {
-      track->filesize = prop->propval.u64;
-    } else {
-      track->filesize = prop->propval.u32;
+    switch (prop->property) {
+    case PTP_OPC_Name:
+        if (prop->propval.str != NULL)
+            track->title = strdup(prop->propval.str);
+        else
+            track->title = NULL;
+        break;
+    case PTP_OPC_Artist:
+        if (prop->propval.str != NULL)
+            track->artist = strdup(prop->propval.str);
+        else
+            track->artist = NULL;
+        break;
+    case PTP_OPC_Composer:
+        if (prop->propval.str != NULL)
+            track->composer = strdup(prop->propval.str);
+        else
+            track->composer = NULL;
+        break;
+    case PTP_OPC_Duration:
+        track->duration = prop->propval.u32;
+        break;
+    case PTP_OPC_Track:
+        track->tracknumber = prop->propval.u16;
+        break;
+    case PTP_OPC_Genre:
+        if (prop->propval.str != NULL)
+            track->genre = strdup(prop->propval.str);
+        else
+            track->genre = NULL;
+        break;
+    case PTP_OPC_AlbumName:
+        if (prop->propval.str != NULL)
+            track->album = strdup(prop->propval.str);
+        else
+            track->album = NULL;
+        break;
+    case PTP_OPC_OriginalReleaseDate:
+        if (prop->propval.str != NULL)
+            track->date = strdup(prop->propval.str);
+        else
+            track->date = NULL;
+        break;
+        /* These are, well not so important. */
+    case PTP_OPC_SampleRate:
+        track->samplerate = prop->propval.u32;
+        break;
+    case PTP_OPC_NumberOfChannels:
+        track->nochannels = prop->propval.u16;
+        break;
+    case PTP_OPC_AudioWAVECodec:
+        track->wavecodec = prop->propval.u32;
+        break;
+    case PTP_OPC_AudioBitRate:
+        track->bitrate = prop->propval.u32;
+        break;
+    case PTP_OPC_BitRateType:
+        track->bitratetype = prop->propval.u16;
+        break;
+    case PTP_OPC_Rating:
+        track->rating = prop->propval.u16;
+        break;
+    case PTP_OPC_UseCount:
+        track->usecount = prop->propval.u32;
+        break;
+    case PTP_OPC_ObjectSize:
+        if (device->object_bitsize == 64)
+            track->filesize = prop->propval.u64;
+        else
+            track->filesize = prop->propval.u32;
+        break;
+    default:
+        break;
     }
-    break;
-  default:
-    break;
-  }
 }
 
 /**
