@@ -5346,7 +5346,8 @@ int LIBMTP_Send_Track_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_Track_From_Handler(LIBMTP_mtpdevice_t *device,
-                    MTPDataGetFunc get_func, void * priv, LIBMTP_track_t * const metadata,
+                    MTPDataGetFunc get_func, void * priv,
+                    LIBMTP_track_t * const metadata,
                     LIBMTP_progressfunc_t const callback,
                     void const * const data)
 {
@@ -5426,32 +5427,34 @@ int LIBMTP_Send_Track_From_Handler(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_File_From_File(LIBMTP_mtpdevice_t *device,
-			       char const * const path, LIBMTP_file_t * const filedata,
-			       LIBMTP_progressfunc_t const callback,
-			       void const * const data)
+                    char const * const path,
+                    LIBMTP_file_t * const filedata,
+                    LIBMTP_progressfunc_t const callback,
+                    void const * const data)
 {
-  int fd;
-  int ret;
+    int fd;
+    int ret;
 
-  // Sanity check
-  if (path == NULL) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Send_File_From_File(): Bad arguments, path was NULL.");
-    return -1;
-  }
+    /* Sanity check */
+    if (path == NULL) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Send_File_From_File(): Bad arguments, path was NULL.");
+        return -1;
+    }
 
-  // Open file
+    /* Open file */
 #ifdef __WIN32__
 #ifdef USE_WINDOWS_IO_H
-  if ( (fd = _open(path, O_RDONLY|O_BINARY)) == -1 ) {
+    fd = _open(path, O_RDONLY|O_BINARY));
 #else
-  if ( (fd = open(path, O_RDONLY|O_BINARY)) == -1 ) {
+    fd = open(path, O_RDONLY|O_BINARY);
 #endif
 #else
-  if ( (fd = open(path, O_RDONLY)) == -1) {
+    fd = open(path, O_RDONLY);
 #endif
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Send_File_From_File(): Could not open source file.");
-    return -1;
-  }
+    if (fd == -1) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Send_File_From_File(): Could not open source file.");
+        return -1;
+    }
 
   ret = LIBMTP_Send_File_From_File_Descriptor(device, fd, filedata, callback, data);
 
