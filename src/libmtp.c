@@ -5707,276 +5707,265 @@ int LIBMTP_Send_File_From_Handler(LIBMTP_mtpdevice_t *device,
  */
 static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *filedata)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  uint32_t store;
-  int use_primary_storage = 1;
-  uint16_t of = map_libmtp_type_to_ptp_type(filedata->filetype);
-  LIBMTP_devicestorage_t *storage;
-  uint32_t localph = filedata->parent_id;
-  uint16_t ret;
-  int i;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    uint32_t store;
+    int use_primary_storage = 1;
+    uint16_t of = map_libmtp_type_to_ptp_type(filedata->filetype);
+    LIBMTP_devicestorage_t *storage;
+    uint32_t localph = filedata->parent_id;
+    uint16_t ret;
+    int i;
 
 #if 0
-  // Sanity check: no zerolength files on some devices?
-  // If the zerolength files cause problems on some devices,
-  // then add a bug flag for this.
-  if (filedata->filesize == 0) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "send_file_object_info(): "
-			    "File of zero size.");
-    return -1;
-  }
+    /* Sanity check: no zerolength files on some devices?
+     * If the zerolength files cause problems on some devices,
+     * then add a bug flag for this. */
+    if (filedata->filesize == 0) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, 
+            "send_file_object_info(): File of zero size.");
+        return -1;
+    }
 #endif
-  if (filedata->storage_id != 0) {
-    store = filedata->storage_id;
-  } else {
-    store = get_suggested_storage_id(device, filedata->filesize, localph);
-  }
+    if (filedata->storage_id != 0)
+        store = filedata->storage_id;
+    else
+        store = get_suggested_storage_id(device, filedata->filesize, localph);
 
-  // Detect if something non-primary is in use.
-  storage = device->storage;
-  if (storage != NULL && store != storage->id) {
-    use_primary_storage = 0;
-  }
+    /* Detect if something non-primary is in use. */
+    storage = device->storage;
+    if (storage != NULL && store != storage->id)
+        use_primary_storage = 0;
 
-  /*
-   * If no destination folder was given, look up a default
-   * folder if possible. Perhaps there is some way of retrieveing
-   * the default folder for different forms of content, what
-   * do I know, we use a fixed list in lack of any better method.
-   * Some devices obviously need to have their files in certain
-   * folders in order to find/display them at all (hello Creative),
-   * so we have to have a method for this. We only do this if the
-   * primary storage is in use.
-   */
-
-  if (localph == 0 && use_primary_storage) {
-    if (LIBMTP_FILETYPE_IS_AUDIO(filedata->filetype)) {
-      localph = device->default_music_folder;
-    } else if (LIBMTP_FILETYPE_IS_VIDEO(filedata->filetype)) {
-      localph = device->default_video_folder;
-    } else if (of == PTP_OFC_EXIF_JPEG ||
-	       of == PTP_OFC_JP2 ||
-	       of == PTP_OFC_JPX ||
-	       of == PTP_OFC_JFIF ||
-	       of == PTP_OFC_TIFF ||
-	       of == PTP_OFC_TIFF_IT ||
-	       of == PTP_OFC_BMP ||
-	       of == PTP_OFC_GIF ||
-	       of == PTP_OFC_PICT ||
-	       of == PTP_OFC_PNG ||
-	       of == PTP_OFC_MTP_WindowsImageFormat) {
-      localph = device->default_picture_folder;
-    } else if (of == PTP_OFC_MTP_vCalendar1 ||
-	       of == PTP_OFC_MTP_vCalendar2 ||
-	       of == PTP_OFC_MTP_UndefinedContact ||
-	       of == PTP_OFC_MTP_vCard2 ||
-	       of == PTP_OFC_MTP_vCard3 ||
-	       of == PTP_OFC_MTP_UndefinedCalendarItem) {
-      localph = device->default_organizer_folder;
-    } else if (of == PTP_OFC_Text) {
-      localph = device->default_text_folder;
-    }
-  }
-
-  // Here we wire the type to unknown on bugged, but
-  // Ogg or FLAC-supportive devices.
-  if (FLAG_OGG_IS_UNKNOWN(ptp_usb) && of == PTP_OFC_MTP_OGG) {
-    of = PTP_OFC_Undefined;
-  }
-  if (FLAG_FLAC_IS_UNKNOWN(ptp_usb) && of == PTP_OFC_MTP_FLAC) {
-    of = PTP_OFC_Undefined;
-  }
-
-  if (ptp_operation_issupported(params, PTP_OC_MTP_SendObjectPropList) &&
-      !FLAG_BROKEN_SEND_OBJECT_PROPLIST(ptp_usb)) {
     /*
-     * MTP enhanched does it this way (from a sniff):
-     * -> PTP_OC_MTP_SendObjectPropList (0x9808):
-     *    20 00 00 00 01 00 08 98 1B 00 00 00 01 00 01 00
-     *    FF FF FF FF 00 30 00 00 00 00 00 00 12 5E 00 00
-     *    Length: 0x00000020
-     *    Type:   0x0001 PTP_USB_CONTAINER_COMMAND
-     *    Code:   0x9808
-     *    Transaction ID: 0x0000001B
-     *    Param1: 0x00010001 <- store
-     *    Param2: 0xffffffff <- parent handle (-1 ?)
-     *    Param3: 0x00003000 <- file type PTP_OFC_Undefined - we don't know about PDF files
-     *    Param4: 0x00000000 <- file length MSB (-0x0c header len)
-     *    Param5: 0x00005e12 <- file length LSB (-0x0c header len)
-     *
-     * -> PTP_OC_MTP_SendObjectPropList (0x9808):
-     *    46 00 00 00 02 00 08 98 1B 00 00 00 03 00 00 00
-     *    00 00 00 00 07 DC FF FF 0D 4B 00 53 00 30 00 36 - dc07 = file name
-     *    00 30 00 33 00 30 00 36 00 2E 00 70 00 64 00 66
-     *    00 00 00 00 00 00 00 03 DC 04 00 00 00 00 00 00 - dc03 = protection status
-     *    00 4F DC 02 00 01                               - dc4f = non consumable
-     *    Length: 0x00000046
-     *    Type:   0x0002 PTP_USB_CONTAINER_DATA
-     *    Code:   0x9808
-     *    Transaction ID: 0x0000001B
-     *    Metadata....
-     *    0x00000003 <- Number of metadata items
-     *    0x00000000 <- Object handle, set to 0x00000000 since it is unknown!
-     *    0xdc07     <- metadata type: file name
-     *    0xffff     <- metadata type: string
-     *    0x0d       <- number of (uint16_t) characters
-     *    4b 53 30 36 30 33 30 36 2e 50 64 66 00 "KS060306.pdf", null terminated
-     *    0x00000000 <- Object handle, set to 0x00000000 since it is unknown!
-     *    0xdc03     <- metadata type: protection status
-     *    0x0004     <- metadata type: uint16_t
-     *    0x0000     <- not protected
-     *    0x00000000 <- Object handle, set to 0x00000000 since it is unknown!
-     *    0xdc4f     <- non consumable
-     *    0x0002     <- metadata type: uint8_t
-     *    0x01       <- non-consumable (this device cannot display PDF)
-     *
-     * <- Read 0x18 bytes back
-     *    18 00 00 00 03 00 01 20 1B 00 00 00 01 00 01 00
-     *    00 00 00 00 01 40 00 00
-     *    Length: 0x000000018
-     *    Type:   0x0003 PTP_USB_CONTAINER_RESPONSE
-     *    Code:   0x2001 PTP_OK
-     *    Transaction ID: 0x0000001B
-     *    Param1: 0x00010001 <- store
-     *    Param2: 0x00000000 <- parent handle
-     *    Param3: 0x00004001 <- new file/object ID
-     *
-     * -> PTP_OC_SendObject (0x100d)
-     *    0C 00 00 00 01 00 0D 10 1C 00 00 00
-     * -> ... all the bytes ...
-     * <- Read 0x0c bytes back
-     *    0C 00 00 00 03 00 01 20 1C 00 00 00
-     *    ... Then update metadata one-by one, actually (instead of sending it first!) ...
+     * If no destination folder was given, look up a default
+     * folder if possible. Perhaps there is some way of retrieveing
+     * the default folder for different forms of content, what
+     * do I know, we use a fixed list in lack of any better method.
+     * Some devices obviously need to have their files in certain
+     * folders in order to find/display them at all (hello Creative),
+     * so we have to have a method for this. We only do this if the
+     * primary storage is in use.
      */
-    MTPProperties *props = NULL;
-    int nrofprops = 0;
-    MTPProperties *prop = NULL;
-    uint16_t *properties = NULL;
-    uint32_t propcnt = 0;
 
-    // default parent handle
-    if (localph == 0)
-      localph = 0xFFFFFFFFU; // Set to -1
-
-    // Must be 0x00000000U for new objects
-    filedata->item_id = 0x00000000U;
-
-    ret = ptp_mtp_getobjectpropssupported(params, of, &propcnt, &properties);
-
-    for (i=0;i<propcnt;i++) {
-      PTPObjectPropDesc opd;
-
-      ret = ptp_mtp_getobjectpropdesc(params, properties[i], of, &opd);
-      if (ret != PTP_RC_OK) {
-	add_ptp_error_to_errorstack(device, ret, "send_file_object_info(): "
-				"could not get property description.");
-      } else if (opd.GetSet) {
-	switch (properties[i]) {
-	case PTP_OPC_ObjectFileName:
-	  prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	  prop->ObjectHandle = filedata->item_id;
-	  prop->property = PTP_OPC_ObjectFileName;
-	  prop->datatype = PTP_DTC_STR;
-	  if (filedata->filename != NULL) {
-	    prop->propval.str = strdup(filedata->filename);
-	    if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb)) {
-	      strip_7bit_from_utf8(prop->propval.str);
-	    }
-	  }
-	  break;
-	case PTP_OPC_ProtectionStatus:
-	  prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	  prop->ObjectHandle = filedata->item_id;
-	  prop->property = PTP_OPC_ProtectionStatus;
-	  prop->datatype = PTP_DTC_UINT16;
-	  prop->propval.u16 = 0x0000U; /* Not protected */
-	  break;
-	case PTP_OPC_NonConsumable:
-	  prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	  prop->ObjectHandle = filedata->item_id;
-	  prop->property = PTP_OPC_NonConsumable;
-	  prop->datatype = PTP_DTC_UINT8;
-	  prop->propval.u8 = 0x00; /* It is supported, then it is consumable */
-	  break;
-	case PTP_OPC_Name:
-	  prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	  prop->ObjectHandle = filedata->item_id;
-	  prop->property = PTP_OPC_Name;
-	  prop->datatype = PTP_DTC_STR;
-	  if (filedata->filename != NULL)
-	    prop->propval.str = strdup(filedata->filename);
-	  break;
-	case PTP_OPC_DateModified:
-	  // Tag with current time if that is supported
-	  if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
-	    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	    prop->ObjectHandle = filedata->item_id;
-	    prop->property = PTP_OPC_DateModified;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = get_iso8601_stamp();
-	    filedata->modificationdate = time(NULL);
-	  }
-	  break;
-	}
-      }
-      ptp_free_objectpropdesc(&opd);
+    if (localph == 0 && use_primary_storage) {
+        if (LIBMTP_FILETYPE_IS_AUDIO(filedata->filetype))
+            localph = device->default_music_folder;
+        else if (LIBMTP_FILETYPE_IS_VIDEO(filedata->filetype))
+            localph = device->default_video_folder;
+        else if (of == PTP_OFC_EXIF_JPEG ||
+                of == PTP_OFC_JP2 ||
+                of == PTP_OFC_JPX ||
+                of == PTP_OFC_JFIF ||
+                of == PTP_OFC_TIFF ||
+                of == PTP_OFC_TIFF_IT ||
+                of == PTP_OFC_BMP ||
+                of == PTP_OFC_GIF ||
+                of == PTP_OFC_PICT ||
+                of == PTP_OFC_PNG ||
+                of == PTP_OFC_MTP_WindowsImageFormat)
+            localph = device->default_picture_folder;
+        else if (of == PTP_OFC_MTP_vCalendar1 ||
+                of == PTP_OFC_MTP_vCalendar2 ||
+                of == PTP_OFC_MTP_UndefinedContact ||
+                of == PTP_OFC_MTP_vCard2 ||
+                of == PTP_OFC_MTP_vCard3 ||
+                of == PTP_OFC_MTP_UndefinedCalendarItem)
+            localph = device->default_organizer_folder;
+        else if (of == PTP_OFC_Text)
+            localph = device->default_text_folder;
     }
-    free(properties);
 
-    ret = ptp_mtp_sendobjectproplist(params, &store, &localph, &filedata->item_id,
-				     of, filedata->filesize, props, nrofprops);
+    /* Here we wire the type to unknown on bugged, but
+     * Ogg or FLAC-supportive devices. */
+    if ((FLAG_OGG_IS_UNKNOWN(ptp_usb) && of == PTP_OFC_MTP_OGG) ||
+        (FLAG_FLAC_IS_UNKNOWN(ptp_usb) && of == PTP_OFC_MTP_FLAC))
+        of = PTP_OFC_Undefined;
 
-    /* Free property list */
-    ptp_destroy_object_prop_list(props, nrofprops);
+    if (ptp_operation_issupported(params, PTP_OC_MTP_SendObjectPropList) &&
+        !FLAG_BROKEN_SEND_OBJECT_PROPLIST(ptp_usb)) {
+        /*
+         * MTP enhanched does it this way (from a sniff):
+         * -> PTP_OC_MTP_SendObjectPropList (0x9808):
+         *    20 00 00 00 01 00 08 98 1B 00 00 00 01 00 01 00
+         *    FF FF FF FF 00 30 00 00 00 00 00 00 12 5E 00 00
+         *    Length: 0x00000020
+         *    Type:   0x0001 PTP_USB_CONTAINER_COMMAND
+         *    Code:   0x9808
+         *    Transaction ID: 0x0000001B
+         *    Param1: 0x00010001 <- store
+         *    Param2: 0xffffffff <- parent handle (-1 ?)
+         *    Param3: 0x00003000 <- file type PTP_OFC_Undefined - we don't know about PDF files
+         *    Param4: 0x00000000 <- file length MSB (-0x0c header len)
+         *    Param5: 0x00005e12 <- file length LSB (-0x0c header len)
+         *
+         * -> PTP_OC_MTP_SendObjectPropList (0x9808):
+         *    46 00 00 00 02 00 08 98 1B 00 00 00 03 00 00 00
+         *    00 00 00 00 07 DC FF FF 0D 4B 00 53 00 30 00 36 - dc07 = file name
+         *    00 30 00 33 00 30 00 36 00 2E 00 70 00 64 00 66
+         *    00 00 00 00 00 00 00 03 DC 04 00 00 00 00 00 00 - dc03 = protection status
+         *    00 4F DC 02 00 01                               - dc4f = non consumable
+         *    Length: 0x00000046
+         *    Type:   0x0002 PTP_USB_CONTAINER_DATA
+         *    Code:   0x9808
+         *    Transaction ID: 0x0000001B
+         *    Metadata....
+         *    0x00000003 <- Number of metadata items
+         *    0x00000000 <- Object handle, set to 0x00000000 since it is unknown!
+         *    0xdc07     <- metadata type: file name
+         *    0xffff     <- metadata type: string
+         *    0x0d       <- number of (uint16_t) characters
+         *    4b 53 30 36 30 33 30 36 2e 50 64 66 00 "KS060306.pdf", null terminated
+         *    0x00000000 <- Object handle, set to 0x00000000 since it is unknown!
+         *    0xdc03     <- metadata type: protection status
+         *    0x0004     <- metadata type: uint16_t
+         *    0x0000     <- not protected
+         *    0x00000000 <- Object handle, set to 0x00000000 since it is unknown!
+         *    0xdc4f     <- non consumable
+         *    0x0002     <- metadata type: uint8_t
+         *    0x01       <- non-consumable (this device cannot display PDF)
+         *
+         * <- Read 0x18 bytes back
+         *    18 00 00 00 03 00 01 20 1B 00 00 00 01 00 01 00
+         *    00 00 00 00 01 40 00 00
+         *    Length: 0x000000018
+         *    Type:   0x0003 PTP_USB_CONTAINER_RESPONSE
+         *    Code:   0x2001 PTP_OK
+         *    Transaction ID: 0x0000001B
+         *    Param1: 0x00010001 <- store
+         *    Param2: 0x00000000 <- parent handle
+         *    Param3: 0x00004001 <- new file/object ID
+         *
+         * -> PTP_OC_SendObject (0x100d)
+         *    0C 00 00 00 01 00 0D 10 1C 00 00 00
+         * -> ... all the bytes ...
+         * <- Read 0x0c bytes back
+         *    0C 00 00 00 03 00 01 20 1C 00 00 00
+         *    ... Then update metadata one-by one, actually (instead of sending it first!) ...
+         */
+        MTPProperties *props = NULL;
+        int nrofprops = 0;
+        MTPProperties *prop = NULL;
+        uint16_t *properties = NULL;
+        uint32_t propcnt = 0;
 
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "send_file_object_info():"
-				  "Could not send object property list.");
-      if (ret == PTP_RC_AccessDenied) {
-	add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
-      }
-      return -1;
+        /* Default parent handle */
+        if (localph == 0)
+            localph = 0xFFFFFFFFU; /* Set to -1 */
+
+        /* Must be 0x00000000U for new objects */
+        filedata->item_id = 0x00000000U;
+
+        ret = ptp_mtp_getobjectpropssupported(params, of, &propcnt, &properties);
+
+        for (i = 0; i < propcnt; i++) {
+            PTPObjectPropDesc opd;
+
+            ret = ptp_mtp_getobjectpropdesc(params, properties[i], of, &opd);
+            if (ret != PTP_RC_OK)
+                add_ptp_error_to_errorstack(device, ret,
+                    "send_file_object_info(): could not get property description.");
+            else if (opd.GetSet) {
+                switch (properties[i]) {
+                case PTP_OPC_ObjectFileName:
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = filedata->item_id;
+                    prop->property = PTP_OPC_ObjectFileName;
+                    prop->datatype = PTP_DTC_STR;
+                    if (filedata->filename != NULL) {
+                        prop->propval.str = strdup(filedata->filename);
+                        if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb))
+                            strip_7bit_from_utf8(prop->propval.str);
+                    }
+                    break;
+                case PTP_OPC_ProtectionStatus:
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = filedata->item_id;
+                    prop->property = PTP_OPC_ProtectionStatus;
+                    prop->datatype = PTP_DTC_UINT16;
+                    prop->propval.u16 = 0x0000U; /* Not protected */
+                    break;
+                case PTP_OPC_NonConsumable:
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = filedata->item_id;
+                    prop->property = PTP_OPC_NonConsumable;
+                    prop->datatype = PTP_DTC_UINT8;
+                    prop->propval.u8 = 0x00; /* It is supported, then it is consumable */
+                    break;
+                case PTP_OPC_Name:
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = filedata->item_id;
+                    prop->property = PTP_OPC_Name;
+                    prop->datatype = PTP_DTC_STR;
+                    if (filedata->filename != NULL)
+                        prop->propval.str = strdup(filedata->filename);
+                    break;
+                case PTP_OPC_DateModified:
+                    /* Tag with current time if that is supported */
+                    if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
+                        prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                        prop->ObjectHandle = filedata->item_id;
+                        prop->property = PTP_OPC_DateModified;
+                        prop->datatype = PTP_DTC_STR;
+                        prop->propval.str = get_iso8601_stamp();
+                        filedata->modificationdate = time(NULL);
+                    }
+                    break;
+                }
+            }
+            ptp_free_objectpropdesc(&opd);
+        }
+        free(properties);
+
+        ret = ptp_mtp_sendobjectproplist(params, &store, &localph, &filedata->item_id,
+            of, filedata->filesize, props, nrofprops);
+
+        /* Free property list */
+        ptp_destroy_object_prop_list(props, nrofprops);
+
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret,
+                "send_file_object_info(): Could not send object property list.");
+            if (ret == PTP_RC_AccessDenied)
+                add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
+            return -1;
+        }
+    } else if (ptp_operation_issupported(params,PTP_OC_SendObjectInfo)) {
+        PTPObjectInfo new_file;
+
+        memset(&new_file, 0, sizeof(PTPObjectInfo));
+
+        new_file.Filename = filedata->filename;
+        if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb))
+            strip_7bit_from_utf8(new_file.Filename);
+        if (filedata->filesize > 0xFFFFFFFFL)
+            /* This is a kludge in the MTP standard for large files. */
+            new_file.ObjectCompressedSize = (uint32_t) 0xFFFFFFFF;
+        else
+            new_file.ObjectCompressedSize = (uint32_t) filedata->filesize;
+        new_file.ObjectFormat = of;
+        new_file.StorageID = store;
+        new_file.ParentObject = localph;
+        new_file.ModificationDate = time(NULL);
+
+        /* Create the object */
+        ret = ptp_sendobjectinfo(params, &store, &localph, &filedata->item_id, &new_file);
+
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret,
+                "send_file_object_info(): Could not send object info.");
+            if (ret == PTP_RC_AccessDenied)
+                add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
+            return -1;
+        }
+        /* NOTE: the char* pointers inside new_file are not copies so don't
+         * try to destroy this objectinfo! */
     }
-  } else if (ptp_operation_issupported(params,PTP_OC_SendObjectInfo)) {
-    PTPObjectInfo new_file;
 
-    memset(&new_file, 0, sizeof(PTPObjectInfo));
+    /* Now there IS an object with this parent handle. */
+    filedata->parent_id = localph;
 
-    new_file.Filename = filedata->filename;
-    if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb)) {
-      strip_7bit_from_utf8(new_file.Filename);
-    }
-    if (filedata->filesize > 0xFFFFFFFFL) {
-      // This is a kludge in the MTP standard for large files.
-      new_file.ObjectCompressedSize = (uint32_t) 0xFFFFFFFF;
-    } else {
-      new_file.ObjectCompressedSize = (uint32_t) filedata->filesize;
-    }
-    new_file.ObjectFormat = of;
-    new_file.StorageID = store;
-    new_file.ParentObject = localph;
-    new_file.ModificationDate = time(NULL);
-
-    // Create the object
-    ret = ptp_sendobjectinfo(params, &store, &localph, &filedata->item_id, &new_file);
-
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "send_file_object_info(): "
-				  "Could not send object info.");
-      if (ret == PTP_RC_AccessDenied) {
-	add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
-      }
-      return -1;
-    }
-    // NOTE: the char* pointers inside new_file are not copies so don't
-    // try to destroy this objectinfo!
-  }
-
-  // Now there IS an object with this parent handle.
-  filedata->parent_id = localph;
-
-  return 0;
+    return 0;
 }
 
 /**
