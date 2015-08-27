@@ -4773,22 +4773,21 @@ LIBMTP_track_t *LIBMTP_Get_Trackmetadata(LIBMTP_mtpdevice_t *device, uint32_t co
  */
 static uint16_t get_func_wrapper(PTPParams* params, void* priv, unsigned long wantlen, unsigned char *data, unsigned long *gotlen)
 {
-  MTPDataHandler *handler = (MTPDataHandler *)priv;
-  uint16_t ret;
-  uint32_t local_gotlen = 0;
-  ret = handler->getfunc(params, handler->priv, wantlen, data, &local_gotlen);
-  *gotlen = local_gotlen;
-  switch (ret)
-  {
+    MTPDataHandler *handler = (MTPDataHandler *)priv;
+    uint16_t ret;
+    uint32_t local_gotlen = 0;
+    ret = handler->getfunc(params, handler->priv, wantlen, data, &local_gotlen);
+    *gotlen = local_gotlen;
+    switch (ret) {
     case LIBMTP_HANDLER_RETURN_OK:
-      return PTP_RC_OK;
+        return PTP_RC_OK;
     case LIBMTP_HANDLER_RETURN_ERROR:
-      return PTP_ERROR_IO;
+        return PTP_ERROR_IO;
     case LIBMTP_HANDLER_RETURN_CANCEL:
-      return PTP_ERROR_CANCEL;
+        return PTP_ERROR_CANCEL;
     default:
-      return PTP_ERROR_IO;
-  }
+        return PTP_ERROR_IO;
+    }
 }
 
 /**
