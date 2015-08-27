@@ -4584,104 +4584,99 @@ LIBMTP_track_t *LIBMTP_Get_Tracklisting_With_Callback_For_Storage(LIBMTP_mtpdevi
                                                       LIBMTP_progressfunc_t const callback,
                                                       void const * const data)
 {
-  uint32_t i = 0;
-  LIBMTP_track_t *retracks = NULL;
-  LIBMTP_track_t *curtrack = NULL;
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    uint32_t i = 0;
+    LIBMTP_track_t *retracks = NULL;
+    LIBMTP_track_t *curtrack = NULL;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
 
-  // Get all the handles if we haven't already done that
-  if (params->nrofobjects == 0) {
-    flush_handles(device);
-  }
+    /* Get all the handles if we haven't already done that */
+    if (params->nrofobjects == 0)
+        flush_handles(device);
 
-  for (i = 0; i < params->nrofobjects; i++) {
-    LIBMTP_track_t *track;
-    PTPObject *ob;
-    LIBMTP_filetype_t mtptype;
+    for (i = 0; i < params->nrofobjects; i++) {
+        LIBMTP_track_t *track;
+        PTPObject *ob;
+        LIBMTP_filetype_t mtptype;
 
-    if (callback != NULL)
-      callback(i, params->nrofobjects, data);
+        if (callback != NULL)
+            callback(i, params->nrofobjects, data);
 
-    ob = &params->objects[i];
-    mtptype = map_ptp_type_to_libmtp_type(ob->oi.ObjectFormat);
+        ob = &params->objects[i];
+        mtptype = map_ptp_type_to_libmtp_type(ob->oi.ObjectFormat);
 
-    // Ignore stuff we don't know how to handle...
-    // TODO: get this list as an intersection of the sets
-    // supported by the device and the from the device and
-    // all known track files?
-    if (!LIBMTP_FILETYPE_IS_TRACK(mtptype) &&
-	// This row lets through undefined files for examination since they may be forgotten OGG files.
-	(ob->oi.ObjectFormat != PTP_OFC_Undefined ||
-	 (!FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) &&
-	  !FLAG_OGG_IS_UNKNOWN(ptp_usb) &&
-	  !FLAG_FLAC_IS_UNKNOWN(ptp_usb)))
-	) {
-      //printf("Not a music track (name: %s format: %d), skipping...\n", oi->Filename, oi->ObjectFormat);
-      continue;
-    }
+        /* Ignore stuff we don't know how to handle...
+         * TODO: get this list as an intersection of the sets
+         * supported by the device and the from the device and
+         * all known track files? */
+        if (!LIBMTP_FILETYPE_IS_TRACK(mtptype) &&
+            /* This row lets through undefined files for examination since they may be forgotten OGG files. */
+            (ob->oi.ObjectFormat != PTP_OFC_Undefined ||
+            (!FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) &&
+            !FLAG_OGG_IS_UNKNOWN(ptp_usb) &&
+            !FLAG_FLAC_IS_UNKNOWN(ptp_usb))))
+            continue;
 
-	// Ignore stuff that isn't into the storage device
-	if ((storage_id != 0) && (ob->oi.StorageID != storage_id ))
-		continue;
+        /* Ignore stuff that isn't into the storage device */
+        if ((storage_id != 0) && (ob->oi.StorageID != storage_id ))
+            continue;
 
-    // Allocate a new track type
-    track = LIBMTP_new_track_t();
+        /* Allocate a new track type */
+        track = LIBMTP_new_track_t();
 
-    // This is some sort of unique ID so we can keep track of the track.
-    track->item_id = ob->oid;
-    track->parent_id = ob->oi.ParentObject;
-    track->storage_id = ob->oi.StorageID;
-    track->modificationdate = ob->oi.ModificationDate;
+        /* This is some sort of unique ID so we can keep track of the track. */
+        track->item_id = ob->oid;
+        track->parent_id = ob->oi.ParentObject;
+        track->storage_id = ob->oi.StorageID;
+        track->modificationdate = ob->oi.ModificationDate;
 
-    track->filetype = mtptype;
+        track->filetype = mtptype;
 
-    // Original file-specific properties
-    track->filesize = ob->oi.ObjectCompressedSize;
-    if (ob->oi.Filename != NULL) {
-      track->filename = strdup(ob->oi.Filename);
-    }
+        /* Original file-specific properties */
+        track->filesize = ob->oi.ObjectCompressedSize;
+        if (ob->oi.Filename != NULL)
+            track->filename = strdup(ob->oi.Filename);
 
-    get_track_metadata(device, ob->oi.ObjectFormat, track);
+        get_track_metadata(device, ob->oi.ObjectFormat, track);
 
-    /*
-     * A special quirk for iriver devices that doesn't quite
-     * remember that some files marked as "unknown" type are
-     * actually OGG or FLAC files. We look at the filename extension
-     * and see if it happens that this was atleast named "ogg" or "flac"
-     * and fall back on this heuristic approach in that case,
-     * for these bugged devices only.
-     */
-    if (track->filetype == LIBMTP_FILETYPE_UNKNOWN &&
-	track->filename != NULL) {
-      if ((FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) ||
-	   FLAG_OGG_IS_UNKNOWN(ptp_usb)) &&
-	  has_ogg_extension(track->filename))
-	track->filetype = LIBMTP_FILETYPE_OGG;
-      else if (FLAG_FLAC_IS_UNKNOWN(ptp_usb) &&
-	       has_flac_extension(track->filename))
-	track->filetype = LIBMTP_FILETYPE_FLAC;
-      else {
-	// This was not an OGG/FLAC file so discard it and continue
-	LIBMTP_destroy_track_t(track);
-	continue;
-      }
-    }
+        /*
+         * A special quirk for iriver devices that doesn't quite
+         * remember that some files marked as "unknown" type are
+         * actually OGG or FLAC files. We look at the filename extension
+         * and see if it happens that this was atleast named "ogg" or "flac"
+         * and fall back on this heuristic approach in that case,
+         * for these bugged devices only.
+         */
+        if (track->filetype == LIBMTP_FILETYPE_UNKNOWN &&
+            track->filename != NULL) {
+            if ((FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) ||
+                FLAG_OGG_IS_UNKNOWN(ptp_usb)) &&
+                has_ogg_extension(track->filename))
+                track->filetype = LIBMTP_FILETYPE_OGG;
+            else if (FLAG_FLAC_IS_UNKNOWN(ptp_usb) &&
+                    has_flac_extension(track->filename))
+                track->filetype = LIBMTP_FILETYPE_FLAC;
+            else {
+                /* This was not an OGG/FLAC file so discard it and continue */
+                LIBMTP_destroy_track_t(track);
+                continue;
+            }
+        }
 
-    // Add track to a list that will be returned afterwards.
-    if (retracks == NULL) {
-      retracks = track;
-      curtrack = track;
-    } else {
-      curtrack->next = track;
-      curtrack = track;
-    }
+        /* Add track to a list that will be returned afterwards. */
+        if (retracks == NULL) {
+            retracks = track;
+            curtrack = track;
+        } else {
+            curtrack->next = track;
+            curtrack = track;
+        }
 
-    // Call listing callback
-    // double progressPercent = (double)i*(double)100.0 / (double)params->handles.n;
+        /* Call listing callback
+         * double progressPercent = (double)i*(double)100.0 / (double)params->handles.n; */
 
-  } // Handle counting loop
-  return retracks;
+    } /* Handle counting loop */
+    return retracks;
 }
 
 /**
