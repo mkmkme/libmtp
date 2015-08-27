@@ -4953,61 +4953,61 @@ int LIBMTP_Get_File_To_File_Descriptor(LIBMTP_mtpdevice_t *device,
  *           failure.
  */
 int LIBMTP_Get_File_To_Handler(LIBMTP_mtpdevice_t *device,
-					uint32_t const id,
-					MTPDataPutFunc put_func,
-          void * priv,
-					LIBMTP_progressfunc_t const callback,
-					void const * const data)
+                    uint32_t const id,
+                    MTPDataPutFunc put_func,
+                    void * priv,
+                    LIBMTP_progressfunc_t const callback,
+                    void const * const data)
 {
-  PTPObject *ob;
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    PTPObject *ob;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
 
-  ret = ptp_object_want (params, id, PTPOBJECT_OBJECTINFO_LOADED, &ob);
-  if (ret != PTP_RC_OK) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Get_File_To_File_Descriptor(): Could not get object info.");
-    return -1;
-  }
-  if (ob->oi.ObjectFormat == PTP_OFC_Association) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Get_File_To_File_Descriptor(): Bad object format.");
-    return -1;
-  }
+    ret = ptp_object_want (params, id, PTPOBJECT_OBJECTINFO_LOADED, &ob);
+    if (ret != PTP_RC_OK) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Get_File_To_File_Descriptor(): Could not get object info.");
+        return -1;
+    }
+    if (ob->oi.ObjectFormat == PTP_OFC_Association) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Get_File_To_File_Descriptor(): Bad object format.");
+        return -1;
+    }
 
-  // Callbacks
-  ptp_usb->callback_active = 1;
-  ptp_usb->current_transfer_total = ob->oi.ObjectCompressedSize+
-    PTP_USB_BULK_HDR_LEN+sizeof(uint32_t); // Request length, one parameter
-  ptp_usb->current_transfer_complete = 0;
-  ptp_usb->current_transfer_callback = callback;
-  ptp_usb->current_transfer_callback_data = data;
+    /* Callbacks */
+    ptp_usb->callback_active = 1;
+    /* Request length, one parameter */
+    ptp_usb->current_transfer_total = ob->oi.ObjectCompressedSize + PTP_USB_BULK_HDR_LEN + sizeof(uint32_t);
+    ptp_usb->current_transfer_complete = 0;
+    ptp_usb->current_transfer_callback = callback;
+    ptp_usb->current_transfer_callback_data = data;
 
-  MTPDataHandler mtp_handler;
-  mtp_handler.getfunc = NULL;
-  mtp_handler.putfunc = put_func;
-  mtp_handler.priv = priv;
+    MTPDataHandler mtp_handler;
+    mtp_handler.getfunc = NULL;
+    mtp_handler.putfunc = put_func;
+    mtp_handler.priv = priv;
 
-  PTPDataHandler handler;
-  handler.getfunc = NULL;
-  handler.putfunc = put_func_wrapper;
-  handler.priv = &mtp_handler;
+    PTPDataHandler handler;
+    handler.getfunc = NULL;
+    handler.putfunc = put_func_wrapper;
+    handler.priv = &mtp_handler;
 
-  ret = ptp_getobject_to_handler(params, id, &handler);
+    ret = ptp_getobject_to_handler(params, id, &handler);
 
-  ptp_usb->callback_active = 0;
-  ptp_usb->current_transfer_callback = NULL;
-  ptp_usb->current_transfer_callback_data = NULL;
+    ptp_usb->callback_active = 0;
+    ptp_usb->current_transfer_callback = NULL;
+    ptp_usb->current_transfer_callback_data = NULL;
 
-  if (ret == PTP_ERROR_CANCEL) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_CANCELLED, "LIBMTP_Get_File_From_File_Descriptor(): Cancelled transfer.");
-    return -1;
-  }
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_File_To_File_Descriptor(): Could not get file from device.");
-    return -1;
-  }
+    if (ret == PTP_ERROR_CANCEL) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_CANCELLED, "LIBMTP_Get_File_From_File_Descriptor(): Cancelled transfer.");
+        return -1;
+    }
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_File_To_File_Descriptor(): Could not get file from device.");
+        return -1;
+    }
 
-  return 0;
+    return 0;
 }
 
 
