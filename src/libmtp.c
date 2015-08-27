@@ -4388,93 +4388,92 @@ static void pick_property_to_track_metadata(LIBMTP_mtpdevice_t *device, MTPPrope
  * @param track a metadata set to fill in.
  */
 static void get_track_metadata(LIBMTP_mtpdevice_t *device, uint16_t objectformat,
-			       LIBMTP_track_t *track)
+                        LIBMTP_track_t *track)
 {
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
-  uint32_t i;
-  MTPProperties *prop;
-  PTPObject *ob;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint32_t i;
+    MTPProperties *prop;
+    PTPObject *ob;
 
-  /*
-   * If we have a cached, large set of metadata, then use it!
-   */
-  ret = ptp_object_want(params, track->item_id, PTPOBJECT_MTPPROPLIST_LOADED, &ob);
-  if (ob->mtpprops) {
-    prop = ob->mtpprops;
-    for (i=0;i<ob->nrofmtpprops;i++,prop++)
-      pick_property_to_track_metadata(device, prop, track);
-  } else {
-    uint16_t *props = NULL;
-    uint32_t propcnt = 0;
-
-    // First see which properties can be retrieved for this object format
-    ret = ptp_mtp_getobjectpropssupported(params, map_libmtp_type_to_ptp_type(track->filetype), &propcnt, &props);
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "get_track_metadata(): call to ptp_mtp_getobjectpropssupported() failed.");
-      // Just bail out for now, nothing is ever set.
-      return;
+    /*
+     * If we have a cached, large set of metadata, then use it!
+     */
+    ret = ptp_object_want(params, track->item_id, PTPOBJECT_MTPPROPLIST_LOADED, &ob);
+    if (ob->mtpprops) {
+        prop = ob->mtpprops;
+        for (i = 0; i < ob->nrofmtpprops; i++, prop++)
+            pick_property_to_track_metadata(device, prop, track);
     } else {
-      for (i=0;i<propcnt;i++) {
-	switch (props[i]) {
-	case PTP_OPC_Name:
-	  track->title = get_string_from_object(device, track->item_id, PTP_OPC_Name);
-	  break;
-	case PTP_OPC_Artist:
-	  track->artist = get_string_from_object(device, track->item_id, PTP_OPC_Artist);
-	  break;
-	case PTP_OPC_Composer:
-	  track->composer = get_string_from_object(device, track->item_id, PTP_OPC_Composer);
-	  break;
-	case PTP_OPC_Duration:
-	  track->duration = get_u32_from_object(device, track->item_id, PTP_OPC_Duration, 0);
-	  break;
-	case PTP_OPC_Track:
-	  track->tracknumber = get_u16_from_object(device, track->item_id, PTP_OPC_Track, 0);
-	  break;
-	case PTP_OPC_Genre:
-	  track->genre = get_string_from_object(device, track->item_id, PTP_OPC_Genre);
-	  break;
-	case PTP_OPC_AlbumName:
-	  track->album = get_string_from_object(device, track->item_id, PTP_OPC_AlbumName);
-	  break;
-	case PTP_OPC_OriginalReleaseDate:
-	  track->date = get_string_from_object(device, track->item_id, PTP_OPC_OriginalReleaseDate);
-	  break;
-	  // These are, well not so important.
-	case PTP_OPC_SampleRate:
-	  track->samplerate = get_u32_from_object(device, track->item_id, PTP_OPC_SampleRate, 0);
-	  break;
-	case PTP_OPC_NumberOfChannels:
-	  track->nochannels = get_u16_from_object(device, track->item_id, PTP_OPC_NumberOfChannels, 0);
-	  break;
-	case PTP_OPC_AudioWAVECodec:
-	  track->wavecodec = get_u32_from_object(device, track->item_id, PTP_OPC_AudioWAVECodec, 0);
-	  break;
-	case PTP_OPC_AudioBitRate:
-	  track->bitrate = get_u32_from_object(device, track->item_id, PTP_OPC_AudioBitRate, 0);
-	  break;
-	case PTP_OPC_BitRateType:
-	  track->bitratetype = get_u16_from_object(device, track->item_id, PTP_OPC_BitRateType, 0);
-	  break;
-	case PTP_OPC_Rating:
-	  track->rating = get_u16_from_object(device, track->item_id, PTP_OPC_Rating, 0);
-	  break;
-	case PTP_OPC_UseCount:
-	  track->usecount = get_u32_from_object(device, track->item_id, PTP_OPC_UseCount, 0);
-	  break;
-	case PTP_OPC_ObjectSize:
-	  if (device->object_bitsize == 64) {
-	    track->filesize = get_u64_from_object(device, track->item_id, PTP_OPC_ObjectSize, 0);
-	  } else {
-	    track->filesize = (uint64_t) get_u32_from_object(device, track->item_id, PTP_OPC_ObjectSize, 0);
-	  }
-	  break;
-	}
-      }
-      free(props);
+        uint16_t *props = NULL;
+        uint32_t propcnt = 0;
+
+        /* First see which properties can be retrieved for this object format */
+        ret = ptp_mtp_getobjectpropssupported(params, map_libmtp_type_to_ptp_type(track->filetype), &propcnt, &props);
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret, "get_track_metadata(): call to ptp_mtp_getobjectpropssupported() failed.");
+            /* Just bail out for now, nothing is ever set. */
+            return;
+        } else {
+            for (i = 0; i < propcnt; i++) {
+                switch (props[i]) {
+                case PTP_OPC_Name:
+                    track->title = get_string_from_object(device, track->item_id, PTP_OPC_Name);
+                    break;
+                case PTP_OPC_Artist:
+                    track->artist = get_string_from_object(device, track->item_id, PTP_OPC_Artist);
+                    break;
+                case PTP_OPC_Composer:
+                    track->composer = get_string_from_object(device, track->item_id, PTP_OPC_Composer);
+                    break;
+                case PTP_OPC_Duration:
+                    track->duration = get_u32_from_object(device, track->item_id, PTP_OPC_Duration, 0);
+                    break;
+                case PTP_OPC_Track:
+                    track->tracknumber = get_u16_from_object(device, track->item_id, PTP_OPC_Track, 0);
+                    break;
+                case PTP_OPC_Genre:
+                    track->genre = get_string_from_object(device, track->item_id, PTP_OPC_Genre);
+                    break;
+                case PTP_OPC_AlbumName:
+                    track->album = get_string_from_object(device, track->item_id, PTP_OPC_AlbumName);
+                    break;
+                case PTP_OPC_OriginalReleaseDate:
+                    track->date = get_string_from_object(device, track->item_id, PTP_OPC_OriginalReleaseDate);
+                    break;
+                    /* These are, well not so important. */
+                case PTP_OPC_SampleRate:
+                    track->samplerate = get_u32_from_object(device, track->item_id, PTP_OPC_SampleRate, 0);
+                    break;
+                case PTP_OPC_NumberOfChannels:
+                    track->nochannels = get_u16_from_object(device, track->item_id, PTP_OPC_NumberOfChannels, 0);
+                    break;
+                case PTP_OPC_AudioWAVECodec:
+                    track->wavecodec = get_u32_from_object(device, track->item_id, PTP_OPC_AudioWAVECodec, 0);
+                    break;
+                case PTP_OPC_AudioBitRate:
+                    track->bitrate = get_u32_from_object(device, track->item_id, PTP_OPC_AudioBitRate, 0);
+                    break;
+                case PTP_OPC_BitRateType:
+                    track->bitratetype = get_u16_from_object(device, track->item_id, PTP_OPC_BitRateType, 0);
+                    break;
+                case PTP_OPC_Rating:
+                    track->rating = get_u16_from_object(device, track->item_id, PTP_OPC_Rating, 0);
+                    break;
+                case PTP_OPC_UseCount:
+                    track->usecount = get_u32_from_object(device, track->item_id, PTP_OPC_UseCount, 0);
+                    break;
+                case PTP_OPC_ObjectSize:
+                    if (device->object_bitsize == 64)
+                        track->filesize = get_u64_from_object(device, track->item_id, PTP_OPC_ObjectSize, 0);
+                    else
+                        track->filesize = (uint64_t) get_u32_from_object(device, track->item_id, PTP_OPC_ObjectSize, 0);
+                    break;
+                }
+            }
+            free(props);
+        }
     }
-  }
 }
 
 /**
