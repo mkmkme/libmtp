@@ -4796,22 +4796,21 @@ static uint16_t get_func_wrapper(PTPParams* params, void* priv, unsigned long wa
  */
 static uint16_t put_func_wrapper(PTPParams* params, void* priv, unsigned long sendlen, unsigned char *data, unsigned long *putlen)
 {
-  MTPDataHandler *handler = (MTPDataHandler *)priv;
-  uint16_t ret;
-  uint32_t local_putlen = 0;
-  ret = handler->putfunc(params, handler->priv, sendlen, data, &local_putlen);
-  *putlen = local_putlen;
-  switch (ret)
-  {
+    MTPDataHandler *handler = (MTPDataHandler *)priv;
+    uint16_t ret;
+    uint32_t local_putlen = 0;
+    ret = handler->putfunc(params, handler->priv, sendlen, data, &local_putlen);
+    *putlen = local_putlen;
+    switch (ret) {
     case LIBMTP_HANDLER_RETURN_OK:
-      return PTP_RC_OK;
+        return PTP_RC_OK;
     case LIBMTP_HANDLER_RETURN_ERROR:
-      return PTP_ERROR_IO;
+        return PTP_ERROR_IO;
     case LIBMTP_HANDLER_RETURN_CANCEL:
-      return PTP_ERROR_CANCEL;
+        return PTP_ERROR_CANCEL;
     default:
-      return PTP_ERROR_IO;
-  }
+        return PTP_ERROR_IO;
+    }
 }
 
 /**
