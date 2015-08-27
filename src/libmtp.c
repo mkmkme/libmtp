@@ -4248,34 +4248,33 @@ LIBMTP_file_t * LIBMTP_Get_Files_And_Folders(LIBMTP_mtpdevice_t *device,
  */
 LIBMTP_track_t *LIBMTP_new_track_t(void)
 {
-  LIBMTP_track_t *new = (LIBMTP_track_t *) malloc(sizeof(LIBMTP_track_t));
-  if (new == NULL) {
-    return NULL;
-  }
-  new->item_id = 0;
-  new->parent_id = 0;
-  new->storage_id = 0;
-  new->title = NULL;
-  new->artist = NULL;
-  new->composer = NULL;
-  new->album = NULL;
-  new->genre = NULL;
-  new->date = NULL;
-  new->filename = NULL;
-  new->duration = 0;
-  new->tracknumber = 0;
-  new->filesize = 0;
-  new->filetype = LIBMTP_FILETYPE_UNKNOWN;
-  new->samplerate = 0;
-  new->nochannels = 0;
-  new->wavecodec = 0;
-  new->bitrate = 0;
-  new->bitratetype = 0;
-  new->rating = 0;
-  new->usecount = 0;
-  new->modificationdate = 0;
-  new->next = NULL;
-  return new;
+    LIBMTP_track_t *new = (LIBMTP_track_t *) malloc(sizeof(LIBMTP_track_t));
+    if (new == NULL)
+        return NULL;
+    new->item_id = 0;
+    new->parent_id = 0;
+    new->storage_id = 0;
+    new->title = NULL;
+    new->artist = NULL;
+    new->composer = NULL;
+    new->album = NULL;
+    new->genre = NULL;
+    new->date = NULL;
+    new->filename = NULL;
+    new->duration = 0;
+    new->tracknumber = 0;
+    new->filesize = 0;
+    new->filetype = LIBMTP_FILETYPE_UNKNOWN;
+    new->samplerate = 0;
+    new->nochannels = 0;
+    new->wavecodec = 0;
+    new->bitrate = 0;
+    new->bitratetype = 0;
+    new->rating = 0;
+    new->usecount = 0;
+    new->modificationdate = 0;
+    new->next = NULL;
+    return new;
 }
 
 /**
