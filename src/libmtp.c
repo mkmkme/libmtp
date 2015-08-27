@@ -4288,20 +4288,13 @@ void LIBMTP_destroy_track_t(LIBMTP_track_t *track)
 {
     if (track == NULL)
         return;
-    if (track->title != NULL)
-        free(track->title);
-    if (track->artist != NULL)
-        free(track->artist);
-    if (track->composer != NULL)
-        free(track->composer);
-    if (track->album != NULL)
-        free(track->album);
-    if (track->genre != NULL)
-        free(track->genre);
-    if (track->date != NULL)
-        free(track->date);
-    if (track->filename != NULL)
-        free(track->filename);
+    free(track->title);
+    free(track->artist);
+    free(track->composer);
+    free(track->album);
+    free(track->genre);
+    free(track->date);
+    free(track->filename);
     free(track);
 }
 
