@@ -4484,9 +4484,9 @@ static void get_track_metadata(LIBMTP_mtpdevice_t *device, uint16_t objectformat
  */
 LIBMTP_track_t *LIBMTP_Get_Tracklisting(LIBMTP_mtpdevice_t *device)
 {
-  LIBMTP_INFO("WARNING: LIBMTP_Get_Tracklisting() is deprecated.\n");
-  LIBMTP_INFO("WARNING: please update your code to use LIBMTP_Get_Tracklisting_With_Callback()\n");
-  return LIBMTP_Get_Tracklisting_With_Callback(device, NULL, NULL);
+    LIBMTP_INFO("WARNING: LIBMTP_Get_Tracklisting() is deprecated.\n");
+    LIBMTP_INFO("WARNING: please update your code to use LIBMTP_Get_Tracklisting_With_Callback()\n");
+    return LIBMTP_Get_Tracklisting_With_Callback(device, NULL, NULL);
 }
 
 /**
@@ -4534,7 +4534,7 @@ LIBMTP_track_t *LIBMTP_Get_Tracklisting_With_Callback(LIBMTP_mtpdevice_t *device
                                                       LIBMTP_progressfunc_t const callback,
                                                       void const * const data)
 {
-	return LIBMTP_Get_Tracklisting_With_Callback_For_Storage(device, 0, callback, data);
+    return LIBMTP_Get_Tracklisting_With_Callback_For_Storage(device, 0, callback, data);
 }
 
 
