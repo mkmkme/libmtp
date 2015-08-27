@@ -5028,11 +5028,11 @@ int LIBMTP_Get_File_To_Handler(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Get_Track_To_File_Descriptor()
  */
 int LIBMTP_Get_Track_To_File(LIBMTP_mtpdevice_t *device, uint32_t const id,
-			 char const * const path, LIBMTP_progressfunc_t const callback,
-			 void const * const data)
+                    char const * const path, LIBMTP_progressfunc_t const callback,
+                    void const * const data)
 {
-  // This is just a wrapper
-  return LIBMTP_Get_File_To_File(device, id, path, callback, data);
+    /* This is just a wrapper */
+    return LIBMTP_Get_File_To_File(device, id, path, callback, data);
 }
 
 /**
@@ -5052,13 +5052,13 @@ int LIBMTP_Get_Track_To_File(LIBMTP_mtpdevice_t *device, uint32_t const id,
  * @see LIBMTP_Get_Track_To_File()
  */
 int LIBMTP_Get_Track_To_File_Descriptor(LIBMTP_mtpdevice_t *device,
-					uint32_t const id,
-					int const fd,
-					LIBMTP_progressfunc_t const callback,
-					void const * const data)
+                    uint32_t const id,
+                    int const fd,
+                    LIBMTP_progressfunc_t const callback,
+                    void const * const data)
 {
-  // This is just a wrapper
-  return LIBMTP_Get_File_To_File_Descriptor(device, id, fd, callback, data);
+    /* This is just a wrapper */
+    return LIBMTP_Get_File_To_File_Descriptor(device, id, fd, callback, data);
 }
 
 /**
@@ -5079,14 +5079,14 @@ int LIBMTP_Get_Track_To_File_Descriptor(LIBMTP_mtpdevice_t *device,
  *           failure.
  */
 int LIBMTP_Get_Track_To_Handler(LIBMTP_mtpdevice_t *device,
-					uint32_t const id,
-					MTPDataPutFunc put_func,
-          void * priv,
-					LIBMTP_progressfunc_t const callback,
-					void const * const data)
+                    uint32_t const id,
+                    MTPDataPutFunc put_func,
+                    void * priv,
+                    LIBMTP_progressfunc_t const callback,
+                    void const * const data)
 {
-  // This is just a wrapper
-  return LIBMTP_Get_File_To_Handler(device, id, put_func, priv, callback, data);
+    /* This is just a wrapper */
+    return LIBMTP_Get_File_To_Handler(device, id, put_func, priv, callback, data);
 }
 
 /**
