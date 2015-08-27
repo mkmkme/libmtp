@@ -5626,76 +5626,76 @@ int LIBMTP_Send_File_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_File_From_Handler(LIBMTP_mtpdevice_t *device,
-			 MTPDataGetFunc get_func, void * priv, LIBMTP_file_t * const filedata,
-       LIBMTP_progressfunc_t const callback, void const * const data)
+                    MTPDataGetFunc get_func,
+                    void * priv,
+                    LIBMTP_file_t * const filedata,
+                    LIBMTP_progressfunc_t const callback,
+                    void const * const data)
 {
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  LIBMTP_file_t *newfilemeta;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    LIBMTP_file_t *newfilemeta;
 
-  if (send_file_object_info(device, filedata))
-  {
-    // no need to output an error since send_file_object_info will already have done so
-    return -1;
-  }
+    if (send_file_object_info(device, filedata))
+        return -1;
 
-  // Callbacks
-  ptp_usb->callback_active = 1;
-  // The callback will deactivate itself after this amount of data has been sent
-  // One BULK header for the request, one for the data phase. No parameters to the request.
-  ptp_usb->current_transfer_total = filedata->filesize+PTP_USB_BULK_HDR_LEN*2;
-  ptp_usb->current_transfer_complete = 0;
-  ptp_usb->current_transfer_callback = callback;
-  ptp_usb->current_transfer_callback_data = data;
+    /* Callbacks */
+    ptp_usb->callback_active = 1;
+    /* The callback will deactivate itself after this amount of data has been sent
+     * One BULK header for the request, one for the data phase. No parameters to the request. */
+    ptp_usb->current_transfer_total = filedata->filesize+PTP_USB_BULK_HDR_LEN*2;
+    ptp_usb->current_transfer_complete = 0;
+    ptp_usb->current_transfer_callback = callback;
+    ptp_usb->current_transfer_callback_data = data;
 
-  MTPDataHandler mtp_handler;
-  mtp_handler.getfunc = get_func;
-  mtp_handler.putfunc = NULL;
-  mtp_handler.priv = priv;
+    MTPDataHandler mtp_handler;
+    mtp_handler.getfunc = get_func;
+    mtp_handler.putfunc = NULL;
+    mtp_handler.priv = priv;
 
-  PTPDataHandler handler;
-  handler.getfunc = get_func_wrapper;
-  handler.putfunc = NULL;
-  handler.priv = &mtp_handler;
+    PTPDataHandler handler;
+    handler.getfunc = get_func_wrapper;
+    handler.putfunc = NULL;
+    handler.priv = &mtp_handler;
 
-  ret = ptp_sendobject_from_handler(params, &handler, filedata->filesize);
+    ret = ptp_sendobject_from_handler(params, &handler, filedata->filesize);
 
-  ptp_usb->callback_active = 0;
-  ptp_usb->current_transfer_callback = NULL;
-  ptp_usb->current_transfer_callback_data = NULL;
+    ptp_usb->callback_active = 0;
+    ptp_usb->current_transfer_callback = NULL;
+    ptp_usb->current_transfer_callback_data = NULL;
 
-  if (ret == PTP_ERROR_CANCEL) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_CANCELLED, "LIBMTP_Send_File_From_Handler(): Cancelled transfer.");
-    return -1;
-  }
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Send_File_From_Handler(): "
-				"Could not send object.");
-    return -1;
-  }
+    if (ret == PTP_ERROR_CANCEL) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_CANCELLED,
+            "LIBMTP_Send_File_From_Handler(): Cancelled transfer.");
+        return -1;
+    }
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret,
+            "LIBMTP_Send_File_From_Handler(): Could not send object.");
+        return -1;
+    }
 
-  add_object_to_cache(device, filedata->item_id);
+    add_object_to_cache(device, filedata->item_id);
 
-  /*
-   * Get the device-assined parent_id from the cache.
-   * The operation that adds it to the cache will
-   * look it up from the device, so we get the new
-   * parent_id from the cache.
-   */
-  newfilemeta = LIBMTP_Get_Filemetadata(device, filedata->item_id);
-  if (newfilemeta != NULL) {
-    filedata->parent_id = newfilemeta->parent_id;
-    filedata->storage_id = newfilemeta->storage_id;
-    LIBMTP_destroy_file_t(newfilemeta);
-  } else {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-			    "LIBMTP_Send_File_From_Handler(): "
-			    "Could not retrieve updated metadata.");
-    return -1;
-  }
+    /*
+     * Get the device-assined parent_id from the cache.
+     * The operation that adds it to the cache will
+     * look it up from the device, so we get the new
+     * parent_id from the cache.
+     */
+    newfilemeta = LIBMTP_Get_Filemetadata(device, filedata->item_id);
+    if (newfilemeta != NULL) {
+        filedata->parent_id = newfilemeta->parent_id;
+        filedata->storage_id = newfilemeta->storage_id;
+        LIBMTP_destroy_file_t(newfilemeta);
+    } else {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "LIBMTP_Send_File_From_Handler(): Could not retrieve updated metadata.");
+        return -1;
+    }
 
-  return 0;
+    return 0;
 }
 
 /**
