@@ -6523,21 +6523,18 @@ int LIBMTP_Set_Folder_Name(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Set_Track_Name(LIBMTP_mtpdevice_t *device,
-                   LIBMTP_track_t *track, const char* newname)
+                    LIBMTP_track_t *track, const char* newname)
 {
-  int         ret;
+    int ret;
 
-  ret = set_object_filename(device, track->item_id,
-			    map_libmtp_type_to_ptp_type(track->filetype),
-			    &newname);
+    ret = set_object_filename(device, track->item_id, map_libmtp_type_to_ptp_type(track->filetype), &newname);
 
-  if (ret != 0) {
+    if (ret != 0)
+        return ret;
+
+    free(track->filename);
+    track->filename = strdup(newname);
     return ret;
-  }
-
-  free(track->filename);
-  track->filename = strdup(newname);
-  return ret;
 }
 
 /**
