@@ -6899,69 +6899,65 @@ LIBMTP_folder_t *LIBMTP_Get_Folder_List(LIBMTP_mtpdevice_t *device)
  * @return id to new folder or 0 if an error occured
  */
 uint32_t LIBMTP_Create_Folder(LIBMTP_mtpdevice_t *device, char *name,
-			      uint32_t parent_id, uint32_t storage_id)
+                    uint32_t parent_id, uint32_t storage_id)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  uint32_t parenthandle = 0;
-  uint32_t store;
-  PTPObjectInfo new_folder;
-  uint16_t ret;
-  uint32_t new_id = 0;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    uint32_t parenthandle = 0;
+    uint32_t store;
+    PTPObjectInfo new_folder;
+    uint16_t ret;
+    uint32_t new_id = 0;
 
-  if (storage_id == 0) {
-    // I'm just guessing that a folder may require 512 bytes
-    store = get_suggested_storage_id(device, 512, parent_id);
-  } else {
-    store = storage_id;
-  }
-  parenthandle = parent_id;
+    if (storage_id == 0)
+        /* I'm just guessing that a folder may require 512 bytes */
+        store = get_suggested_storage_id(device, 512, parent_id);
+    else
+        store = storage_id;
+    parenthandle = parent_id;
 
-  memset(&new_folder, 0, sizeof(new_folder));
-  new_folder.Filename = name;
-  if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb)) {
-    strip_7bit_from_utf8(new_folder.Filename);
-  }
-  new_folder.ObjectCompressedSize = 0;
-  new_folder.ObjectFormat = PTP_OFC_Association;
-  new_folder.ProtectionStatus = PTP_PS_NoProtection;
-  new_folder.AssociationType = PTP_AT_GenericFolder;
-  new_folder.ParentObject = parent_id;
-  new_folder.StorageID = store;
+    memset(&new_folder, 0, sizeof(new_folder));
+    new_folder.Filename = name;
+    if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb))
+        strip_7bit_from_utf8(new_folder.Filename);
+    new_folder.ObjectCompressedSize = 0;
+    new_folder.ObjectFormat = PTP_OFC_Association;
+    new_folder.ProtectionStatus = PTP_PS_NoProtection;
+    new_folder.AssociationType = PTP_AT_GenericFolder;
+    new_folder.ParentObject = parent_id;
+    new_folder.StorageID = store;
 
-  // Create the object
-  if (!(params->device_flags & DEVICE_FLAG_BROKEN_SEND_OBJECT_PROPLIST) &&
-	ptp_operation_issupported(params,PTP_OC_MTP_SendObjectPropList)) {
-	MTPProperties *props = (MTPProperties*)calloc(2,sizeof(MTPProperties));
+    /* Create the object */
+    if (!(params->device_flags & DEVICE_FLAG_BROKEN_SEND_OBJECT_PROPLIST) &&
+        ptp_operation_issupported(params,PTP_OC_MTP_SendObjectPropList)) {
+        
+        MTPProperties *props = (MTPProperties*)calloc(2,sizeof(MTPProperties));
 
-	props[0].property = PTP_OPC_ObjectFileName;
-	props[0].datatype = PTP_DTC_STR;
-	props[0].propval.str = name;
+        props[0].property = PTP_OPC_ObjectFileName;
+        props[0].datatype = PTP_DTC_STR;
+        props[0].propval.str = name;
 
-	props[1].property = PTP_OPC_Name;
-	props[1].datatype = PTP_DTC_STR;
-	props[1].propval.str = name;
+        props[1].property = PTP_OPC_Name;
+        props[1].datatype = PTP_DTC_STR;
+        props[1].propval.str = name;
 
-	ret = ptp_mtp_sendobjectproplist(params, &store, &parenthandle, &new_id, PTP_OFC_Association,
-			0, props, 1);
-	free(props);
-  } else {
-	ret = ptp_sendobjectinfo(params, &store, &parenthandle, &new_id, &new_folder);
-  }
+        ret = ptp_mtp_sendobjectproplist(params, &store, &parenthandle, &new_id, PTP_OFC_Association, 0, props, 1);
+        free(props);
+    } else
+        ret = ptp_sendobjectinfo(params, &store, &parenthandle, &new_id, &new_folder);
 
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Create_Folder: Could not send object info.");
-    if (ret == PTP_RC_AccessDenied) {
-      add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "LIBMTP_Create_Folder: Could not send object info.");
+        if (ret == PTP_RC_AccessDenied)
+            add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
+        return 0;
     }
-    return 0;
-  }
-  // NOTE: don't destroy the new_folder objectinfo, because it is statically referencing
-  // several strings.
+    /* NOTE: don't destroy the new_folder objectinfo, because it is statically referencing
+     * several strings. */
 
-  add_object_to_cache(device, new_id);
+    add_object_to_cache(device, new_id);
 
-  return new_id;
+    return new_id;
 }
 
 /**
