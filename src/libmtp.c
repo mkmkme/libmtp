@@ -7500,203 +7500,197 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 static int update_abstract_list(LIBMTP_mtpdevice_t *device,
-				char const * const name,
-				char const * const artist,
-				char const * const composer,
-				char const * const genre,
-				uint32_t const objecthandle,
-				uint16_t const objectformat,
-				uint32_t const * const tracks,
-				uint32_t const no_tracks)
+                    char const * const name,
+                    char const * const artist,
+                    char const * const composer,
+                    char const * const genre,
+                    uint32_t const objecthandle,
+                    uint16_t const objectformat,
+                    uint32_t const * const tracks,
+                    uint32_t const no_tracks)
 {
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  uint16_t *properties = NULL;
-  uint32_t propcnt = 0;
-  int i;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    uint16_t *properties = NULL;
+    uint32_t propcnt = 0;
+    int i;
 
-  // First see which properties can be set
-  // i.e only try to update this metadata for object tags that exist on the current player.
-  ret = ptp_mtp_getobjectpropssupported(params, objectformat, &propcnt, &properties);
-  if (ret != PTP_RC_OK) {
-    // Just bail out for now, nothing is ever set.
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-			    "could not retrieve supported object properties.");
-    return -1;
-  }
-  if (ptp_operation_issupported(params,PTP_OC_MTP_SetObjPropList) &&
-      !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
-    MTPProperties *props = NULL;
-    MTPProperties *prop = NULL;
-    int nrofprops = 0;
-
-    for (i=0;i<propcnt;i++) {
-      PTPObjectPropDesc opd;
-
-      ret = ptp_mtp_getobjectpropdesc(params, properties[i], objectformat, &opd);
-      if (ret != PTP_RC_OK) {
-	add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-				"could not get property description.");
-      } else if (opd.GetSet) {
-	switch (properties[i]) {
-	case PTP_OPC_Name:
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = objecthandle;
-	  prop->property = PTP_OPC_Name;
-	  prop->datatype = PTP_DTC_STR;
-	  if (name != NULL)
-	    prop->propval.str = strdup(name);
-	  break;
-	case PTP_OPC_AlbumArtist:
-	  if (artist != NULL) {
-	    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	    prop->ObjectHandle = objecthandle;
-	    prop->property = PTP_OPC_AlbumArtist;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = strdup(artist);
-	  }
-	  break;
-	case PTP_OPC_Artist:
-	  if (artist != NULL) {
-	    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	    prop->ObjectHandle = objecthandle;
-	    prop->property = PTP_OPC_Artist;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = strdup(artist);
-	  }
-	  break;
-	case PTP_OPC_Composer:
-	  if (composer != NULL) {
-	    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	    prop->ObjectHandle = objecthandle;
-	    prop->property = PTP_OPC_Composer;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = strdup(composer);
-	  }
-	  break;
-	case PTP_OPC_Genre:
-	  if (genre != NULL) {
-	    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	    prop->ObjectHandle = objecthandle;
-	    prop->property = PTP_OPC_Genre;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = strdup(genre);
-	  }
-	  break;
- 	case PTP_OPC_DateModified:
-	  if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
-	    // Tag with current time if that is supported
-	    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	    prop->ObjectHandle = objecthandle;
-	    prop->property = PTP_OPC_DateModified;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = get_iso8601_stamp();
-	  }
-	  break;
-	default:
-	  break;
-	}
-      }
-      ptp_free_objectpropdesc(&opd);
+    /* First see which properties can be set
+     * i.e only try to update this metadata for object tags that exist on the current player. */
+    ret = ptp_mtp_getobjectpropssupported(params, objectformat, &propcnt, &properties);
+    if (ret != PTP_RC_OK) {
+        /* Just bail out for now, nothing is ever set. */
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "update_abstract_list(): could not retrieve supported object properties.");
+        return -1;
     }
+    if (ptp_operation_issupported(params,PTP_OC_MTP_SetObjPropList) &&
+        !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
+        MTPProperties *props = NULL;
+        MTPProperties *prop = NULL;
+        int nrofprops = 0;
 
-    // proplist could be NULL if we can't write any properties
-    if (props != NULL) {
-      ret = ptp_mtp_setobjectproplist(params, props, nrofprops);
+        for (i = 0; i < propcnt; i++) {
+            PTPObjectPropDesc opd;
 
-      ptp_destroy_object_prop_list(props, nrofprops);
+            ret = ptp_mtp_getobjectpropdesc(params, properties[i], objectformat, &opd);
+            if (ret != PTP_RC_OK)
+                add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                    "update_abstract_list(): could not get property description.");
+            else if (opd.GetSet) {
+                switch (properties[i]) {
+                case PTP_OPC_Name:
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = objecthandle;
+                    prop->property = PTP_OPC_Name;
+                    prop->datatype = PTP_DTC_STR;
+                    if (name != NULL)
+                        prop->propval.str = strdup(name);
+                    break;
+                case PTP_OPC_AlbumArtist:
+                    if (artist == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = objecthandle;
+                    prop->property = PTP_OPC_AlbumArtist;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(artist);
+                    break;
+                case PTP_OPC_Artist:
+                    if (artist == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = objecthandle;
+                    prop->property = PTP_OPC_Artist;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(artist);
+                    break;
+                case PTP_OPC_Composer:
+                    if (composer == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = objecthandle;
+                    prop->property = PTP_OPC_Composer;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(composer);
+                    break;
+                case PTP_OPC_Genre:
+                    if (genre == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = objecthandle;
+                    prop->property = PTP_OPC_Genre;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(genre);
+                    break;
+                case PTP_OPC_DateModified:
+                    if (FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb))
+                        break;
+                    /* Tag with current time if that is supported */
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = objecthandle;
+                    prop->property = PTP_OPC_DateModified;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = get_iso8601_stamp();
+                    break;
+                default:
+                    break;
+                }
+            }
+            ptp_free_objectpropdesc(&opd);
+        }
 
-      if (ret != PTP_RC_OK) {
-        // TODO: return error of which property we couldn't set
-        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-                                "could not set object property list.");
+        /* proplist could be NULL if we can't write any properties */
+        if (props != NULL) {
+            ret = ptp_mtp_setobjectproplist(params, props, nrofprops);
+
+            ptp_destroy_object_prop_list(props, nrofprops);
+
+            if (ret != PTP_RC_OK) {
+                /* TODO: return error of which property we couldn't set */
+                add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                    "update_abstract_list(): could not set object property list.");
+                free(properties);
+                return -1;
+            }
+        }
+
+    } else if (ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
+        for (i = 0; i < propcnt; i++) {
+            switch (properties[i]) {
+            case PTP_OPC_Name:
+                /* Update title */
+                ret = set_object_string(device, objecthandle, PTP_OPC_Name, name);
+                if (ret != 0)
+                    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                        "update_abstract_list(): could not set title.");
+                break;
+            case PTP_OPC_AlbumArtist:
+                /* Update album artist */
+                ret = set_object_string(device, objecthandle, PTP_OPC_AlbumArtist, artist);
+                if (ret != 0)
+                    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                        "update_abstract_list(): could not set album artist name.");
+                break;
+            case PTP_OPC_Artist:
+                /* Update artist */
+                ret = set_object_string(device, objecthandle, PTP_OPC_Artist, artist);
+                if (ret != 0)
+                    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                        "update_abstract_list(): could not set artist name.");
+                break;
+            case PTP_OPC_Composer:
+                /* Update composer */
+                ret = set_object_string(device, objecthandle, PTP_OPC_Composer, composer);
+                if (ret != 0)
+                    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                        "update_abstract_list(): could not set composer name.");
+                break;
+            case PTP_OPC_Genre:
+                /* Update genre (but only if valid) */
+                if(!genre)
+                    break;
+                ret = set_object_string(device, objecthandle, PTP_OPC_Genre, genre);
+                if (ret != 0)
+                    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                        "update_abstract_list(): could not set genre.");
+                break;
+            case PTP_OPC_DateModified:
+                /* Update date modified */
+                if (FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb))
+                    break;
+                char *tmpdate = get_iso8601_stamp();
+                ret = set_object_string(device, objecthandle, PTP_OPC_DateModified, tmpdate);
+                if (ret != 0)
+                    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                        "update_abstract_list(): could not set modification date.");
+                free(tmpdate);
+                break;
+            default:
+                break;
+            }
+        }
+    } else {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "update_abstract_list(): Your device doesn't seem to support any known way of setting metadata.");
         free(properties);
         return -1;
-      }
     }
 
-  } else if (ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
-    for (i=0;i<propcnt;i++) {
-      switch (properties[i]) {
-      case PTP_OPC_Name:
-	// Update title
-	ret = set_object_string(device, objecthandle, PTP_OPC_Name, name);
-	if (ret != 0) {
-	  add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-				  "could not set title.");
-	}
-	break;
-      case PTP_OPC_AlbumArtist:
-	// Update album artist
-	ret = set_object_string(device, objecthandle, PTP_OPC_AlbumArtist, artist);
-	if (ret != 0) {
-	  add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-				  "could not set album artist name.");
-	}
-	break;
-      case PTP_OPC_Artist:
-	// Update artist
-	ret = set_object_string(device, objecthandle, PTP_OPC_Artist, artist);
-	if (ret != 0) {
-	  add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-				  "could not set artist name.");
-	}
-	break;
-      case PTP_OPC_Composer:
-	// Update composer
-	ret = set_object_string(device, objecthandle, PTP_OPC_Composer, composer);
-	if (ret != 0) {
-	  add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-				  "could not set composer name.");
-	}
-	break;
-      case PTP_OPC_Genre:
-	// Update genre (but only if valid)
-	if(genre) {
-	  ret = set_object_string(device, objecthandle, PTP_OPC_Genre, genre);
-	  if (ret != 0) {
-	    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-				    "could not set genre.");
-	  }
-        }
-	break;
-      case PTP_OPC_DateModified:
-	// Update date modified
-	if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
-	  char *tmpdate = get_iso8601_stamp();
-	  ret = set_object_string(device, objecthandle, PTP_OPC_DateModified, tmpdate);
-	  if (ret != 0) {
-	    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-				    "could not set modification date.");
-	  }
-	  free(tmpdate);
-	}
-	break;
-      default:
-	break;
-      }
+    /* Then the object references... */
+    ret = ptp_mtp_setobjectreferences (params, objecthandle, (uint32_t *) tracks, no_tracks);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "update_abstract_list(): could not add tracks as object references.");
+        free(properties);
+        return -1;
     }
-  } else {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-                            "Your device doesn't seem to support any known way of setting metadata.");
+
     free(properties);
-    return -1;
-  }
 
-  // Then the object references...
-  ret = ptp_mtp_setobjectreferences (params, objecthandle, (uint32_t *) tracks, no_tracks);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "update_abstract_list(): could not add tracks as object references.");
-    free(properties);
-    return -1;
-  }
+    update_metadata_cache(device, objecthandle);
 
-  free(properties);
-
-  update_metadata_cache(device, objecthandle);
-
-  return 0;
+    return 0;
 }
 
 
