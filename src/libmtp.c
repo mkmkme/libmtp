@@ -6735,37 +6735,37 @@ LIBMTP_folder_t *LIBMTP_Find_Folder(LIBMTP_folder_t *folderlist, uint32_t id)
  */
 static LIBMTP_folder_t *get_subfolders_for_folder(LIBMTP_folder_t *list, uint32_t parent)
 {
-  LIBMTP_folder_t *retfolders = NULL;
-  LIBMTP_folder_t *children, *iter, *curr;
+    LIBMTP_folder_t *retfolders = NULL;
+    LIBMTP_folder_t *children, *iter, *curr;
 
-  iter = list->sibling;
-  while(iter != list) {
-    if (iter->parent_id != parent) {
-      iter = iter->sibling;
-      continue;
+    iter = list->sibling;
+    while (iter != list) {
+        if (iter->parent_id != parent) {
+            iter = iter->sibling;
+            continue;
+        }
+
+        /* We know that iter is a child of 'parent', therefore we can safely
+         * hold on to 'iter' locally since no one else will steal it
+         * from the 'list' as we recurse. */
+        children = get_subfolders_for_folder(list, iter->folder_id);
+
+        curr = iter;
+        iter = iter->sibling;
+
+        /* Remove curr from the list. */
+        curr->child->sibling = curr->sibling;
+        curr->sibling->child = curr->child;
+
+        /* Attach the children to curr. */
+        curr->child = children;
+
+        /* Put this folder into the list of siblings. */
+        curr->sibling = retfolders;
+        retfolders = curr;
     }
 
-    /* We know that iter is a child of 'parent', therefore we can safely
-     * hold on to 'iter' locally since no one else will steal it
-     * from the 'list' as we recurse. */
-    children = get_subfolders_for_folder(list, iter->folder_id);
-
-    curr = iter;
-    iter = iter->sibling;
-
-    // Remove curr from the list.
-    curr->child->sibling = curr->sibling;
-    curr->sibling->child = curr->child;
-
-    // Attach the children to curr.
-    curr->child = children;
-
-    // Put this folder into the list of siblings.
-    curr->sibling = retfolders;
-    retfolders = curr;
-  }
-
-  return retfolders;
+    return retfolders;
 }
 
 /**
