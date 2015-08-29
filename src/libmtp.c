@@ -6557,21 +6557,18 @@ int LIBMTP_Set_Track_Name(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Update_Playlist()
  */
 int LIBMTP_Set_Playlist_Name(LIBMTP_mtpdevice_t *device,
-                   LIBMTP_playlist_t *playlist, const char* newname)
+                    LIBMTP_playlist_t *playlist, const char* newname)
 {
-  int ret;
+    int ret;
 
-  ret = set_object_filename(device, playlist->playlist_id,
-			    PTP_OFC_MTP_AbstractAudioVideoPlaylist,
-			    &newname);
+    ret = set_object_filename(device, playlist->playlist_id, PTP_OFC_MTP_AbstractAudioVideoPlaylist, &newname);
 
-  if (ret != 0) {
+    if (ret != 0)
+        return ret;
+
+    free(playlist->name);
+    playlist->name = strdup(newname);
     return ret;
-  }
-
-  free(playlist->name);
-  playlist->name = strdup(newname);
-  return ret;
 }
 
 /**
@@ -6594,21 +6591,18 @@ int LIBMTP_Set_Playlist_Name(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Update_Album()
  */
 int LIBMTP_Set_Album_Name(LIBMTP_mtpdevice_t *device,
-                   LIBMTP_album_t *album, const char* newname)
+                    LIBMTP_album_t *album, const char* newname)
 {
-  int ret;
+    int ret;
 
-  ret = set_object_filename(device, album->album_id,
-			    PTP_OFC_MTP_AbstractAudioAlbum,
-			    &newname);
+    ret = set_object_filename(device, album->album_id, PTP_OFC_MTP_AbstractAudioAlbum, &newname);
 
-  if (ret != 0) {
+    if (ret != 0)
+        return ret;
+
+    free(album->name);
+    album->name = strdup(newname);
     return ret;
-  }
-
-  free(album->name);
-  album->name = strdup(newname);
-  return ret;
 }
 
 /**
@@ -6622,24 +6616,24 @@ int LIBMTP_Set_Album_Name(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Set_Album_Name()
  */
 int LIBMTP_Set_Object_Filename(LIBMTP_mtpdevice_t *device,
-                   uint32_t object_id, char* newname)
+                    uint32_t object_id, char* newname)
 {
-  int             ret;
-  LIBMTP_file_t   *file;
+    int ret;
+    LIBMTP_file_t *file;
 
-  file = LIBMTP_Get_Filemetadata(device, object_id);
+    file = LIBMTP_Get_Filemetadata(device, object_id);
 
-  if (file == NULL) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Set_Object_Filename(): "
-			    "could not get file metadata for target object.");
-    return -1;
-  }
+    if (file == NULL) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "LIBMTP_Set_Object_Filename(): could not get file metadata for target object.");
+        return -1;
+    }
 
-  ret = set_object_filename(device, object_id, map_libmtp_type_to_ptp_type(file->filetype), (const char **) &newname);
+    ret = set_object_filename(device, object_id, map_libmtp_type_to_ptp_type(file->filetype), (const char **) &newname);
 
-  free(file);
+    free(file);
 
-  return ret;
+    return ret;
 }
 
 /**
@@ -6648,17 +6642,16 @@ int LIBMTP_Set_Object_Filename(LIBMTP_mtpdevice_t *device,
  * @param id the track ID of the track to retrieve.
  * @return TRUE (!=0) if the track exists, FALSE (0) if not
  */
-int LIBMTP_Track_Exists(LIBMTP_mtpdevice_t *device,
-           uint32_t const id)
+int LIBMTP_Track_Exists(LIBMTP_mtpdevice_t *device, uint32_t const id)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
-  PTPObject *ob;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
+    PTPObject *ob;
 
-  ret = ptp_object_want (params, id, 0, &ob);
-  if (ret == PTP_RC_OK)
-      return -1;
-  return 0;
+    ret = ptp_object_want (params, id, 0, &ob);
+    if (ret == PTP_RC_OK)
+        return -1;
+    return 0;
 }
 
 /**
@@ -6673,17 +6666,16 @@ int LIBMTP_Track_Exists(LIBMTP_mtpdevice_t *device,
  */
 LIBMTP_folder_t *LIBMTP_new_folder_t(void)
 {
-  LIBMTP_folder_t *new = (LIBMTP_folder_t *) malloc(sizeof(LIBMTP_folder_t));
-  if (new == NULL) {
-    return NULL;
-  }
-  new->folder_id = 0;
-  new->parent_id = 0;
-  new->storage_id = 0;
-  new->name = NULL;
-  new->sibling = NULL;
-  new->child = NULL;
-  return new;
+    LIBMTP_folder_t *new = (LIBMTP_folder_t *) malloc(sizeof(LIBMTP_folder_t));
+    if (new == NULL)
+        return NULL;
+    new->folder_id = 0;
+    new->parent_id = 0;
+    new->storage_id = 0;
+    new->name = NULL;
+    new->sibling = NULL;
+    new->child = NULL;
+    return new;
 }
 
 /**
@@ -6697,24 +6689,18 @@ LIBMTP_folder_t *LIBMTP_new_folder_t(void)
 void LIBMTP_destroy_folder_t(LIBMTP_folder_t *folder)
 {
 
-  if(folder == NULL) {
-     return;
-  }
+    if (folder == NULL)
+        return;
 
-  //Destroy from the bottom up
-  if(folder->child != NULL) {
-     LIBMTP_destroy_folder_t(folder->child);
-  }
+    /* Destroy from the bottom up */
+    if (folder->child != NULL)
+        LIBMTP_destroy_folder_t(folder->child);
 
-  if(folder->sibling != NULL) {
-    LIBMTP_destroy_folder_t(folder->sibling);
-  }
+    if (folder->sibling != NULL)
+        LIBMTP_destroy_folder_t(folder->sibling);
 
-  if(folder->name != NULL) {
     free(folder->name);
-  }
-
-  free(folder);
+    free(folder);
 }
 
 /**
@@ -6727,25 +6713,21 @@ void LIBMTP_destroy_folder_t(LIBMTP_folder_t *folder)
  */
 LIBMTP_folder_t *LIBMTP_Find_Folder(LIBMTP_folder_t *folderlist, uint32_t id)
 {
-  LIBMTP_folder_t *ret = NULL;
+    LIBMTP_folder_t *ret = NULL;
 
-  if(folderlist == NULL) {
-    return NULL;
-  }
+    if (folderlist == NULL)
+        return NULL;
 
-  if(folderlist->folder_id == id) {
-    return folderlist;
-  }
+    if (folderlist->folder_id == id)
+        return folderlist;
 
-  if(folderlist->sibling) {
-    ret = LIBMTP_Find_Folder(folderlist->sibling, id);
-  }
+    if (folderlist->sibling)
+        ret = LIBMTP_Find_Folder(folderlist->sibling, id);
 
-  if(folderlist->child && ret == NULL) {
-    ret = LIBMTP_Find_Folder(folderlist->child, id);
-  }
+    if (folderlist->child && ret == NULL)
+        ret = LIBMTP_Find_Folder(folderlist->child, id);
 
-  return ret;
+    return ret;
 }
 
 /**
