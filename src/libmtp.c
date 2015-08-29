@@ -6979,18 +6979,17 @@ uint32_t LIBMTP_Create_Folder(LIBMTP_mtpdevice_t *device, char *name,
  */
 LIBMTP_playlist_t *LIBMTP_new_playlist_t(void)
 {
-  LIBMTP_playlist_t *new = (LIBMTP_playlist_t *) malloc(sizeof(LIBMTP_playlist_t));
-  if (new == NULL) {
-    return NULL;
-  }
-  new->playlist_id = 0;
-  new->parent_id = 0;
-  new->storage_id = 0;
-  new->name = NULL;
-  new->tracks = NULL;
-  new->no_tracks = 0;
-  new->next = NULL;
-  return new;
+    LIBMTP_playlist_t *new = (LIBMTP_playlist_t *) malloc(sizeof(LIBMTP_playlist_t));
+    if (new == NULL)
+        return NULL;
+    new->playlist_id = 0;
+    new->parent_id = 0;
+    new->storage_id = 0;
+    new->name = NULL;
+    new->tracks = NULL;
+    new->no_tracks = 0;
+    new->next = NULL;
+    return new;
 }
 
 /**
@@ -7002,15 +7001,12 @@ LIBMTP_playlist_t *LIBMTP_new_playlist_t(void)
  */
 void LIBMTP_destroy_playlist_t(LIBMTP_playlist_t *playlist)
 {
-  if (playlist == NULL) {
-    return;
-  }
-  if (playlist->name != NULL)
+    if (playlist == NULL)
+        return;
     free(playlist->name);
-  if (playlist->tracks != NULL)
     free(playlist->tracks);
-  free(playlist);
-  return;
+    free(playlist);
+    return;
 }
 
 /**
