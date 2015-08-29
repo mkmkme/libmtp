@@ -7097,56 +7097,50 @@ LIBMTP_playlist_t *LIBMTP_Get_Playlist_List(LIBMTP_mtpdevice_t *device)
  */
 LIBMTP_playlist_t *LIBMTP_Get_Playlist(LIBMTP_mtpdevice_t *device, uint32_t const plid)
 {
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  const int REQ_SPL = FLAG_PLAYLIST_SPL(ptp_usb);
-  PTPParams *params = (PTPParams *) device->params;
-  PTPObject *ob;
-  LIBMTP_playlist_t *pl;
-  uint16_t ret;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    const int REQ_SPL = FLAG_PLAYLIST_SPL(ptp_usb);
+    PTPParams *params = (PTPParams *) device->params;
+    PTPObject *ob;
+    LIBMTP_playlist_t *pl;
+    uint16_t ret;
 
-  // Get all the handles if we haven't already done that
-  if (params->nrofobjects == 0) {
-    flush_handles(device);
-  }
+    /* Get all the handles if we haven't already done that */
+    if (params->nrofobjects == 0)
+        flush_handles(device);
 
-  ret = ptp_object_want (params, plid, PTPOBJECT_OBJECTINFO_LOADED, &ob);
-  if (ret != PTP_RC_OK)
-    return NULL;
+    ret = ptp_object_want (params, plid, PTPOBJECT_OBJECTINFO_LOADED, &ob);
+    if (ret != PTP_RC_OK)
+        return NULL;
 
-  // For Samsung players we must look for the .spl extension explicitly since
-  // playlists are not stored as playlist objects.
-  if ( REQ_SPL && is_spl_playlist(&ob->oi) ) {
-    // Allocate a new playlist type
+    /* For Samsung players we must look for the .spl extension explicitly since
+     * playlists are not stored as playlist objects. */
+    if (REQ_SPL && is_spl_playlist(&ob->oi)) {
+        /* Allocate a new playlist type */
+        pl = LIBMTP_new_playlist_t();
+        spl_to_playlist_t(device, &ob->oi, ob->oid, pl);
+        return pl;
+    } else if (ob->oi.ObjectFormat != PTP_OFC_MTP_AbstractAudioVideoPlaylist)
+        return NULL;
+
+    /* Allocate a new playlist type */
     pl = LIBMTP_new_playlist_t();
-    spl_to_playlist_t(device, &ob->oi, ob->oid, pl);
+
+    pl->name = get_string_from_object(device, ob->oid, PTP_OPC_Name);
+    if (pl->name == NULL)
+        pl->name = strdup(ob->oi.Filename);
+    pl->playlist_id = ob->oid;
+    pl->parent_id = ob->oi.ParentObject;
+    pl->storage_id = ob->oi.StorageID;
+
+    /* Then get the track listing for this playlist */
+    ret = ptp_mtp_getobjectreferences(params, pl->playlist_id, &pl->tracks, &pl->no_tracks);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Playlist(): Could not get object references.");
+        pl->tracks = NULL;
+        pl->no_tracks = 0;
+    }
+
     return pl;
-  }
-
-  // Ignore stuff that isn't playlists
-  else if ( ob->oi.ObjectFormat != PTP_OFC_MTP_AbstractAudioVideoPlaylist ) {
-    return NULL;
-  }
-
-  // Allocate a new playlist type
-  pl = LIBMTP_new_playlist_t();
-
-  pl->name = get_string_from_object(device, ob->oid, PTP_OPC_Name);
-  if (pl->name == NULL) {
-    pl->name = strdup(ob->oi.Filename);
-  }
-  pl->playlist_id = ob->oid;
-  pl->parent_id = ob->oi.ParentObject;
-  pl->storage_id = ob->oi.StorageID;
-
-  // Then get the track listing for this playlist
-  ret = ptp_mtp_getobjectreferences(params, pl->playlist_id, &pl->tracks, &pl->no_tracks);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Playlist(): Could not get object references.");
-    pl->tracks = NULL;
-    pl->no_tracks = 0;
-  }
-
-  return pl;
 }
 
 /**
