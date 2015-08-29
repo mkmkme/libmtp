@@ -6379,82 +6379,81 @@ int LIBMTP_Delete_Object(LIBMTP_mtpdevice_t *device,
  * Internal function to update an object filename property.
  */
 static int set_object_filename(LIBMTP_mtpdevice_t *device,
-			       uint32_t object_id, uint16_t ptp_type,
-			       const char **newname_ptr)
+                    uint32_t object_id, uint16_t ptp_type,
+                    const char **newname_ptr)
 {
-  PTPParams             *params = (PTPParams *) device->params;
-  PTP_USB               *ptp_usb = (PTP_USB*) device->usbinfo;
-  PTPObjectPropDesc     opd;
-  uint16_t              ret;
-  char                  *newname;
+    PTPParams             *params = (PTPParams *) device->params;
+    PTP_USB               *ptp_usb = (PTP_USB*) device->usbinfo;
+    PTPObjectPropDesc     opd;
+    uint16_t              ret;
+    char                  *newname;
 
-  // See if we can modify the filename on this kind of files.
-  ret = ptp_mtp_getobjectpropdesc(params, PTP_OPC_ObjectFileName, ptp_type, &opd);
-  if (ret != PTP_RC_OK) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "set_object_filename(): "
-			    "could not get property description.");
-    return -1;
-  }
-
-  if (!opd.GetSet) {
-    ptp_free_objectpropdesc(&opd);
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "set_object_filename(): "
-            " property is not settable.");
-    // TODO: we COULD actually upload/download the object here, if we feel
-    //       like wasting time for the user.
-    return -1;
-  }
-
-  newname = strdup(*newname_ptr);
-
-  if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb)) {
-    strip_7bit_from_utf8(newname);
-  }
-
-  if (ptp_operation_issupported(params, PTP_OC_MTP_SetObjPropList) &&
-      !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
-    MTPProperties *props = NULL;
-    MTPProperties *prop = NULL;
-    int nrofprops = 0;
-
-    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-    prop->ObjectHandle = object_id;
-    prop->property = PTP_OPC_ObjectFileName;
-    prop->datatype = PTP_DTC_STR;
-    prop->propval.str = newname;
-
-    ret = ptp_mtp_setobjectproplist(params, props, nrofprops);
-
-    ptp_destroy_object_prop_list(props, nrofprops);
-
+    /* See if we can modify the filename on this kind of files. */
+    ret = ptp_mtp_getobjectpropdesc(params, PTP_OPC_ObjectFileName, ptp_type, &opd);
     if (ret != PTP_RC_OK) {
-        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "set_object_filename(): "
-              " could not set object property list.");
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "set_object_filename(): could not get property description.");
+        return -1;
+    }
+
+    if (!opd.GetSet) {
+        ptp_free_objectpropdesc(&opd);
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "set_object_filename(): property is not settable.");
+        /* TODO: we COULD actually upload/download the object here, if we feel
+         *       like wasting time for the user. */
+        return -1;
+    }
+
+    newname = strdup(*newname_ptr);
+
+    if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb))
+        strip_7bit_from_utf8(newname);
+
+    if (ptp_operation_issupported(params, PTP_OC_MTP_SetObjPropList) &&
+        !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
+        MTPProperties *props = NULL;
+        MTPProperties *prop = NULL;
+        int nrofprops = 0;
+
+        prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+        prop->ObjectHandle = object_id;
+        prop->property = PTP_OPC_ObjectFileName;
+        prop->datatype = PTP_DTC_STR;
+        prop->propval.str = newname;
+
+        ret = ptp_mtp_setobjectproplist(params, props, nrofprops);
+
+        ptp_destroy_object_prop_list(props, nrofprops);
+
+        if (ret != PTP_RC_OK) {
+            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                "set_object_filename(): could not set object property list.");
+            ptp_free_objectpropdesc(&opd);
+            return -1;
+        }
+    } else if (ptp_operation_issupported(params, PTP_OC_MTP_SetObjectPropValue)) {
+        ret = set_object_string(device, object_id, PTP_OPC_ObjectFileName, newname);
+        if (ret != 0) {
+            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                "set_object_filename(): could not set object filename.");
+            ptp_free_objectpropdesc(&opd);
+            return -1;
+        }
+    } else {
+        free(newname);
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "set_object_filename(): your device doesn't seem to support any known way of setting metadata.");
         ptp_free_objectpropdesc(&opd);
         return -1;
     }
-  } else if (ptp_operation_issupported(params, PTP_OC_MTP_SetObjectPropValue)) {
-    ret = set_object_string(device, object_id, PTP_OPC_ObjectFileName, newname);
-    if (ret != 0) {
-      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "set_object_filename(): "
-              " could not set object filename.");
-      ptp_free_objectpropdesc(&opd);
-      return -1;
-    }
-  } else {
-    free(newname);
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "set_object_filename(): "
-              " your device doesn't seem to support any known way of setting metadata.");
+
     ptp_free_objectpropdesc(&opd);
-    return -1;
-  }
 
-  ptp_free_objectpropdesc(&opd);
+    /* update cached object properties if metadata cache exists */
+    update_metadata_cache(device, object_id);
 
-  // update cached object properties if metadata cache exists
-  update_metadata_cache(device, object_id);
-
-  return 0;
+    return 0;
 }
 
 /**
