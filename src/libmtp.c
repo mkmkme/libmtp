@@ -6469,21 +6469,18 @@ static int set_object_filename(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Set_File_Name(LIBMTP_mtpdevice_t *device,
-                   LIBMTP_file_t *file, const char *newname)
+                    LIBMTP_file_t *file, const char *newname)
 {
-  int         ret;
+    int         ret;
 
-  ret = set_object_filename(device, file->item_id,
-			    map_libmtp_type_to_ptp_type(file->filetype),
-			    &newname);
+    ret = set_object_filename(device, file->item_id, map_libmtp_type_to_ptp_type(file->filetype), &newname);
 
-  if (ret != 0) {
+    if (ret != 0)
+        return ret;
+
+    free(file->filename);
+    file->filename = strdup(newname);
     return ret;
-  }
-
-  free(file->filename);
-  file->filename = strdup(newname);
-  return ret;
 }
 
 /**
