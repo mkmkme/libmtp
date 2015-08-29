@@ -6361,18 +6361,18 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Delete_Object(LIBMTP_mtpdevice_t *device,
-			 uint32_t object_id)
+                    uint32_t object_id)
 {
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
 
-  ret = ptp_deleteobject(params, object_id, 0);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Delete_Object(): could not delete object.");
-    return -1;
-  }
+    ret = ptp_deleteobject(params, object_id, 0);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "LIBMTP_Delete_Object(): could not delete object.");
+        return -1;
+    }
 
-  return 0;
+    return 0;
 }
 
 /**
