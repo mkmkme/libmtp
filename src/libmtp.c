@@ -6496,21 +6496,18 @@ int LIBMTP_Set_File_Name(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Set_Folder_Name(LIBMTP_mtpdevice_t *device,
-                   LIBMTP_folder_t *folder, const char* newname)
+                    LIBMTP_folder_t *folder, const char* newname)
 {
-  int ret;
+    int ret;
 
-  ret = set_object_filename(device, folder->folder_id,
-			    PTP_OFC_Association,
-			    &newname);
+    ret = set_object_filename(device, folder->folder_id, PTP_OFC_Association, &newname);
 
-  if (ret != 0) {
+    if (ret != 0)
+        return ret;
+
+    free(folder->name);
+    folder->name = strdup(newname);
     return ret;
-    }
-
-  free(folder->name);
-  folder->name = strdup(newname);
-  return ret;
 }
 
 /**
