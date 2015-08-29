@@ -5986,379 +5986,363 @@ static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *file
  *        properties that exist cannot be updated.
  */
 int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
-				 LIBMTP_track_t const * const metadata)
+                LIBMTP_track_t const * const metadata)
 {
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  uint32_t i;
-  uint16_t *properties = NULL;
-  uint32_t propcnt = 0;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    uint32_t i;
+    uint16_t *properties = NULL;
+    uint32_t propcnt = 0;
 
-  // First see which properties can be set on this file format and apply accordingly
-  // i.e only try to update this metadata for object tags that exist on the current player.
-  ret = ptp_mtp_getobjectpropssupported(params, map_libmtp_type_to_ptp_type(metadata->filetype), &propcnt, &properties);
-  if (ret != PTP_RC_OK) {
-    // Just bail out for now, nothing is ever set.
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-			    "could not retrieve supported object properties.");
-    return -1;
-  }
-  if (ptp_operation_issupported(params, PTP_OC_MTP_SetObjPropList) &&
-      !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
-    MTPProperties *props = NULL;
-    MTPProperties *prop = NULL;
-    int nrofprops = 0;
-
-    for (i=0;i<propcnt;i++) {
-      PTPObjectPropDesc opd;
-
-      ret = ptp_mtp_getobjectpropdesc(params, properties[i], map_libmtp_type_to_ptp_type(metadata->filetype), &opd);
-      if (ret != PTP_RC_OK) {
-	add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				"could not get property description.");
-      } else if (opd.GetSet) {
-	switch (properties[i]) {
-	case PTP_OPC_Name:
-	  if (metadata->title == NULL)
-	    break;
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_Name;
-	  prop->datatype = PTP_DTC_STR;
-	  prop->propval.str = strdup(metadata->title);
-	  break;
-	case PTP_OPC_AlbumName:
-	  if (metadata->album == NULL)
-	    break;
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_AlbumName;
-	  prop->datatype = PTP_DTC_STR;
-	  prop->propval.str = strdup(metadata->album);
-	  break;
-	case PTP_OPC_Artist:
-	  if (metadata->artist == NULL)
-	    break;
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_Artist;
-	  prop->datatype = PTP_DTC_STR;
-	  prop->propval.str = strdup(metadata->artist);
-	  break;
-	case PTP_OPC_Composer:
-	  if (metadata->composer == NULL)
-	    break;
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_Composer;
-	  prop->datatype = PTP_DTC_STR;
-	  prop->propval.str = strdup(metadata->composer);
-	  break;
-	case PTP_OPC_Genre:
-	  if (metadata->genre == NULL)
-	    break;
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_Genre;
-	  prop->datatype = PTP_DTC_STR;
-	  prop->propval.str = strdup(metadata->genre);
-	  break;
-	case PTP_OPC_Duration:
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_Duration;
-	  prop->datatype = PTP_DTC_UINT32;
-	  prop->propval.u32 = adjust_u32(metadata->duration, &opd);
-	  break;
-	case PTP_OPC_Track:
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_Track;
-	  prop->datatype = PTP_DTC_UINT16;
-	  prop->propval.u16 = adjust_u16(metadata->tracknumber, &opd);
-	  break;
-	case PTP_OPC_OriginalReleaseDate:
-	  if (metadata->date == NULL)
-	    break;
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_OriginalReleaseDate;
-	  prop->datatype = PTP_DTC_STR;
-	  prop->propval.str = strdup(metadata->date);
-	  break;
-	case PTP_OPC_SampleRate:
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_SampleRate;
-	  prop->datatype = PTP_DTC_UINT32;
-	  prop->propval.u32 = adjust_u32(metadata->samplerate, &opd);
-	  break;
-	case PTP_OPC_NumberOfChannels:
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_NumberOfChannels;
-	  prop->datatype = PTP_DTC_UINT16;
-	  prop->propval.u16 = adjust_u16(metadata->nochannels, &opd);
-	  break;
-	case PTP_OPC_AudioWAVECodec:
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_AudioWAVECodec;
-	  prop->datatype = PTP_DTC_UINT32;
-	  prop->propval.u32 = adjust_u32(metadata->wavecodec, &opd);
-	  break;
-	case PTP_OPC_AudioBitRate:
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_AudioBitRate;
-	  prop->datatype = PTP_DTC_UINT32;
-	  prop->propval.u32 = adjust_u32(metadata->bitrate, &opd);
-	  break;
-	case PTP_OPC_BitRateType:
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_BitRateType;
-	  prop->datatype = PTP_DTC_UINT16;
-	  prop->propval.u16 = adjust_u16(metadata->bitratetype, &opd);
-	  break;
-	case PTP_OPC_Rating:
-	  // TODO: shall this be set for rating 0?
-	  if (metadata->rating == 0)
-	    break;
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_Rating;
-	  prop->datatype = PTP_DTC_UINT16;
-	  prop->propval.u16 = adjust_u16(metadata->rating, &opd);
-	  break;
-	case PTP_OPC_UseCount:
-	  prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	  prop->ObjectHandle = metadata->item_id;
-	  prop->property = PTP_OPC_UseCount;
-	  prop->datatype = PTP_DTC_UINT32;
-	  prop->propval.u32 = adjust_u32(metadata->usecount, &opd);
-	  break;
-	case PTP_OPC_DateModified:
-	  if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
-	    // Tag with current time if that is supported
-	    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
-	    prop->ObjectHandle = metadata->item_id;
-	    prop->property = PTP_OPC_DateModified;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = get_iso8601_stamp();
-	  }
-	  break;
-	default:
-	  break;
-	}
-      }
-      ptp_free_objectpropdesc(&opd);
-    }
-
-    // NOTE: File size is not updated, this should not change anyway.
-    // neither will we change the filename.
-
-    ret = ptp_mtp_setobjectproplist(params, props, nrofprops);
-
-    ptp_destroy_object_prop_list(props, nrofprops);
-
+    /* First see which properties can be set on this file format and apply accordingly
+     * i.e only try to update this metadata for object tags that exist on the current player. */
+    ret = ptp_mtp_getobjectpropssupported(params, map_libmtp_type_to_ptp_type(metadata->filetype), &propcnt, &properties);
     if (ret != PTP_RC_OK) {
-      // TODO: return error of which property we couldn't set
-      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-			      "could not set object property list.");
-      free(properties);
-      return -1;
+        /* Just bail out for now, nothing is ever set. */
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "LIBMTP_Update_Track_Metadata(): could not retrieve supported object properties.");
+        return -1;
+    }
+    if (ptp_operation_issupported(params, PTP_OC_MTP_SetObjPropList) &&
+        !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
+        MTPProperties *props = NULL;
+        MTPProperties *prop = NULL;
+        int nrofprops = 0;
+
+        for (i = 0; i < propcnt; i++) {
+            PTPObjectPropDesc opd;
+
+            ret = ptp_mtp_getobjectpropdesc(params, properties[i], map_libmtp_type_to_ptp_type(metadata->filetype), &opd);
+            if (ret != PTP_RC_OK)
+                add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                    "LIBMTP_Update_Track_Metadata(): could not get property description.");
+            else if (opd.GetSet) {
+                switch (properties[i]) {
+                case PTP_OPC_Name:
+                    if (metadata->title == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_Name;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(metadata->title);
+                    break;
+                case PTP_OPC_AlbumName:
+                    if (metadata->album == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_AlbumName;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(metadata->album);
+                    break;
+                case PTP_OPC_Artist:
+                    if (metadata->artist == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_Artist;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(metadata->artist);
+                    break;
+                case PTP_OPC_Composer:
+                    if (metadata->composer == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_Composer;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(metadata->composer);
+                    break;
+                case PTP_OPC_Genre:
+                    if (metadata->genre == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_Genre;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(metadata->genre);
+                    break;
+                case PTP_OPC_Duration:
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_Duration;
+                    prop->datatype = PTP_DTC_UINT32;
+                    prop->propval.u32 = adjust_u32(metadata->duration, &opd);
+                    break;
+                case PTP_OPC_Track:
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_Track;
+                    prop->datatype = PTP_DTC_UINT16;
+                    prop->propval.u16 = adjust_u16(metadata->tracknumber, &opd);
+                    break;
+                case PTP_OPC_OriginalReleaseDate:
+                    if (metadata->date == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_OriginalReleaseDate;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(metadata->date);
+                    break;
+                case PTP_OPC_SampleRate:
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_SampleRate;
+                    prop->datatype = PTP_DTC_UINT32;
+                    prop->propval.u32 = adjust_u32(metadata->samplerate, &opd);
+                    break;
+                case PTP_OPC_NumberOfChannels:
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_NumberOfChannels;
+                    prop->datatype = PTP_DTC_UINT16;
+                    prop->propval.u16 = adjust_u16(metadata->nochannels, &opd);
+                    break;
+                case PTP_OPC_AudioWAVECodec:
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_AudioWAVECodec;
+                    prop->datatype = PTP_DTC_UINT32;
+                    prop->propval.u32 = adjust_u32(metadata->wavecodec, &opd);
+                    break;
+                case PTP_OPC_AudioBitRate:
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_AudioBitRate;
+                    prop->datatype = PTP_DTC_UINT32;
+                    prop->propval.u32 = adjust_u32(metadata->bitrate, &opd);
+                    break;
+                case PTP_OPC_BitRateType:
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_BitRateType;
+                    prop->datatype = PTP_DTC_UINT16;
+                    prop->propval.u16 = adjust_u16(metadata->bitratetype, &opd);
+                    break;
+                case PTP_OPC_Rating:
+                    /* TODO: shall this be set for rating 0? */
+                    if (metadata->rating == 0)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_Rating;
+                    prop->datatype = PTP_DTC_UINT16;
+                    prop->propval.u16 = adjust_u16(metadata->rating, &opd);
+                    break;
+                case PTP_OPC_UseCount:
+                    prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                    prop->ObjectHandle = metadata->item_id;
+                    prop->property = PTP_OPC_UseCount;
+                    prop->datatype = PTP_DTC_UINT32;
+                    prop->propval.u32 = adjust_u32(metadata->usecount, &opd);
+                    break;
+                case PTP_OPC_DateModified:
+                    if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
+                        /* Tag with current time if that is supported */
+                        prop = ptp_get_new_object_prop_entry(&props, &nrofprops);
+                        prop->ObjectHandle = metadata->item_id;
+                        prop->property = PTP_OPC_DateModified;
+                        prop->datatype = PTP_DTC_STR;
+                        prop->propval.str = get_iso8601_stamp();
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+            ptp_free_objectpropdesc(&opd);
+        }
+
+        /* NOTE: File size is not updated, this should not change anyway.
+         * neither will we change the filename. */
+
+        ret = ptp_mtp_setobjectproplist(params, props, nrofprops);
+
+        ptp_destroy_object_prop_list(props, nrofprops);
+
+        if (ret != PTP_RC_OK) {
+            /* TODO: return error of which property we couldn't set */
+            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                "LIBMTP_Update_Track_Metadata(): could not set object property list.");
+            free(properties);
+            return -1;
+        }
+
+    } else if (ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
+        for (i = 0; i < propcnt; i++) {
+            PTPObjectPropDesc opd;
+
+            ret = ptp_mtp_getobjectpropdesc(params, properties[i], map_libmtp_type_to_ptp_type(metadata->filetype), &opd);
+            if (ret != PTP_RC_OK)
+                add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                    "LIBMTP_Update_Track_Metadata(): could not get property description.");
+            else if (opd.GetSet) {
+                switch (properties[i]) {
+                case PTP_OPC_Name:
+                    /* Update title */
+                    ret = set_object_string(device, metadata->item_id, PTP_OPC_Name, metadata->title);
+                    if (ret != 0)
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "LIBMTP_Update_Track_Metadata(): could not set track title.");
+                        break;
+                case PTP_OPC_AlbumName:
+                    /* Update album */
+                    ret = set_object_string(device, metadata->item_id, PTP_OPC_AlbumName, metadata->album);
+                    if (ret != 0)
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "LIBMTP_Update_Track_Metadata(): could not set track album name.");
+                    break;
+                case PTP_OPC_Artist:
+                    /* Update artist */
+                    ret = set_object_string(device, metadata->item_id, PTP_OPC_Artist, metadata->artist);
+                    if (ret != 0)
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "LIBMTP_Update_Track_Metadata(): could not set track artist name.");
+                    break;
+                case PTP_OPC_Composer:
+                    /* Update composer */
+                    ret = set_object_string(device, metadata->item_id, PTP_OPC_Composer, metadata->composer);
+                    if (ret != 0)
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "LIBMTP_Update_Track_Metadata(): could not set track composer name.");
+                    break;
+                case PTP_OPC_Genre:
+                    /* Update genre (but only if valid) */
+                    if (metadata->genre) {
+                        ret = set_object_string(device, metadata->item_id, PTP_OPC_Genre, metadata->genre);
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "update_abstract_list(): could not set genre.");
+                    }
+                    break;
+                case PTP_OPC_Duration:
+                    /* Update duration */
+                    if (metadata->duration != 0) {
+                        ret = set_object_u32(device, metadata->item_id, PTP_OPC_Duration, adjust_u32(metadata->duration, &opd));
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set track duration.");
+                    }
+                    break;
+                case PTP_OPC_Track:
+                    /* Update track number. */
+                    if (metadata->tracknumber != 0) {
+                        ret = set_object_u16(device, metadata->item_id, PTP_OPC_Track, adjust_u16(metadata->tracknumber, &opd));
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set track tracknumber.");
+                    }
+                    break;
+                case PTP_OPC_OriginalReleaseDate:
+                    /* Update creation datetime
+                     * The date can be zero, but some devices do not support setting zero
+                     * dates (and it seems that a zero date should never be set anyway) */
+                    if (metadata->date) {
+                        ret = set_object_string(device, metadata->item_id, PTP_OPC_OriginalReleaseDate, metadata->date);
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set track release date.");
+                    }
+                    break;
+                /* These are, well not so important. */
+                case PTP_OPC_SampleRate:
+                    /* Update sample rate */
+                    if (metadata->samplerate != 0) {
+                        ret = set_object_u32(device, metadata->item_id, PTP_OPC_SampleRate, adjust_u32(metadata->samplerate, &opd));
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set samplerate.");
+                    }
+                    break;
+                case PTP_OPC_NumberOfChannels:
+                    /* Update number of channels */
+                    if (metadata->nochannels != 0) {
+                        ret = set_object_u16(device, metadata->item_id, PTP_OPC_NumberOfChannels, adjust_u16(metadata->nochannels, &opd));
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set number of channels.");
+                    }
+                    break;
+                case PTP_OPC_AudioWAVECodec:
+                    /* Update WAVE codec */
+                    if (metadata->wavecodec != 0) {
+                        ret = set_object_u32(device, metadata->item_id, PTP_OPC_AudioWAVECodec, adjust_u32(metadata->wavecodec, &opd));
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set WAVE codec.");
+                    }
+                    break;
+                case PTP_OPC_AudioBitRate:
+                    /* Update bitrate */
+                    if (metadata->bitrate != 0) {
+                        ret = set_object_u32(device, metadata->item_id, PTP_OPC_AudioBitRate, adjust_u32(metadata->bitrate, &opd));
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set bitrate.");
+                    }
+                    break;
+                case PTP_OPC_BitRateType:
+                    /* Update bitrate type */
+                    if (metadata->bitratetype != 0) {
+                        ret = set_object_u16(device, metadata->item_id, PTP_OPC_BitRateType, adjust_u16(metadata->bitratetype, &opd));
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set bitratetype.");
+                    }
+                    break;
+                case PTP_OPC_Rating:
+                    /* Update user rating */
+                    /* TODO: shall this be set for rating 0? */
+                    if (metadata->rating != 0) {
+                        ret = set_object_u16(device, metadata->item_id, PTP_OPC_Rating, adjust_u16(metadata->rating, &opd));
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set user rating.");
+                    }
+                    break;
+                case PTP_OPC_UseCount:
+                    /* Update use count, set even to zero if desired. */
+                    ret = set_object_u32(device, metadata->item_id, PTP_OPC_UseCount, adjust_u32(metadata->usecount, &opd));
+                    if (ret != 0)
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "LIBMTP_Update_Track_Metadata(): could not set use count.");
+                    break;
+                case PTP_OPC_DateModified:
+                    if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
+                        /* Update modification time if supported */
+                        char *tmpstamp = get_iso8601_stamp();
+                        ret = set_object_string(device, metadata->item_id, PTP_OPC_DateModified, tmpstamp);
+                        if (ret != 0)
+                            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_Update_Track_Metadata(): could not set modification date.");
+                        free(tmpstamp);
+                    }
+                    break;
+
+                /* NOTE: File size is not updated, this should not change anyway.
+                 * neither will we change the filename. */
+                default:
+                    break;
+                }
+            }
+            ptp_free_objectpropdesc(&opd);
+        }
+    } else {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "LIBMTP_Update_Track_Metadata(): Your device doesn't seem to support any known way of setting metadata.");
+        free(properties);
+        return -1;
     }
 
-  } else if (ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
-    for (i=0;i<propcnt;i++) {
-      PTPObjectPropDesc opd;
+    /* update cached object properties if metadata cache exists */
+    update_metadata_cache(device, metadata->item_id);
 
-      ret = ptp_mtp_getobjectpropdesc(params, properties[i], map_libmtp_type_to_ptp_type(metadata->filetype), &opd);
-      if (ret != PTP_RC_OK) {
-	add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				"could not get property description.");
-      } else if (opd.GetSet) {
-	switch (properties[i]) {
-	case PTP_OPC_Name:
-	  // Update title
-	  ret = set_object_string(device, metadata->item_id, PTP_OPC_Name, metadata->title);
-	  if (ret != 0) {
-	    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				    "could not set track title.");
-	  }
-	  break;
-	case PTP_OPC_AlbumName:
-	  // Update album
-	  ret = set_object_string(device, metadata->item_id, PTP_OPC_AlbumName, metadata->album);
-	  if (ret != 0) {
-	    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				    "could not set track album name.");
-	  }
-	  break;
-	case PTP_OPC_Artist:
-	  // Update artist
-	  ret = set_object_string(device, metadata->item_id, PTP_OPC_Artist, metadata->artist);
-	  if (ret != 0) {
-	    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				    "could not set track artist name.");
-	  }
-	  break;
-	case PTP_OPC_Composer:
-	  // Update composer
-	  ret = set_object_string(device, metadata->item_id, PTP_OPC_Composer, metadata->composer);
-	  if (ret != 0) {
-	    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				    "could not set track composer name.");
-	  }
-	  break;
-	case PTP_OPC_Genre:
-	  // Update genre (but only if valid)
-	  if (metadata->genre) {
-	    ret = set_object_string(device, metadata->item_id, PTP_OPC_Genre, metadata->genre);
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "update_abstract_list(): "
-				      "could not set genre.");
-	    }
-	  }
-	  break;
-	case PTP_OPC_Duration:
-	  // Update duration
-	  if (metadata->duration != 0) {
-	    ret = set_object_u32(device, metadata->item_id, PTP_OPC_Duration, adjust_u32(metadata->duration, &opd));
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				      "could not set track duration.");
-	    }
-	  }
-	  break;
-	case PTP_OPC_Track:
-	  // Update track number.
-	  if (metadata->tracknumber != 0) {
-	    ret = set_object_u16(device, metadata->item_id, PTP_OPC_Track, adjust_u16(metadata->tracknumber, &opd));
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				      "could not set track tracknumber.");
-	    }
-	  }
-	  break;
-	case PTP_OPC_OriginalReleaseDate:
-	  // Update creation datetime
-	  // The date can be zero, but some devices do not support setting zero
-	  // dates (and it seems that a zero date should never be set anyway)
-	  if (metadata->date) {
-	    ret = set_object_string(device, metadata->item_id, PTP_OPC_OriginalReleaseDate, metadata->date);
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				      "could not set track release date.");
-	    }
-	  }
-	  break;
-	  // These are, well not so important.
-	case PTP_OPC_SampleRate:
-	  // Update sample rate
-	  if (metadata->samplerate != 0) {
-	    ret = set_object_u32(device, metadata->item_id, PTP_OPC_SampleRate, adjust_u32(metadata->samplerate, &opd));
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				      "could not set samplerate.");
-	    }
-	  }
-	  break;
-	case PTP_OPC_NumberOfChannels:
-	  // Update number of channels
-	  if (metadata->nochannels != 0) {
-	    ret = set_object_u16(device, metadata->item_id, PTP_OPC_NumberOfChannels, adjust_u16(metadata->nochannels, &opd));
-	  if (ret != 0) {
-	    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				    "could not set number of channels.");
-	  }
-	}
-	  break;
-	case PTP_OPC_AudioWAVECodec:
-	  // Update WAVE codec
-	  if (metadata->wavecodec != 0) {
-	    ret = set_object_u32(device, metadata->item_id, PTP_OPC_AudioWAVECodec, adjust_u32(metadata->wavecodec, &opd));
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				      "could not set WAVE codec.");
-	    }
-	  }
-	  break;
-	case PTP_OPC_AudioBitRate:
-	  // Update bitrate
-	  if (metadata->bitrate != 0) {
-	    ret = set_object_u32(device, metadata->item_id, PTP_OPC_AudioBitRate, adjust_u32(metadata->bitrate, &opd));
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				      "could not set bitrate.");
-	  }
-	  }
-	  break;
-	case PTP_OPC_BitRateType:
-	  // Update bitrate type
-	  if (metadata->bitratetype != 0) {
-	    ret = set_object_u16(device, metadata->item_id, PTP_OPC_BitRateType, adjust_u16(metadata->bitratetype, &opd));
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				      "could not set bitratetype.");
-	    }
-	  }
-	  break;
-	case PTP_OPC_Rating:
-	  // Update user rating
-	  // TODO: shall this be set for rating 0?
-	  if (metadata->rating != 0) {
-	    ret = set_object_u16(device, metadata->item_id, PTP_OPC_Rating, adjust_u16(metadata->rating, &opd));
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				      "could not set user rating.");
-	    }
-	  }
-	  break;
-	case PTP_OPC_UseCount:
-	  // Update use count, set even to zero if desired.
-	  ret = set_object_u32(device, metadata->item_id, PTP_OPC_UseCount, adjust_u32(metadata->usecount, &opd));
-	  if (ret != 0) {
-	    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				  "could not set use count.");
-	  }
-	  break;
-	case PTP_OPC_DateModified:
-	  if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
-	    // Update modification time if supported
-	    char *tmpstamp = get_iso8601_stamp();
-	    ret = set_object_string(device, metadata->item_id, PTP_OPC_DateModified, tmpstamp);
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-				      "could not set modification date.");
-	    }
-	    free(tmpstamp);
-	  }
-	  break;
-
-	  // NOTE: File size is not updated, this should not change anyway.
-	  // neither will we change the filename.
-	default:
-	  break;
-	}
-      }
-      ptp_free_objectpropdesc(&opd);
-    }
-  } else {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Update_Track_Metadata(): "
-                            "Your device doesn't seem to support any known way of setting metadata.");
     free(properties);
-    return -1;
-  }
 
-  // update cached object properties if metadata cache exists
-  update_metadata_cache(device, metadata->item_id);
-
-  free(properties);
-
-  return 0;
+    return 0;
 }
 
 /**
