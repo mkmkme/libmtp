@@ -6777,102 +6777,94 @@ static LIBMTP_folder_t *get_subfolders_for_folder(LIBMTP_folder_t *list, uint32_
  * @return a list of folders
  */
  LIBMTP_folder_t *LIBMTP_Get_Folder_List_For_Storage(LIBMTP_mtpdevice_t *device,
-						    uint32_t const storage)
+                    uint32_t const storage)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  LIBMTP_folder_t head, *rv;
-  int i;
+    PTPParams *params = (PTPParams *) device->params;
+    LIBMTP_folder_t head, *rv;
+    int i;
 
-  // Get all the handles if we haven't already done that
-  if (params->nrofobjects == 0) {
-    flush_handles(device);
-  }
-
-  /*
-   * This creates a temporary list of the folders, this is in a
-   * reverse order and uses the Folder pointers that are already
-   * in the Folder structure. From this we can then build up the
-   * folder hierarchy with only looking at this temporary list,
-   * and removing the folders from this temporary list as we go.
-   * This significantly reduces the number of operations that we
-   * have to do in building the folder hierarchy. Also since the
-   * temp list is in reverse order, when we prepend to the sibling
-   * list things are in the same order as they were originally
-   * in the handle list.
-   */
-  head.sibling = &head;
-  head.child = &head;
-  for (i = 0; i < params->nrofobjects; i++) {
-    LIBMTP_folder_t *folder;
-    PTPObject *ob;
-
-    ob = &params->objects[i];
-    if (ob->oi.ObjectFormat != PTP_OFC_Association) {
-      continue;
-    }
-
-    if (storage != PTP_GOH_ALL_STORAGE && storage != ob->oi.StorageID) {
-      continue;
-    }
+    /* Get all the handles if we haven't already done that */
+    if (params->nrofobjects == 0)
+        flush_handles(device);
 
     /*
-     * Do we know how to handle these? They are part
-     * of the MTP 1.0 specification paragraph 3.6.4.
-     * For AssociationDesc 0x00000001U ptp_mtp_getobjectreferences()
-     * should be called on these to get the contained objects, but
-     * we basically don't care. Hopefully parent_id is maintained for all
-     * children, because we rely on that instead.
+     * This creates a temporary list of the folders, this is in a
+     * reverse order and uses the Folder pointers that are already
+     * in the Folder structure. From this we can then build up the
+     * folder hierarchy with only looking at this temporary list,
+     * and removing the folders from this temporary list as we go.
+     * This significantly reduces the number of operations that we
+     * have to do in building the folder hierarchy. Also since the
+     * temp list is in reverse order, when we prepend to the sibling
+     * list things are in the same order as they were originally
+     * in the handle list.
      */
-    if (ob->oi.AssociationDesc != 0x00000000U) {
-      LIBMTP_INFO("MTP extended association type 0x%08x encountered\n", ob->oi.AssociationDesc);
+    head.sibling = &head;
+    head.child = &head;
+    for (i = 0; i < params->nrofobjects; i++) {
+        LIBMTP_folder_t *folder;
+        PTPObject *ob;
+
+        ob = &params->objects[i];
+        if (ob->oi.ObjectFormat != PTP_OFC_Association)
+            continue;
+
+        if (storage != PTP_GOH_ALL_STORAGE && storage != ob->oi.StorageID)
+            continue;
+
+        /*
+         * Do we know how to handle these? They are part
+         * of the MTP 1.0 specification paragraph 3.6.4.
+         * For AssociationDesc 0x00000001U ptp_mtp_getobjectreferences()
+         * should be called on these to get the contained objects, but
+         * we basically don't care. Hopefully parent_id is maintained for all
+         * children, because we rely on that instead.
+         */
+        if (ob->oi.AssociationDesc != 0x00000000U)
+            LIBMTP_INFO("MTP extended association type 0x%08x encountered\n", ob->oi.AssociationDesc);
+
+        // Create a folder struct...
+        folder = LIBMTP_new_folder_t();
+        if (folder == NULL)
+            /* malloc failure or so. */
+            return NULL;
+        folder->folder_id = ob->oid;
+        folder->parent_id = ob->oi.ParentObject;
+        folder->storage_id = ob->oi.StorageID;
+        folder->name = (ob->oi.Filename) ? (char *)strdup(ob->oi.Filename) : NULL;
+
+        /* pretend sibling says next, and child says prev. */
+        folder->sibling = head.sibling;
+        folder->child = &head;
+        head.sibling->child = folder;
+        head.sibling = folder;
     }
 
-    // Create a folder struct...
-    folder = LIBMTP_new_folder_t();
-    if (folder == NULL) {
-      // malloc failure or so.
-      return NULL;
+    /* We begin at the given root folder and get them all recursively */
+    rv = get_subfolders_for_folder(&head, 0x00000000U);
+
+    /* Some buggy devices may have some files in the "root folder"
+     * 0xffffffff so if 0x00000000 didn't return any folders,
+     * look for children of the root 0xffffffffU */
+    if (rv == NULL) {
+        rv = get_subfolders_for_folder(&head, 0xffffffffU);
+        if (rv != NULL)
+            LIBMTP_ERROR("Device have files in \"root folder\" 0xffffffffU - this is a firmware bug (but continuing)\n");
     }
-    folder->folder_id = ob->oid;
-    folder->parent_id = ob->oi.ParentObject;
-    folder->storage_id = ob->oi.StorageID;
-    folder->name = (ob->oi.Filename) ? (char *)strdup(ob->oi.Filename) : NULL;
 
-    // pretend sibling says next, and child says prev.
-    folder->sibling = head.sibling;
-    folder->child = &head;
-    head.sibling->child = folder;
-    head.sibling = folder;
-  }
+    /* The temp list should be empty. Clean up any orphans just in case. */
+    while (head.sibling != &head) {
+        LIBMTP_folder_t *curr = head.sibling;
 
-  // We begin at the given root folder and get them all recursively
-  rv = get_subfolders_for_folder(&head, 0x00000000U);
+        LIBMTP_INFO("Orphan folder with ID: 0x%08x name: \"%s\" encountered.\n", curr->folder_id, curr->name);
+        curr->sibling->child = curr->child;
+        curr->child->sibling = curr->sibling;
+        curr->child = NULL;
+        curr->sibling = NULL;
+        LIBMTP_destroy_folder_t(curr);
+    }
 
-  // Some buggy devices may have some files in the "root folder"
-  // 0xffffffff so if 0x00000000 didn't return any folders,
-  // look for children of the root 0xffffffffU
-  if (rv == NULL) {
-    rv = get_subfolders_for_folder(&head, 0xffffffffU);
-    if (rv != NULL)
-      LIBMTP_ERROR("Device have files in \"root folder\" 0xffffffffU - "
-		   "this is a firmware bug (but continuing)\n");
-  }
-
-  // The temp list should be empty. Clean up any orphans just in case.
-  while(head.sibling != &head) {
-    LIBMTP_folder_t *curr = head.sibling;
-
-    LIBMTP_INFO("Orphan folder with ID: 0x%08x name: \"%s\" encountered.\n",
-	   curr->folder_id,
-	   curr->name);
-    curr->sibling->child = curr->child;
-    curr->child->sibling = curr->sibling;
-    curr->child = NULL;
-    curr->sibling = NULL;
-    LIBMTP_destroy_folder_t(curr);
-  }
-
-  return rv;
+    return rv;
 }
 
 /**
@@ -6884,7 +6876,7 @@ static LIBMTP_folder_t *get_subfolders_for_folder(LIBMTP_folder_t *list, uint32_
  */
 LIBMTP_folder_t *LIBMTP_Get_Folder_List(LIBMTP_mtpdevice_t *device)
 {
-  return LIBMTP_Get_Folder_List_For_Storage(device, PTP_GOH_ALL_STORAGE);
+    return LIBMTP_Get_Folder_List_For_Storage(device, PTP_GOH_ALL_STORAGE);
 }
 
 /**
