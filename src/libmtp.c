@@ -7164,323 +7164,325 @@ LIBMTP_playlist_t *LIBMTP_Get_Playlist(LIBMTP_mtpdevice_t *device, uint32_t cons
  * @return 0 on success, any other value means failure.
  */
 static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
-				    char const * const name,
-				    char const * const artist,
-				    char const * const composer,
-				    char const * const genre,
-				    uint32_t const parenthandle,
-				    uint32_t const storageid,
-				    uint16_t const objectformat,
-				    char const * const suffix,
-				    uint32_t * const newid,
-				    uint32_t const * const tracks,
-				    uint32_t const no_tracks)
+                    char const * const name,
+                    char const * const artist,
+                    char const * const composer,
+                    char const * const genre,
+                    uint32_t const parenthandle,
+                    uint32_t const storageid,
+                    uint16_t const objectformat,
+                    char const * const suffix,
+                    uint32_t * const newid,
+                    uint32_t const * const tracks,
+                    uint32_t const no_tracks)
 
 {
-  int i;
-  int supported = 0;
-  uint16_t ret;
-  uint16_t *properties = NULL;
-  uint32_t propcnt = 0;
-  uint32_t store;
-  uint32_t localph = parenthandle;
-  uint8_t nonconsumable = 0x00U; /* By default it is consumable */
-  PTPParams *params = (PTPParams *) device->params;
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  char fname[256];
-  //uint8_t data[2];
+    int i;
+    int supported = 0;
+    uint16_t ret;
+    uint16_t *properties = NULL;
+    uint32_t propcnt = 0;
+    uint32_t store;
+    uint32_t localph = parenthandle;
+    uint8_t nonconsumable = 0x00U; /* By default it is consumable */
+    PTPParams *params = (PTPParams *) device->params;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    char fname[256];
+    /* uint8_t data[2]; */
 
-  // NULL check
-  if (!name) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): list name was NULL, using default name \"Unknown\"");
-    return -1;
-  }
-
-  if (storageid == 0) {
-    // I'm just guessing that an abstract list may require 512 bytes
-    store = get_suggested_storage_id(device, 512, localph);
-  } else {
-    store = storageid;
-  }
-
-  // Check if we can create an object of this type
-  for ( i=0; i < params->deviceinfo.ImageFormats_len; i++ ) {
-    if (params->deviceinfo.ImageFormats[i] == objectformat) {
-      supported = 1;
-      break;
-    }
-  }
-  if (!supported) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): player does not support this abstract type");
-    LIBMTP_ERROR("Unsupported abstract list type: %04x\n", objectformat);
-    return -1;
-  }
-
-  // add the new suffix if it isn't there
-  fname[0] = '\0';
-  if (strlen(name) > strlen(suffix)) {
-    char const * const suff = &name[strlen(name)-strlen(suffix)];
-    if (!strcmp(suff, suffix)) {
-      // Home free.
-      strncpy(fname, name, sizeof(fname));
-    }
-  }
-  // If it didn't end with "<suffix>" then add that here.
-  if (fname[0] == '\0') {
-    strncpy(fname, name, sizeof(fname)-strlen(suffix)-1);
-    strcat(fname, suffix);
-    fname[sizeof(fname)-1] = '\0';
-  }
-
-  if (ptp_operation_issupported(params, PTP_OC_MTP_SendObjectPropList) &&
-      !FLAG_BROKEN_SEND_OBJECT_PROPLIST(ptp_usb)) {
-    MTPProperties *props = NULL;
-    MTPProperties *prop = NULL;
-    int nrofprops = 0;
-
-    *newid = 0x00000000U;
-
-    ret = ptp_mtp_getobjectpropssupported(params, objectformat, &propcnt, &properties);
-
-    for (i=0;i<propcnt;i++) {
-      PTPObjectPropDesc opd;
-
-      ret = ptp_mtp_getobjectpropdesc(params, properties[i], objectformat, &opd);
-      if (ret != PTP_RC_OK) {
-	add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): "
-				"could not get property description.");
-      } else if (opd.GetSet) {
-	switch (properties[i]) {
-	case PTP_OPC_ObjectFileName:
-	  prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	  prop->ObjectHandle = *newid;
-	  prop->property = PTP_OPC_ObjectFileName;
-	  prop->datatype = PTP_DTC_STR;
-	  prop->propval.str = strdup(fname);
-	  if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb)) {
-	    strip_7bit_from_utf8(prop->propval.str);
-	  }
-	  break;
-	case PTP_OPC_ProtectionStatus:
-	  prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	  prop->ObjectHandle = *newid;
-	  prop->property = PTP_OPC_ProtectionStatus;
-	  prop->datatype = PTP_DTC_UINT16;
-	  prop->propval.u16 = 0x0000U; /* Not protected */
-	  break;
-	case PTP_OPC_NonConsumable:
-	  prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	  prop->ObjectHandle = *newid;
-	  prop->property = PTP_OPC_NonConsumable;
-	  prop->datatype = PTP_DTC_UINT8;
-	  prop->propval.u8 = nonconsumable;
-	  break;
-	case PTP_OPC_Name:
-	  if (name != NULL) {
-	    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	    prop->ObjectHandle = *newid;
-	    prop->property = PTP_OPC_Name;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = strdup(name);
-	  }
-	  break;
-	case PTP_OPC_AlbumArtist:
-	  if (artist != NULL) {
-	    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	    prop->ObjectHandle = *newid;
-	    prop->property = PTP_OPC_AlbumArtist;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = strdup(artist);
-	  }
-	  break;
-	case PTP_OPC_Artist:
-	  if (artist != NULL) {
-	    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	    prop->ObjectHandle = *newid;
-	    prop->property = PTP_OPC_Artist;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = strdup(artist);
-	  }
-	  break;
-	case PTP_OPC_Composer:
-	  if (composer != NULL) {
-	    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	    prop->ObjectHandle = *newid;
-	    prop->property = PTP_OPC_Composer;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = strdup(composer);
-	  }
-	  break;
-	case PTP_OPC_Genre:
-	  if (genre != NULL) {
-	    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	    prop->ObjectHandle = *newid;
-	    prop->property = PTP_OPC_Genre;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = strdup(genre);
-	  }
-	  break;
- 	case PTP_OPC_DateModified:
-	  // Tag with current time if that is supported
-	  if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
-	    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
-	    prop->ObjectHandle = *newid;
-	    prop->property = PTP_OPC_DateModified;
-	    prop->datatype = PTP_DTC_STR;
-	    prop->propval.str = get_iso8601_stamp();
-	  }
-	  break;
-	}
-      }
-      ptp_free_objectpropdesc(&opd);
-    }
-    free(properties);
-
-    ret = ptp_mtp_sendobjectproplist(params, &store, &localph, newid,
-				     objectformat, 0, props, nrofprops);
-
-    /* Free property list */
-    ptp_destroy_object_prop_list(props, nrofprops);
-
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "create_new_abstract_list(): Could not send object property list.");
-      if (ret == PTP_RC_AccessDenied) {
-	add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
-      }
-      return -1;
+    if (name == NULL) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "create_new_abstract_list(): list name was NULL, using default name \"Unknown\"");
+        return -1;
     }
 
-    // now send the blank object
-    ret = ptp_sendobject(params, NULL, 0);
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "create_new_abstract_list(): Could not send blank object data.");
-      return -1;
+    if (storageid == 0)
+        /* I'm just guessing that an abstract list may require 512 bytes */
+        store = get_suggested_storage_id(device, 512, localph);
+    else
+        store = storageid;
+
+    /* Check if we can create an object of this type */
+    for (i = 0; i < params->deviceinfo.ImageFormats_len; i++) {
+        if (params->deviceinfo.ImageFormats[i] == objectformat) {
+            supported = 1;
+            break;
+        }
+    }
+    if (!supported) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+            "create_new_abstract_list(): player does not support this abstract type");
+        LIBMTP_ERROR("Unsupported abstract list type: %04x\n", objectformat);
+        return -1;
     }
 
-  } else if (ptp_operation_issupported(params,PTP_OC_SendObjectInfo)) {
-    PTPObjectInfo new_object;
-
-    new_object.Filename = fname;
-    if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb)) {
-      strip_7bit_from_utf8(new_object.Filename);
+    /* add the new suffix if it isn't there */
+    fname[0] = '\0';
+    if (strlen(name) > strlen(suffix)) {
+        char const * const suff = &name[strlen(name) - strlen(suffix)];
+        if (strcmp(suff, suffix) == 0)
+            /* Home free. */
+            strncpy(fname, name, sizeof(fname));
     }
-    // At one point this had to be one
-    new_object.ObjectCompressedSize = 0;
-    new_object.ObjectFormat = objectformat;
-
-    // Create the object
-    ret = ptp_sendobjectinfo(params, &store, &localph, newid, &new_object);
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "create_new_abstract_list(): Could not send object info (the playlist itself).");
-      if (ret == PTP_RC_AccessDenied) {
-	add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
-      }
-      return -1;
+    /* If it didn't end with "<suffix>" then add that here. */
+    if (fname[0] == '\0') {
+        strncpy(fname, name, sizeof(fname) - strlen(suffix) - 1);
+        strcat(fname, suffix);
+        fname[sizeof(fname) - 1] = '\0';
     }
-    // NOTE: don't destroy new_object objectinfo afterwards - the strings it contains are
-    // not copies.
+
+    if (ptp_operation_issupported(params, PTP_OC_MTP_SendObjectPropList) &&
+        !FLAG_BROKEN_SEND_OBJECT_PROPLIST(ptp_usb)) {
+        MTPProperties *props = NULL;
+        MTPProperties *prop = NULL;
+        int nrofprops = 0;
+
+        *newid = 0x00000000U;
+
+        ret = ptp_mtp_getobjectpropssupported(params, objectformat, &propcnt, &properties);
+
+        for (i = 0; i < propcnt; i++) {
+            PTPObjectPropDesc opd;
+
+            ret = ptp_mtp_getobjectpropdesc(params, properties[i], objectformat, &opd);
+            if (ret != PTP_RC_OK)
+                add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                    "create_new_abstract_list(): could not get property description.");
+            else if (opd.GetSet) {
+                switch (properties[i]) {
+                case PTP_OPC_ObjectFileName:
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = *newid;
+                    prop->property = PTP_OPC_ObjectFileName;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(fname);
+                    if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb))
+                        strip_7bit_from_utf8(prop->propval.str);
+                    break;
+                case PTP_OPC_ProtectionStatus:
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = *newid;
+                    prop->property = PTP_OPC_ProtectionStatus;
+                    prop->datatype = PTP_DTC_UINT16;
+                    prop->propval.u16 = 0x0000U; /* Not protected */
+                    break;
+                case PTP_OPC_NonConsumable:
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = *newid;
+                    prop->property = PTP_OPC_NonConsumable;
+                    prop->datatype = PTP_DTC_UINT8;
+                    prop->propval.u8 = nonconsumable;
+                    break;
+                case PTP_OPC_Name:
+                    if (name == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = *newid;
+                    prop->property = PTP_OPC_Name;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(name);
+                    break;
+                case PTP_OPC_AlbumArtist:
+                    if (artist == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = *newid;
+                    prop->property = PTP_OPC_AlbumArtist;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(artist);
+                    break;
+                case PTP_OPC_Artist:
+                    if (artist == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = *newid;
+                    prop->property = PTP_OPC_Artist;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(artist);
+                    break;
+                case PTP_OPC_Composer:
+                    if (composer == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = *newid;
+                    prop->property = PTP_OPC_Composer;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(composer);
+                    break;
+                case PTP_OPC_Genre:
+                    if (genre == NULL)
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = *newid;
+                    prop->property = PTP_OPC_Genre;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = strdup(genre);
+                    break;
+                case PTP_OPC_DateModified:
+                    /* Tag with current time if that is supported */
+                    if (FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb))
+                        break;
+                    prop = ptp_get_new_object_prop_entry(&props,&nrofprops);
+                    prop->ObjectHandle = *newid;
+                    prop->property = PTP_OPC_DateModified;
+                    prop->datatype = PTP_DTC_STR;
+                    prop->propval.str = get_iso8601_stamp();
+                    break;
+                }
+            }
+            ptp_free_objectpropdesc(&opd);
+        }
+        free(properties);
+
+        ret = ptp_mtp_sendobjectproplist(params, &store, &localph, newid, objectformat, 0, props, nrofprops);
+
+        /* Free property list */
+        ptp_destroy_object_prop_list(props, nrofprops);
+
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret, "create_new_abstract_list(): Could not send object property list.");
+            if (ret == PTP_RC_AccessDenied)
+                add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
+            return -1;
+        }
+
+        /* now send the blank object */
+        ret = ptp_sendobject(params, NULL, 0);
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret, "create_new_abstract_list(): Could not send blank object data.");
+            return -1;
+        }
+
+    } else if (ptp_operation_issupported(params,PTP_OC_SendObjectInfo)) {
+        PTPObjectInfo new_object;
+
+        new_object.Filename = fname;
+        if (FLAG_ONLY_7BIT_FILENAMES(ptp_usb))
+            strip_7bit_from_utf8(new_object.Filename);
+        /* At one point this had to be one */
+        new_object.ObjectCompressedSize = 0;
+        new_object.ObjectFormat = objectformat;
+
+        /* Create the object */
+        ret = ptp_sendobjectinfo(params, &store, &localph, newid, &new_object);
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret, "create_new_abstract_list(): Could not send object info (the playlist itself).");
+            if (ret == PTP_RC_AccessDenied)
+                add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
+            return -1;
+        }
+        /* NOTE: don't destroy new_object objectinfo afterwards - the strings it contains are
+         * not copies. */
 
 #if 0
-    /*
-     * At one time we had to send this one blank data byte.
-     * If we didn't, the handle will not be created and thus there is
-     * no playlist. Possibly this was masking some bug, so removing it
-     * now.
-     */
-    data[0] = '\0';
-    data[1] = '\0';
-    ret = ptp_sendobject(params, data, 1);
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "create_new_abstract_list(): Could not send blank object data.");
-      return -1;
-    }
+        /*
+         * At one time we had to send this one blank data byte.
+         * If we didn't, the handle will not be created and thus there is
+         * no playlist. Possibly this was masking some bug, so removing it
+         * now.
+         */
+        data[0] = '\0';
+        data[1] = '\0';
+        ret = ptp_sendobject(params, data, 1);
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret,
+                "create_new_abstract_list(): Could not send blank object data.");
+            return -1;
+        }
 #endif
 
-    // set the properties one by one
-    ret = ptp_mtp_getobjectpropssupported(params, objectformat, &propcnt, &properties);
+        /* set the properties one by one */
+        ret = ptp_mtp_getobjectpropssupported(params, objectformat, &propcnt, &properties);
 
-    for (i=0;i<propcnt;i++) {
-      PTPObjectPropDesc opd;
+        for (i = 0; i < propcnt; i++) {
+            PTPObjectPropDesc opd;
 
-      ret = ptp_mtp_getobjectpropdesc(params, properties[i], objectformat, &opd);
-      if (ret != PTP_RC_OK) {
-	add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): "
-				"could not get property description.");
-      } else if (opd.GetSet) {
-	switch (properties[i]) {
-	case PTP_OPC_Name:
-	  if (name != NULL) {
-	    ret = set_object_string(device, *newid, PTP_OPC_Name, name);
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): could not set entity name.");
-	      return -1;
-	    }
-	  }
-	  break;
-	case PTP_OPC_AlbumArtist:
-	  if (artist != NULL) {
-	    ret = set_object_string(device, *newid, PTP_OPC_AlbumArtist, artist);
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): could not set entity album artist.");
-	      return -1;
-	    }
-	  }
-	  break;
-	case PTP_OPC_Artist:
-	  if (artist != NULL) {
-	    ret = set_object_string(device, *newid, PTP_OPC_Artist, artist);
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): could not set entity artist.");
-	      return -1;
-	    }
-	  }
-	  break;
-	case PTP_OPC_Composer:
-	  if (composer != NULL) {
-	    ret = set_object_string(device, *newid, PTP_OPC_Composer, composer);
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): could not set entity composer.");
-	      return -1;
-	    }
-	  }
-	  break;
-	case PTP_OPC_Genre:
-	  if (genre != NULL) {
-	    ret = set_object_string(device, *newid, PTP_OPC_Genre, genre);
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): could not set entity genre.");
-	      return -1;
-	    }
-	  }
-	  break;
- 	case PTP_OPC_DateModified:
-	  if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
-	    ret = set_object_string(device, *newid, PTP_OPC_DateModified, get_iso8601_stamp());
-	    if (ret != 0) {
-	      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "create_new_abstract_list(): could not set date modified.");
-	      return -1;
-	    }
-	  }
-	  break;
-	}
-      }
-      ptp_free_objectpropdesc(&opd);
+            ret = ptp_mtp_getobjectpropdesc(params, properties[i], objectformat, &opd);
+            if (ret != PTP_RC_OK)
+                add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                    "create_new_abstract_list(): could not get property description.");
+            else if (opd.GetSet) {
+                switch (properties[i]) {
+                case PTP_OPC_Name:
+                    if (name == NULL)
+                        break;
+                    ret = set_object_string(device, *newid, PTP_OPC_Name, name);
+                    if (ret != 0) {
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "create_new_abstract_list(): could not set entity name.");
+                        return -1;
+                    }
+                    break;
+                case PTP_OPC_AlbumArtist:
+                    if (artist == NULL)
+                        break;
+                    ret = set_object_string(device, *newid, PTP_OPC_AlbumArtist, artist);
+                    if (ret != 0) {
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "create_new_abstract_list(): could not set entity album artist.");
+                        return -1;
+                    }
+                    break;
+                case PTP_OPC_Artist:
+                    if (artist == NULL)
+                        break;
+                    ret = set_object_string(device, *newid, PTP_OPC_Artist, artist);
+                    if (ret != 0) {
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "create_new_abstract_list(): could not set entity artist.");
+                        return -1;
+                    }
+                    break;
+                case PTP_OPC_Composer:
+                    if (composer == NULL)
+                        break;
+                    ret = set_object_string(device, *newid, PTP_OPC_Composer, composer);
+                    if (ret != 0) {
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "create_new_abstract_list(): could not set entity composer.");
+                        return -1;
+                    }
+                    break;
+                case PTP_OPC_Genre:
+                    if (genre == NULL)
+                        break;
+                    ret = set_object_string(device, *newid, PTP_OPC_Genre, genre);
+                    if (ret != 0) {
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "create_new_abstract_list(): could not set entity genre.");
+                        return -1;
+                    }
+                    break;
+                case PTP_OPC_DateModified:
+                    if (FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb))
+                        break;
+                    ret = set_object_string(device, *newid, PTP_OPC_DateModified, get_iso8601_stamp());
+                    if (ret != 0) {
+                        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                            "create_new_abstract_list(): could not set date modified.");
+                        return -1;
+                    }
+                    break;
+                }
+            }
+            ptp_free_objectpropdesc(&opd);
+        }
+        free(properties);
     }
-    free(properties);
-  }
 
-  if (no_tracks > 0) {
-    // Add tracks to the list as object references.
-    ret = ptp_mtp_setobjectreferences (params, *newid, (uint32_t *) tracks, no_tracks);
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "create_new_abstract_list(): could not add tracks as object references.");
-      return -1;
+    if (no_tracks > 0) {
+        /* Add tracks to the list as object references. */
+        ret = ptp_mtp_setobjectreferences (params, *newid, (uint32_t *) tracks, no_tracks);
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret,
+                "create_new_abstract_list(): could not add tracks as object references.");
+            return -1;
+        }
     }
-  }
 
-  add_object_to_cache(device, *newid);
+    add_object_to_cache(device, *newid);
 
-  return 0;
+    return 0;
 }
 
 /**
