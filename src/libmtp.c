@@ -7721,38 +7721,28 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Create_New_Playlist(LIBMTP_mtpdevice_t *device,
-			       LIBMTP_playlist_t * const metadata)
+                    LIBMTP_playlist_t * const metadata)
 {
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  uint32_t localph = metadata->parent_id;
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    uint32_t localph = metadata->parent_id;
 
-  // Use a default folder if none given
-  if (localph == 0) {
-    if (device->default_playlist_folder != 0)
-      localph = device->default_playlist_folder;
-    else
-      localph = device->default_music_folder;
-  }
-  metadata->parent_id = localph;
+    /* Use a default folder if none given */
+    if (localph == 0) {
+        if (device->default_playlist_folder != 0)
+            localph = device->default_playlist_folder;
+        else
+            localph = device->default_music_folder;
+    }
+    metadata->parent_id = localph;
 
-  // Samsung needs its own special type of playlists
-  if(FLAG_PLAYLIST_SPL(ptp_usb)) {
-    return playlist_t_to_spl(device, metadata);
-  }
+    /* Samsung needs its own special type of playlists */
+    if(FLAG_PLAYLIST_SPL(ptp_usb))
+        return playlist_t_to_spl(device, metadata);
 
-  // Just create a new abstract audio/video playlist...
-  return create_new_abstract_list(device,
-				  metadata->name,
-				  NULL,
-				  NULL,
-				  NULL,
-				  localph,
-				  metadata->storage_id,
-				  PTP_OFC_MTP_AbstractAudioVideoPlaylist,
-				  get_playlist_extension(ptp_usb),
-				  &metadata->playlist_id,
-				  metadata->tracks,
-				  metadata->no_tracks);
+    /* Just create a new abstract audio/video playlist... */
+    return create_new_abstract_list(device, metadata->name, NULL, NULL, NULL,
+        localph, metadata->storage_id, PTP_OFC_MTP_AbstractAudioVideoPlaylist,
+        get_playlist_extension(ptp_usb), &metadata->playlist_id, metadata->tracks, metadata->no_tracks);
 }
 
 /**
@@ -7773,24 +7763,16 @@ int LIBMTP_Create_New_Playlist(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Update_Playlist(LIBMTP_mtpdevice_t *device,
-			   LIBMTP_playlist_t * const metadata)
+                    LIBMTP_playlist_t * const metadata)
 {
 
-  // Samsung needs its own special type of playlists
-  PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
-  if(FLAG_PLAYLIST_SPL(ptp_usb)) {
-    return update_spl_playlist(device, metadata);
-  }
+    /* Samsung needs its own special type of playlists */
+    PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
+    if(FLAG_PLAYLIST_SPL(ptp_usb))
+        return update_spl_playlist(device, metadata);
 
-  return update_abstract_list(device,
-			      metadata->name,
-			      NULL,
-			      NULL,
-			      NULL,
-			      metadata->playlist_id,
-			      PTP_OFC_MTP_AbstractAudioVideoPlaylist,
-			      metadata->tracks,
-			      metadata->no_tracks);
+    return update_abstract_list(device, metadata->name, NULL, NULL, NULL, metadata->playlist_id,
+        PTP_OFC_MTP_AbstractAudioVideoPlaylist, metadata->tracks, metadata->no_tracks);
 }
 
 /**
@@ -7805,21 +7787,20 @@ int LIBMTP_Update_Playlist(LIBMTP_mtpdevice_t *device,
  */
 LIBMTP_album_t *LIBMTP_new_album_t(void)
 {
-  LIBMTP_album_t *new = (LIBMTP_album_t *) malloc(sizeof(LIBMTP_album_t));
-  if (new == NULL) {
-    return NULL;
-  }
-  new->album_id = 0;
-  new->parent_id = 0;
-  new->storage_id = 0;
-  new->name = NULL;
-  new->artist = NULL;
-  new->composer = NULL;
-  new->genre = NULL;
-  new->tracks = NULL;
-  new->no_tracks = 0;
-  new->next = NULL;
-  return new;
+    LIBMTP_album_t *new = (LIBMTP_album_t *) malloc(sizeof(LIBMTP_album_t));
+    if (new == NULL)
+        return NULL;
+    new->album_id = 0;
+    new->parent_id = 0;
+    new->storage_id = 0;
+    new->name = NULL;
+    new->artist = NULL;
+    new->composer = NULL;
+    new->genre = NULL;
+    new->tracks = NULL;
+    new->no_tracks = 0;
+    new->next = NULL;
+    return new;
 }
 
 /**
@@ -7830,66 +7811,58 @@ LIBMTP_album_t *LIBMTP_new_album_t(void)
  */
 void LIBMTP_destroy_album_t(LIBMTP_album_t *album)
 {
-  if (album == NULL) {
-    return;
-  }
-  if (album->name != NULL)
+    if (album == NULL)
+        return;
     free(album->name);
-  if (album->artist != NULL)
     free(album->artist);
-  if (album->composer != NULL)
     free(album->composer);
-  if (album->genre != NULL)
     free(album->genre);
-  if (album->tracks != NULL)
     free(album->tracks);
-  free(album);
-  return;
+    free(album);
 }
 
 /**
  * This function maps and copies a property onto the album metadata if applicable.
  */
 static void pick_property_to_album_metadata(LIBMTP_mtpdevice_t *device,
-					    MTPProperties *prop, LIBMTP_album_t *alb)
+                    MTPProperties *prop, LIBMTP_album_t *alb)
 {
-  switch (prop->property) {
-  case PTP_OPC_Name:
-    if (prop->propval.str != NULL)
-      alb->name = strdup(prop->propval.str);
-    else
-      alb->name = NULL;
-    break;
-  case PTP_OPC_AlbumArtist:
-    if (prop->propval.str != NULL) {
-      // This should take precedence over plain "Artist"
-      if (alb->artist != NULL)
-	free(alb->artist);
-      alb->artist = strdup(prop->propval.str);
-    } else
-      alb->artist = NULL;
-    break;
-  case PTP_OPC_Artist:
-    if (prop->propval.str != NULL) {
-      // Only use of AlbumArtist is not set
-      if (alb->artist == NULL)
-	alb->artist = strdup(prop->propval.str);
-    } else
-      alb->artist = NULL;
-    break;
-  case PTP_OPC_Composer:
-    if (prop->propval.str != NULL)
-      alb->composer = strdup(prop->propval.str);
-    else
-      alb->composer = NULL;
-    break;
-  case PTP_OPC_Genre:
-    if (prop->propval.str != NULL)
-      alb->genre = strdup(prop->propval.str);
-    else
-      alb->genre = NULL;
-    break;
-  }
+    switch (prop->property) {
+    case PTP_OPC_Name:
+        if (prop->propval.str != NULL)
+            alb->name = strdup(prop->propval.str);
+        else
+            alb->name = NULL;
+        break;
+    case PTP_OPC_AlbumArtist:
+        if (prop->propval.str != NULL) {
+            /* This should take precedence over plain "Artist" */
+            free(alb->artist);
+            alb->artist = strdup(prop->propval.str);
+        } else
+            alb->artist = NULL;
+        break;
+    case PTP_OPC_Artist:
+        if (prop->propval.str != NULL) {
+            /* Only use of AlbumArtist is not set */
+            if (alb->artist == NULL)
+                alb->artist = strdup(prop->propval.str);
+        } else
+            alb->artist = NULL;
+        break;
+    case PTP_OPC_Composer:
+        if (prop->propval.str != NULL)
+            alb->composer = strdup(prop->propval.str);
+        else
+            alb->composer = NULL;
+        break;
+    case PTP_OPC_Genre:
+        if (prop->propval.str != NULL)
+            alb->genre = strdup(prop->propval.str);
+        else
+            alb->genre = NULL;
+        break;
+    }
 }
 
 /**
@@ -7899,60 +7872,58 @@ static void pick_property_to_album_metadata(LIBMTP_mtpdevice_t *device,
  * @param alb an album metadata metadata set to fill in.
  */
 static void get_album_metadata(LIBMTP_mtpdevice_t *device,
-			       LIBMTP_album_t *alb)
+                    LIBMTP_album_t *alb)
 {
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
-  uint32_t i;
-  MTPProperties *prop;
-  PTPObject *ob;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint32_t i;
+    MTPProperties *prop;
+    PTPObject *ob;
 
-  /*
-   * If we have a cached, large set of metadata, then use it!
-   */
-  ret = ptp_object_want(params, alb->album_id, PTPOBJECT_MTPPROPLIST_LOADED, &ob);
-  if (ob->mtpprops) {
-    prop = ob->mtpprops;
-    for (i=0;i<ob->nrofmtpprops;i++,prop++)
-      pick_property_to_album_metadata(device, prop, alb);
-  } else {
-    uint16_t *props = NULL;
-    uint32_t propcnt = 0;
-
-    // First see which properties can be retrieved for albums
-    ret = ptp_mtp_getobjectpropssupported(params, PTP_OFC_MTP_AbstractAudioAlbum, &propcnt, &props);
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "get_album_metadata(): call to ptp_mtp_getobjectpropssupported() failed.");
-      // Just bail out for now, nothing is ever set.
-      return;
+    /*
+     * If we have a cached, large set of metadata, then use it!
+     */
+    ret = ptp_object_want(params, alb->album_id, PTPOBJECT_MTPPROPLIST_LOADED, &ob);
+    if (ob->mtpprops != NULL) {
+        prop = ob->mtpprops;
+        for (i = 0; i < ob->nrofmtpprops; i++, prop++)
+            pick_property_to_album_metadata(device, prop, alb);
     } else {
-      for (i=0;i<propcnt;i++) {
-	switch (props[i]) {
-	case PTP_OPC_Name:
-	  alb->name = get_string_from_object(device, ob->oid, PTP_OPC_Name);
-	  break;
-	case PTP_OPC_AlbumArtist:
-	  if (alb->artist != NULL)
-	    free(alb->artist);
-	  alb->artist = get_string_from_object(device, ob->oid, PTP_OPC_AlbumArtist);
-	  break;
-	case PTP_OPC_Artist:
-	  if (alb->artist == NULL)
-	    alb->artist = get_string_from_object(device, ob->oid, PTP_OPC_Artist);
-	  break;
-	case PTP_OPC_Composer:
-	  alb->composer = get_string_from_object(device, ob->oid, PTP_OPC_Composer);
-	  break;
-	case PTP_OPC_Genre:
-	  alb->genre = get_string_from_object(device, ob->oid, PTP_OPC_Genre);
-	  break;
-	default:
-	  break;
-	}
-      }
-      free(props);
+        uint16_t *props = NULL;
+        uint32_t propcnt = 0;
+
+        /* First see which properties can be retrieved for albums */
+        ret = ptp_mtp_getobjectpropssupported(params, PTP_OFC_MTP_AbstractAudioAlbum, &propcnt, &props);
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret, "get_album_metadata(): call to ptp_mtp_getobjectpropssupported() failed.");
+            /* Just bail out for now, nothing is ever set. */
+            return;
+        }
+        for (i = 0; i < propcnt; i++) {
+            switch (props[i]) {
+            case PTP_OPC_Name:
+                alb->name = get_string_from_object(device, ob->oid, PTP_OPC_Name);
+                break;
+            case PTP_OPC_AlbumArtist:
+                free(alb->artist);
+                alb->artist = get_string_from_object(device, ob->oid, PTP_OPC_AlbumArtist);
+                break;
+            case PTP_OPC_Artist:
+                if (alb->artist == NULL)
+                    alb->artist = get_string_from_object(device, ob->oid, PTP_OPC_Artist);
+                break;
+            case PTP_OPC_Composer:
+                alb->composer = get_string_from_object(device, ob->oid, PTP_OPC_Composer);
+                break;
+            case PTP_OPC_Genre:
+                alb->genre = get_string_from_object(device, ob->oid, PTP_OPC_Genre);
+                break;
+            default:
+                break;
+            }
+        }
+        free(props);
     }
-  }
 }
 
 
@@ -7967,8 +7938,8 @@ static void get_album_metadata(LIBMTP_mtpdevice_t *device,
  */
 LIBMTP_album_t *LIBMTP_Get_Album_List(LIBMTP_mtpdevice_t *device)
 {
-	// Read all storage devices
-	return LIBMTP_Get_Album_List_For_Storage(device, 0);
+    /* Read all storage devices */
+    return LIBMTP_Get_Album_List_For_Storage(device, 0);
 }
 
 
@@ -7985,58 +7956,58 @@ LIBMTP_album_t *LIBMTP_Get_Album_List(LIBMTP_mtpdevice_t *device)
  */
 LIBMTP_album_t *LIBMTP_Get_Album_List_For_Storage(LIBMTP_mtpdevice_t *device, uint32_t const storage_id)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  LIBMTP_album_t *retalbums = NULL;
-  LIBMTP_album_t *curalbum = NULL;
-  uint32_t i;
+    PTPParams *params = (PTPParams *) device->params;
+    LIBMTP_album_t *retalbums = NULL;
+    LIBMTP_album_t *curalbum = NULL;
+    uint32_t i;
 
-  // Get all the handles if we haven't already done that
-  if (params->nrofobjects == 0)
-    flush_handles(device);
+    /* Get all the handles if we haven't already done that */
+    if (params->nrofobjects == 0)
+        flush_handles(device);
 
-  for (i = 0; i < params->nrofobjects; i++) {
-    LIBMTP_album_t *alb;
-    PTPObject *ob;
-    uint16_t ret;
+    for (i = 0; i < params->nrofobjects; i++) {
+        LIBMTP_album_t *alb;
+        PTPObject *ob;
+        uint16_t ret;
 
-    ob = &params->objects[i];
+        ob = &params->objects[i];
 
-    // Ignore stuff that isn't an album
-    if ( ob->oi.ObjectFormat != PTP_OFC_MTP_AbstractAudioAlbum )
-      continue;
+        /* Ignore stuff that isn't an album */
+        if (ob->oi.ObjectFormat != PTP_OFC_MTP_AbstractAudioAlbum)
+            continue;
 
-	// Ignore stuff that isn't into the storage device
-	if ((storage_id != 0) && (ob->oi.StorageID != storage_id ))
-		continue;
+        /* Ignore stuff that isn't into the storage device */
+        if ((storage_id != 0) && (ob->oi.StorageID != storage_id ))
+            continue;
 
-    // Allocate a new album type
-    alb = LIBMTP_new_album_t();
-    alb->album_id = ob->oid;
-    alb->parent_id = ob->oi.ParentObject;
-    alb->storage_id = ob->oi.StorageID;
+        /* Allocate a new album type */
+        alb = LIBMTP_new_album_t();
+        alb->album_id = ob->oid;
+        alb->parent_id = ob->oi.ParentObject;
+        alb->storage_id = ob->oi.StorageID;
 
-    // Fetch supported metadata
-    get_album_metadata(device, alb);
+        /* Fetch supported metadata */
+        get_album_metadata(device, alb);
 
-    // Then get the track listing for this album
-    ret = ptp_mtp_getobjectreferences(params, alb->album_id, &alb->tracks, &alb->no_tracks);
-    if (ret != PTP_RC_OK) {
-      add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Album_List(): Could not get object references.");
-      alb->tracks = NULL;
-      alb->no_tracks = 0;
+        /* Then get the track listing for this album */
+        ret = ptp_mtp_getobjectreferences(params, alb->album_id, &alb->tracks, &alb->no_tracks);
+        if (ret != PTP_RC_OK) {
+            add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Album_List(): Could not get object references.");
+            alb->tracks = NULL;
+            alb->no_tracks = 0;
+        }
+
+        /* Add album to a list that will be returned afterwards. */
+        if (retalbums == NULL) {
+            retalbums = alb;
+            curalbum = alb;
+        } else {
+            curalbum->next = alb;
+            curalbum = alb;
+        }
+
     }
-
-    // Add album to a list that will be returned afterwards.
-    if (retalbums == NULL) {
-      retalbums = alb;
-      curalbum = alb;
-    } else {
-      curalbum->next = alb;
-      curalbum = alb;
-    }
-
-  }
-  return retalbums;
+    return retalbums;
 }
 
 /**
