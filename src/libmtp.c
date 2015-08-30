@@ -8019,41 +8019,41 @@ LIBMTP_album_t *LIBMTP_Get_Album_List_For_Storage(LIBMTP_mtpdevice_t *device, ui
  */
 LIBMTP_album_t *LIBMTP_Get_Album(LIBMTP_mtpdevice_t *device, uint32_t const albid)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
-  PTPObject *ob;
-  LIBMTP_album_t *alb;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
+    PTPObject *ob;
+    LIBMTP_album_t *alb;
 
-  // Get all the handles if we haven't already done that
-  if (params->nrofobjects == 0)
-    flush_handles(device);
+    /* Get all the handles if we haven't already done that */
+    if (params->nrofobjects == 0)
+        flush_handles(device);
 
-  ret = ptp_object_want(params, albid, PTPOBJECT_OBJECTINFO_LOADED, &ob);
-  if (ret != PTP_RC_OK)
-    return NULL;
+    ret = ptp_object_want(params, albid, PTPOBJECT_OBJECTINFO_LOADED, &ob);
+    if (ret != PTP_RC_OK)
+        return NULL;
 
-  // Ignore stuff that isn't an album
-  if (ob->oi.ObjectFormat != PTP_OFC_MTP_AbstractAudioAlbum)
-    return NULL;
+    /* Ignore stuff that isn't an album */
+    if (ob->oi.ObjectFormat != PTP_OFC_MTP_AbstractAudioAlbum)
+        return NULL;
 
-  // Allocate a new album type
-  alb = LIBMTP_new_album_t();
-  alb->album_id = ob->oid;
-  alb->parent_id = ob->oi.ParentObject;
-  alb->storage_id = ob->oi.StorageID;
+    /* Allocate a new album type */
+    alb = LIBMTP_new_album_t();
+    alb->album_id = ob->oid;
+    alb->parent_id = ob->oi.ParentObject;
+    alb->storage_id = ob->oi.StorageID;
 
-  // Fetch supported metadata
-  get_album_metadata(device, alb);
+    /* Fetch supported metadata */
+    get_album_metadata(device, alb);
 
-  // Then get the track listing for this album
-  ret = ptp_mtp_getobjectreferences(params, alb->album_id, &alb->tracks, &alb->no_tracks);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Album: Could not get object references.");
-    alb->tracks = NULL;
-    alb->no_tracks = 0;
-  }
+    /* Then get the track listing for this album */
+    ret = ptp_mtp_getobjectreferences(params, alb->album_id, &alb->tracks, &alb->no_tracks);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Album: Could not get object references.");
+        alb->tracks = NULL;
+        alb->no_tracks = 0;
+    }
 
-  return alb;
+    return alb;
 }
 
 /**
@@ -8083,32 +8083,32 @@ LIBMTP_album_t *LIBMTP_Get_Album(LIBMTP_mtpdevice_t *device, uint32_t const albi
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Create_New_Album(LIBMTP_mtpdevice_t *device,
-			    LIBMTP_album_t * const metadata)
+                    LIBMTP_album_t * const metadata)
 {
-  uint32_t localph = metadata->parent_id;
+    uint32_t localph = metadata->parent_id;
 
-  // Use a default folder if none given
-  if (localph == 0) {
-    if (device->default_album_folder != 0)
-      localph = device->default_album_folder;
-    else
-      localph = device->default_music_folder;
-  }
-  metadata->parent_id = localph;
+    /* Use a default folder if none given */
+    if (localph == 0) {
+        if (device->default_album_folder != 0)
+            localph = device->default_album_folder;
+        else
+            localph = device->default_music_folder;
+    }
+    metadata->parent_id = localph;
 
-  // Just create a new abstract album...
-  return create_new_abstract_list(device,
-				  metadata->name,
-				  metadata->artist,
-				  metadata->composer,
-				  metadata->genre,
-				  localph,
-				  metadata->storage_id,
-				  PTP_OFC_MTP_AbstractAudioAlbum,
-				  ".alb",
-				  &metadata->album_id,
-				  metadata->tracks,
-				  metadata->no_tracks);
+    /* Just create a new abstract album... */
+    return create_new_abstract_list(device,
+                    metadata->name,
+                    metadata->artist,
+                    metadata->composer,
+                    metadata->genre,
+                    localph,
+                    metadata->storage_id,
+                    PTP_OFC_MTP_AbstractAudioAlbum,
+                    ".alb",
+                    &metadata->album_id,
+                    metadata->tracks,
+                    metadata->no_tracks);
 }
 
 /**
@@ -8123,16 +8123,15 @@ int LIBMTP_Create_New_Album(LIBMTP_mtpdevice_t *device,
  */
 LIBMTP_filesampledata_t *LIBMTP_new_filesampledata_t(void)
 {
-  LIBMTP_filesampledata_t *new = (LIBMTP_filesampledata_t *) malloc(sizeof(LIBMTP_filesampledata_t));
-  if (new == NULL) {
-    return NULL;
-  }
-  new->height=0;
-  new->width = 0;
-  new->data = NULL;
-  new->duration = 0;
-  new->size = 0;
-  return new;
+    LIBMTP_filesampledata_t *new = (LIBMTP_filesampledata_t *) malloc(sizeof(LIBMTP_filesampledata_t));
+    if (new == NULL)
+        return NULL;
+    new->height=0;
+    new->width = 0;
+    new->data = NULL;
+    new->duration = 0;
+    new->size = 0;
+    return new;
 }
 
 /**
@@ -8141,13 +8140,10 @@ LIBMTP_filesampledata_t *LIBMTP_new_filesampledata_t(void)
  */
 void LIBMTP_destroy_filesampledata_t(LIBMTP_filesampledata_t * sample)
 {
-  if (sample == NULL) {
-    return;
-  }
-  if (sample->data != NULL) {
+    if (sample == NULL)
+        return;
     free(sample->data);
-  }
-  free(sample);
+    free(sample);
 }
 
 /**
@@ -8174,120 +8170,120 @@ void LIBMTP_destroy_filesampledata_t(LIBMTP_filesampledata_t * sample)
  * @see LIBMTP_Create_New_Album()
  */
 int LIBMTP_Get_Representative_Sample_Format(LIBMTP_mtpdevice_t *device,
-					    LIBMTP_filetype_t const filetype,
-					    LIBMTP_filesampledata_t ** sample)
+                    LIBMTP_filetype_t const filetype,
+                    LIBMTP_filesampledata_t ** sample)
 {
-  uint16_t ret;
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t *props = NULL;
-  uint32_t propcnt = 0;
-  int i;
-  // TODO: Get rid of these when we can properly query the device.
-  int support_data = 0;
-  int support_format = 0;
-  int support_height = 0;
-  int support_width = 0;
-  int support_duration = 0;
-  int support_size = 0;
+    uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t *props = NULL;
+    uint32_t propcnt = 0;
+    int i;
+    /* TODO: Get rid of these when we can properly query the device. */
+    int support_data = 0;
+    int support_format = 0;
+    int support_height = 0;
+    int support_width = 0;
+    int support_duration = 0;
+    int support_size = 0;
 
-  PTPObjectPropDesc opd_height;
-  PTPObjectPropDesc opd_width;
-  PTPObjectPropDesc opd_format;
-  PTPObjectPropDesc opd_duration;
-  PTPObjectPropDesc opd_size;
+    PTPObjectPropDesc opd_height;
+    PTPObjectPropDesc opd_width;
+    PTPObjectPropDesc opd_format;
+    PTPObjectPropDesc opd_duration;
+    PTPObjectPropDesc opd_size;
 
-  // Default to no type supported.
-  *sample = NULL;
+    /* Default to no type supported. */
+    *sample = NULL;
 
-  ret = ptp_mtp_getobjectpropssupported(params, map_libmtp_type_to_ptp_type(filetype), &propcnt, &props);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Representative_Sample_Format(): could not get object properties.");
-    return -1;
-  }
-  /*
-   * TODO: when walking through these object properties, make calls to
-   * a new function in ptp.h/ptp.c that can send the command
-   * PTP_OC_MTP_GetObjectPropDesc to get max/min values of the properties
-   * supported.
-   */
-  for (i = 0; i < propcnt; i++) {
-    switch(props[i]) {
-    case PTP_OPC_RepresentativeSampleData:
-      support_data = 1;
-      break;
-    case PTP_OPC_RepresentativeSampleFormat:
-      support_format = 1;
-      break;
-    case PTP_OPC_RepresentativeSampleSize:
-      support_size = 1;
-      break;
-    case PTP_OPC_RepresentativeSampleHeight:
-      support_height = 1;
-      break;
-    case PTP_OPC_RepresentativeSampleWidth:
-      support_width = 1;
-      break;
-    case PTP_OPC_RepresentativeSampleDuration:
-      support_duration = 1;
-      break;
-    default:
-      break;
+    ret = ptp_mtp_getobjectpropssupported(params, map_libmtp_type_to_ptp_type(filetype), &propcnt, &props);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "LIBMTP_Get_Representative_Sample_Format(): could not get object properties.");
+        return -1;
     }
-  }
-  free(props);
-
-  if (support_data && support_format && support_height && support_width && !support_duration) {
-    // Something that supports height and width and not duration is likely to be JPEG
-    LIBMTP_filesampledata_t *retsam = LIBMTP_new_filesampledata_t();
     /*
-     * Populate the sample format with the first supported format
-     *
-     * TODO: figure out how to pass back more than one format if more are
-     * supported by the device.
+     * TODO: when walking through these object properties, make calls to
+     * a new function in ptp.h/ptp.c that can send the command
+     * PTP_OC_MTP_GetObjectPropDesc to get max/min values of the properties
+     * supported.
      */
-    ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleFormat, map_libmtp_type_to_ptp_type(filetype), &opd_format);
-    retsam->filetype = map_ptp_type_to_libmtp_type(opd_format.FORM.Enum.SupportedValue[0].u16);
-    ptp_free_objectpropdesc(&opd_format);
-    /* Populate the maximum image height */
-    ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleWidth, map_libmtp_type_to_ptp_type(filetype), &opd_width);
-    retsam->width = opd_width.FORM.Range.MaximumValue.u32;
-    ptp_free_objectpropdesc(&opd_width);
-    /* Populate the maximum image width */
-    ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleHeight, map_libmtp_type_to_ptp_type(filetype), &opd_height);
-    retsam->height = opd_height.FORM.Range.MaximumValue.u32;
-    ptp_free_objectpropdesc(&opd_height);
-    /* Populate the maximum size */
-    if (support_size) {
-      ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleSize, map_libmtp_type_to_ptp_type(filetype), &opd_size);
-      retsam->size = opd_size.FORM.Range.MaximumValue.u32;
-      ptp_free_objectpropdesc(&opd_size);
+    for (i = 0; i < propcnt; i++) {
+        switch(props[i]) {
+        case PTP_OPC_RepresentativeSampleData:
+            support_data = 1;
+            break;
+        case PTP_OPC_RepresentativeSampleFormat:
+            support_format = 1;
+            break;
+        case PTP_OPC_RepresentativeSampleSize:
+            support_size = 1;
+            break;
+        case PTP_OPC_RepresentativeSampleHeight:
+            support_height = 1;
+            break;
+        case PTP_OPC_RepresentativeSampleWidth:
+            support_width = 1;
+            break;
+        case PTP_OPC_RepresentativeSampleDuration:
+            support_duration = 1;
+            break;
+        default:
+            break;
+        }
     }
-    *sample = retsam;
-  } else if (support_data && support_format && !support_height && !support_width && support_duration) {
-    // Another qualified guess
-    LIBMTP_filesampledata_t *retsam = LIBMTP_new_filesampledata_t();
-    /*
-     * Populate the sample format with the first supported format
-     *
-     * TODO: figure out how to pass back more than one format if more are
-     * supported by the device.
-     */
-    ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleFormat, map_libmtp_type_to_ptp_type(filetype), &opd_format);
-    retsam->filetype = map_ptp_type_to_libmtp_type(opd_format.FORM.Enum.SupportedValue[0].u16);
-    ptp_free_objectpropdesc(&opd_format);
-    /* Populate the maximum duration */
-    ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleDuration, map_libmtp_type_to_ptp_type(filetype), &opd_duration);
-    retsam->duration = opd_duration.FORM.Range.MaximumValue.u32;
-    ptp_free_objectpropdesc(&opd_duration);
-    /* Populate the maximum size */
-    if (support_size) {
-      ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleSize, map_libmtp_type_to_ptp_type(filetype), &opd_size);
-      retsam->size = opd_size.FORM.Range.MaximumValue.u32;
-      ptp_free_objectpropdesc(&opd_size);
+    free(props);
+
+    if (support_data && support_format && support_height && support_width && !support_duration) {
+        /* Something that supports height and width and not duration is likely to be JPEG */
+        LIBMTP_filesampledata_t *retsam = LIBMTP_new_filesampledata_t();
+        /*
+         * Populate the sample format with the first supported format
+         *
+         * TODO: figure out how to pass back more than one format if more are
+         * supported by the device.
+         */
+        ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleFormat, map_libmtp_type_to_ptp_type(filetype), &opd_format);
+        retsam->filetype = map_ptp_type_to_libmtp_type(opd_format.FORM.Enum.SupportedValue[0].u16);
+        ptp_free_objectpropdesc(&opd_format);
+        /* Populate the maximum image height */
+        ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleWidth, map_libmtp_type_to_ptp_type(filetype), &opd_width);
+        retsam->width = opd_width.FORM.Range.MaximumValue.u32;
+        ptp_free_objectpropdesc(&opd_width);
+        /* Populate the maximum image width */
+        ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleHeight, map_libmtp_type_to_ptp_type(filetype), &opd_height);
+        retsam->height = opd_height.FORM.Range.MaximumValue.u32;
+        ptp_free_objectpropdesc(&opd_height);
+        /* Populate the maximum size */
+        if (support_size) {
+            ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleSize, map_libmtp_type_to_ptp_type(filetype), &opd_size);
+            retsam->size = opd_size.FORM.Range.MaximumValue.u32;
+            ptp_free_objectpropdesc(&opd_size);
+        }
+        *sample = retsam;
+    } else if (support_data && support_format && !support_height && !support_width && support_duration) {
+        /* Another qualified guess */
+        LIBMTP_filesampledata_t *retsam = LIBMTP_new_filesampledata_t();
+        /*
+         * Populate the sample format with the first supported format
+         *
+         * TODO: figure out how to pass back more than one format if more are
+         * supported by the device.
+         */
+        ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleFormat, map_libmtp_type_to_ptp_type(filetype), &opd_format);
+        retsam->filetype = map_ptp_type_to_libmtp_type(opd_format.FORM.Enum.SupportedValue[0].u16);
+        ptp_free_objectpropdesc(&opd_format);
+        /* Populate the maximum duration */
+        ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleDuration, map_libmtp_type_to_ptp_type(filetype), &opd_duration);
+        retsam->duration = opd_duration.FORM.Range.MaximumValue.u32;
+        ptp_free_objectpropdesc(&opd_duration);
+        /* Populate the maximum size */
+        if (support_size) {
+            ptp_mtp_getobjectpropdesc (params, PTP_OPC_RepresentativeSampleSize, map_libmtp_type_to_ptp_type(filetype), &opd_size);
+            retsam->size = opd_size.FORM.Range.MaximumValue.u32;
+            ptp_free_objectpropdesc(&opd_size);
+        }
+        *sample = retsam;
     }
-    *sample = retsam;
-  }
-  return 0;
+    return 0;
 }
 
 /**
