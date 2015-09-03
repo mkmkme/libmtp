@@ -8499,9 +8499,8 @@ int LIBMTP_GetPartialObject(LIBMTP_mtpdevice_t *device, uint32_t const id,
         }
 
         ret = ptp_getpartialobject(params, id, (uint32_t)offset, maxbytes, data, size);
-    } else {
+    } else
         ret = ptp_android_getpartialobject64(params, id, offset, maxbytes, data, size);
-    }
     if (ret == PTP_RC_OK)
         return 0;
     return -1;
@@ -8632,9 +8631,8 @@ static void add_object_to_cache(LIBMTP_mtpdevice_t *device, uint32_t object_id)
     uint16_t ret;
 
     ret = ptp_add_object_to_cache(params, object_id);
-    if (ret != PTP_RC_OK) {
+    if (ret != PTP_RC_OK)
         add_ptp_error_to_errorstack(device, ret, "add_object_to_cache(): couldn't add object to cache");
-    }
 }
 
 
