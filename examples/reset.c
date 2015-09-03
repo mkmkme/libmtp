@@ -1,4 +1,4 @@
-/** 
+/**
  * \file reset.c
  * Example program that resets the device.
  *
@@ -26,60 +26,60 @@
  */
 static int prompt()
 {
-  char buff[2];
-  
-  while (1) {
-    fprintf(stdout, "> ");
-    if ( fgets(buff, sizeof(buff), stdin) == NULL ) {
-      if (ferror(stdin)) {
-        fprintf(stderr, "File error on stdin\n");
-      } else {
-        fprintf(stderr, "EOF on stdin\n");
-      }
-      return 1;
+    char buff[2];
+
+    while (1) {
+        fprintf(stdout, "> ");
+        if ( fgets(buff, sizeof(buff), stdin) == NULL ) {
+            if (ferror(stdin)) {
+                fprintf(stderr, "File error on stdin\n");
+            } else {
+                fprintf(stderr, "EOF on stdin\n");
+            }
+            return 1;
+        }
+        if (buff[0] == 'y') {
+            return 0;
+        } else if (buff[0] == 'n') {
+            return 1;
+        }
     }
-    if (buff[0] == 'y') {
-      return 0;
-    } else if (buff[0] == 'n') {
-      return 1;
-    }
-  }
 }
 
 int main (int argc, char **argv)
 {
-  LIBMTP_mtpdevice_t *device;
-  int ret;
+    LIBMTP_mtpdevice_t *device;
+    int ret;
 
-  fprintf(stdout, "libmtp version: " LIBMTP_VERSION_STRING "\n\n");
+    fprintf(stdout, "libmtp version: " LIBMTP_VERSION_STRING "\n\n");
 
-  LIBMTP_Init();
-  device = LIBMTP_Get_First_Device();
-  if (device == NULL) {
-    printf("No devices.\n");
+    LIBMTP_Init();
+    device = LIBMTP_Get_First_Device();
+    if (device == NULL) {
+        printf("No devices.\n");
+        return 0;
+    }
+
+    printf("I will now reset your device. This means that\n");
+    printf("the device may go inactive immediately and may report errors.\n");
+    printf("Continue? (y/n)\n");
+    if (prompt() == 0) {
+        ret = LIBMTP_Reset_Device(device);
+    } else {
+        printf("Aborted.\n");
+        ret = 0;
+    }
+
+    if ( ret != 0 ) {
+        printf("Failed to reset device.\n");
+        LIBMTP_Dump_Errorstack(device);
+        LIBMTP_Clear_Errorstack(device);
+        LIBMTP_Release_Device(device);
+        return 1;
+    }
+
+    // It is not possible to release the device after successful reset!
+    // LIBMTP_Release_Device(device);
+    printf("OK.\n");
     return 0;
-  }
-
-  printf("I will now reset your device. This means that\n");
-  printf("the device may go inactive immediately and may report errors.\n");
-  printf("Continue? (y/n)\n");
-  if (prompt() == 0) {
-    ret = LIBMTP_Reset_Device(device);
-  } else {
-    printf("Aborted.\n");
-    ret = 0;
-  }
-
-  if ( ret != 0 ) {
-    printf("Failed to reset device.\n");
-    LIBMTP_Dump_Errorstack(device);
-    LIBMTP_Clear_Errorstack(device);
-    LIBMTP_Release_Device(device);
-    return 1;
-  }
-
-  // It is not possible to release the device after successful reset!
-  // LIBMTP_Release_Device(device);
-  printf("OK.\n");
-  return 0;
 }

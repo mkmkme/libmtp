@@ -1,4 +1,4 @@
-/** 
+/**
  * \file pathutils.h
  *
  * Copyright (C) 2006 Chris A. Debenham <chris@adebenham.com>
@@ -22,7 +22,7 @@
 #define PATHUTILS_H_INCLUSION_GUARD
 int parse_path (char *, LIBMTP_file_t *, LIBMTP_folder_t *);
 LIBMTP_filetype_t find_filetype (const char *);
-int progress (const uint64_t, const uint64_t, void const * const); 
+int progress (const uint64_t, const uint64_t, void const * const);
 #ifndef HAVE_LIBGEN_H
 char *basename(char *in);
 #endif

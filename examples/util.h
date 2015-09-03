@@ -1,4 +1,4 @@
-/** 
+/**
  * \file util.h
  * Header for a set of common utility functions found
  * in all samples.

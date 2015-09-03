@@ -1,4 +1,4 @@
-/** 
+/**
  * \file util.c
  * A set of common utility functions found
  * in all samples.
@@ -35,34 +35,34 @@
 
 void checklang(void)
 {
-  const char *langsuff = NULL;
-  const char *lang = getenv("LANG");
+    const char *langsuff = NULL;
+    const char *lang = getenv("LANG");
 
 #ifdef HAVE_LOCALE_H
-  // Set the locale in accordance with environment
-  setlocale(LC_ALL, "");
+    // Set the locale in accordance with environment
+    setlocale(LC_ALL, "");
 #endif
 #ifdef HAVE_LANGINFO_H
-  langsuff = nl_langinfo(CODESET);
+    langsuff = nl_langinfo(CODESET);
 #else
-  /*
-   * Check environment variables $LANG and $LC_CTYPE
-   * to see if we want to support UTF-8 unicode
-   */
-  if (lang != NULL) {
-    const char *sep = strrchr(lang, '.');
-    if (sep != NULL) {
-      langsuff = sep + 1;
-    } else {
-      langsuff = lang;
+    /*
+     * Check environment variables $LANG and $LC_CTYPE
+     * to see if we want to support UTF-8 unicode
+     */
+    if (lang != NULL) {
+        const char *sep = strrchr(lang, '.');
+        if (sep != NULL) {
+            langsuff = sep + 1;
+        } else {
+            langsuff = lang;
+        }
     }
-  }
 #endif
-  if (langsuff == NULL) {
-    printf("Could not determine language suffix for your system. Please check your setup!\n");
-  } else if (strcasecmp(langsuff, "UTF-8") && strcasecmp(langsuff, "UTF8")) {
-    printf("Your system does not appear to have UTF-8 enabled ($LANG=\"%s\")\n", lang);
-    printf("If you want to have support for diacritics and Unicode characters,\n");
-    printf("please switch your locale to an UTF-8 locale, e.g. \"en_US.UTF-8\".\n");
-  }
+    if (langsuff == NULL) {
+        printf("Could not determine language suffix for your system. Please check your setup!\n");
+    } else if (strcasecmp(langsuff, "UTF-8") && strcasecmp(langsuff, "UTF8")) {
+        printf("Your system does not appear to have UTF-8 enabled ($LANG=\"%s\")\n", lang);
+        printf("If you want to have support for diacritics and Unicode characters,\n");
+        printf("please switch your locale to an UTF-8 locale, e.g. \"en_US.UTF-8\".\n");
+    }
 }

@@ -81,42 +81,42 @@ extern "C" {
  */
 typedef struct _PTP_USB PTP_USB;
 struct _PTP_USB {
-  PTPParams *params;
+    PTPParams *params;
 #ifdef HAVE_LIBUSB1
-  libusb_device_handle* handle;
+    libusb_device_handle* handle;
 #endif
 #ifdef HAVE_LIBUSB0
-  usb_dev_handle* handle;
+    usb_dev_handle* handle;
 #endif
 #ifdef HAVE_LIBOPENUSB
-  openusb_dev_handle_t* handle;
+    openusb_dev_handle_t* handle;
 #endif
-  uint8_t config;
-  uint8_t interface;
-  uint8_t altsetting;
-  int inep;
-  int inep_maxpacket;
-  int outep;
-  int outep_maxpacket;
-  int intep;
-  /** File transfer callbacks and counters */
-  int callback_active;
-  int timeout;
-  uint16_t bcdusb;
-  uint64_t current_transfer_total;
-  uint64_t current_transfer_complete;
-  LIBMTP_progressfunc_t current_transfer_callback;
-  void const * current_transfer_callback_data;
-  /** Any special device flags, only used internally */
-  LIBMTP_raw_device_t rawdevice;
+    uint8_t config;
+    uint8_t interface;
+    uint8_t altsetting;
+    int inep;
+    int inep_maxpacket;
+    int outep;
+    int outep_maxpacket;
+    int intep;
+    /** File transfer callbacks and counters */
+    int callback_active;
+    int timeout;
+    uint16_t bcdusb;
+    uint64_t current_transfer_total;
+    uint64_t current_transfer_complete;
+    LIBMTP_progressfunc_t current_transfer_callback;
+    void const * current_transfer_callback_data;
+    /** Any special device flags, only used internally */
+    LIBMTP_raw_device_t rawdevice;
 };
 
 void dump_usbinfo(PTP_USB *ptp_usb);
 const char *get_playlist_extension(PTP_USB *ptp_usb);
 void close_device(PTP_USB *ptp_usb, PTPParams *params);
 LIBMTP_error_number_t configure_usb_device(LIBMTP_raw_device_t *device,
-					   PTPParams *params,
-					   void **usbinfo);
+        PTPParams *params,
+        void **usbinfo);
 void set_usb_device_timeout(PTP_USB *ptp_usb, int timeout);
 void get_usb_device_timeout(PTP_USB *ptp_usb, int *timeout);
 int guess_usb_speed(PTP_USB *ptp_usb);

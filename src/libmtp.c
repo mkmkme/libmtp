@@ -95,10 +95,10 @@ int LIBMTP_debug = LIBMTP_DEBUG_NONE;
  */
 //typedef struct filemap_struct filemap_t;
 typedef struct filemap_struct {
-  char *description; /**< Text description for the file type */
-  LIBMTP_filetype_t id; /**< LIBMTP internal type for the file type */
-  uint16_t ptp_id; /**< PTP ID for the filetype */
-  struct filemap_struct *next;
+    char *description; /**< Text description for the file type */
+    LIBMTP_filetype_t id; /**< LIBMTP internal type for the file type */
+    uint16_t ptp_id; /**< PTP ID for the filetype */
+    struct filemap_struct *next;
 } filemap_t;
 
 /*
@@ -108,10 +108,10 @@ typedef struct filemap_struct {
  * to be installed too, and we don't want that.
  */
 typedef struct propertymap_struct {
-  char *description; /**< Text description for the property */
-  LIBMTP_property_t id; /**< LIBMTP internal type for the property */
-  uint16_t ptp_id; /**< PTP ID for the property */
-  struct propertymap_struct *next;
+    char *description; /**< Text description for the property */
+    LIBMTP_property_t id; /**< LIBMTP internal type for the property */
+    uint16_t ptp_id; /**< PTP ID for the property */
+    struct propertymap_struct *next;
 } propertymap_t;
 
 // Global variables
@@ -124,90 +124,90 @@ static propertymap_t *g_propertymap = NULL;
  * Forward declarations of local (static) functions.
  */
 static int register_filetype(char const * const description, LIBMTP_filetype_t const id,
-			     uint16_t const ptp_id);
+                             uint16_t const ptp_id);
 static void init_filemap();
 static int register_property(char const * const description, LIBMTP_property_t const id,
-			     uint16_t const ptp_id);
+                             uint16_t const ptp_id);
 static void init_propertymap();
 static void add_error_to_errorstack(LIBMTP_mtpdevice_t *device,
-				    LIBMTP_error_number_t errornumber,
-				    char const * const error_text);
+                                    LIBMTP_error_number_t errornumber,
+                                    char const * const error_text);
 static void add_ptp_error_to_errorstack(LIBMTP_mtpdevice_t *device,
-					uint16_t ptp_error,
-					char const * const error_text);
+                                        uint16_t ptp_error,
+                                        char const * const error_text);
 static void flush_handles(LIBMTP_mtpdevice_t *device);
 static void get_handles_recursively(LIBMTP_mtpdevice_t *device,
-				    PTPParams *params,
-				    uint32_t storageid,
-				    uint32_t parent);
+                                    PTPParams *params,
+                                    uint32_t storageid,
+                                    uint32_t parent);
 static void free_storage_list(LIBMTP_mtpdevice_t *device);
 static int sort_storage_by(LIBMTP_mtpdevice_t *device, int const sortby);
 static uint32_t get_writeable_storageid(LIBMTP_mtpdevice_t *device,
-					uint64_t fitsize);
+                                        uint64_t fitsize);
 static int get_storage_freespace(LIBMTP_mtpdevice_t *device,
-				 LIBMTP_devicestorage_t *storage,
-				 uint64_t *freespace);
+                                 LIBMTP_devicestorage_t *storage,
+                                 uint64_t *freespace);
 static int check_if_file_fits(LIBMTP_mtpdevice_t *device,
-			      LIBMTP_devicestorage_t *storage,
-			      uint64_t const filesize);
+                              LIBMTP_devicestorage_t *storage,
+                              uint64_t const filesize);
 static uint16_t map_libmtp_type_to_ptp_type(LIBMTP_filetype_t intype);
 static LIBMTP_filetype_t map_ptp_type_to_libmtp_type(uint16_t intype);
 static uint16_t map_libmtp_property_to_ptp_property(LIBMTP_property_t inproperty);
 static LIBMTP_property_t map_ptp_property_to_libmtp_property(uint16_t intype);
 static int get_device_unicode_property(LIBMTP_mtpdevice_t *device,
-				       char **unicstring, uint16_t property);
+                                       char **unicstring, uint16_t property);
 static uint16_t adjust_u16(uint16_t val, PTPObjectPropDesc *opd);
 static uint32_t adjust_u32(uint32_t val, PTPObjectPropDesc *opd);
 static char *get_iso8601_stamp(void);
 static char *get_string_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-				    uint16_t const attribute_id);
+                                    uint16_t const attribute_id);
 static uint64_t get_u64_from_object(LIBMTP_mtpdevice_t *device,uint32_t const object_id,
                                     uint16_t const attribute_id, uint64_t const value_default);
 static uint32_t get_u32_from_object(LIBMTP_mtpdevice_t *device,uint32_t const object_id,
-				    uint16_t const attribute_id, uint32_t const value_default);
+                                    uint16_t const attribute_id, uint32_t const value_default);
 static uint16_t get_u16_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-				    uint16_t const attribute_id, uint16_t const value_default);
+                                    uint16_t const attribute_id, uint16_t const value_default);
 static uint8_t get_u8_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-				  uint16_t const attribute_id, uint8_t const value_default);
+                                  uint16_t const attribute_id, uint8_t const value_default);
 static int set_object_string(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			     uint16_t const attribute_id, char const * const string);
+                             uint16_t const attribute_id, char const * const string);
 static int set_object_u32(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			  uint16_t const attribute_id, uint32_t const value);
+                          uint16_t const attribute_id, uint32_t const value);
 static int set_object_u16(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			  uint16_t const attribute_id, uint16_t const value);
+                          uint16_t const attribute_id, uint16_t const value);
 static int set_object_u8(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-			 uint16_t const attribute_id, uint8_t const value);
+                         uint16_t const attribute_id, uint8_t const value);
 static void get_track_metadata(LIBMTP_mtpdevice_t *device, uint16_t objectformat,
-			       LIBMTP_track_t *track);
+                               LIBMTP_track_t *track);
 static LIBMTP_folder_t *get_subfolders_for_folder(LIBMTP_folder_t *list, uint32_t parent);
 static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
-				    char const * const name,
-				    char const * const artist,
-				    char const * const composer,
-				    char const * const genre,
-				    uint32_t const parenthandle,
-				    uint32_t const storageid,
-				    uint16_t const objectformat,
-				    char const * const suffix,
-				    uint32_t * const newid,
-				    uint32_t const * const tracks,
-				    uint32_t const no_tracks);
+                                    char const * const name,
+                                    char const * const artist,
+                                    char const * const composer,
+                                    char const * const genre,
+                                    uint32_t const parenthandle,
+                                    uint32_t const storageid,
+                                    uint16_t const objectformat,
+                                    char const * const suffix,
+                                    uint32_t * const newid,
+                                    uint32_t const * const tracks,
+                                    uint32_t const no_tracks);
 static int update_abstract_list(LIBMTP_mtpdevice_t *device,
-				char const * const name,
-				char const * const artist,
-				char const * const composer,
-				char const * const genre,
-				uint32_t const objecthandle,
-				uint16_t const objectformat,
-				uint32_t const * const tracks,
-				uint32_t const no_tracks);
+                                char const * const name,
+                                char const * const artist,
+                                char const * const composer,
+                                char const * const genre,
+                                uint32_t const objecthandle,
+                                uint16_t const objectformat,
+                                uint32_t const * const tracks,
+                                uint32_t const no_tracks);
 static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *filedata);
 static void add_object_to_cache(LIBMTP_mtpdevice_t *device, uint32_t object_id);
 static void update_metadata_cache(LIBMTP_mtpdevice_t *device, uint32_t object_id);
 static int set_object_filename(LIBMTP_mtpdevice_t *device,
-		uint32_t object_id,
-		uint16_t ptp_type,
-                const char **newname);
+                               uint32_t object_id,
+                               uint16_t ptp_type,
+                               const char **newname);
 static char *generate_unique_filename(PTPParams* params, char const * const filename);
 static int check_filename_exists(PTPParams* params, char const * const filename);
 
@@ -327,7 +327,7 @@ static int register_filetype(char const * const description, LIBMTP_filetype_t c
                 current = current->next;
             current->next = new;
         }
-    // Update the existing entry
+        // Update the existing entry
     } else {
         free(current->description);
         current->description = NULL;
@@ -489,7 +489,7 @@ static int register_property(char const * const description, LIBMTP_property_t c
                 current=current->next;
             current->next = new;
         }
-    // Update the existing entry
+        // Update the existing entry
     } else {
         free(current->description);
         current->description = NULL;
@@ -906,7 +906,7 @@ static char *get_iso8601_stamp(void)
  * @return 0 on success, any other value means failure
  */
 int LIBMTP_Get_Allowed_Property_Values(LIBMTP_mtpdevice_t *device, LIBMTP_property_t const property,
-            LIBMTP_filetype_t const filetype, LIBMTP_allowed_values_t *allowed_vals)
+                                       LIBMTP_filetype_t const filetype, LIBMTP_allowed_values_t *allowed_vals)
 {
     PTPObjectPropDesc opd;
     uint16_t ret = 0;
@@ -1090,7 +1090,7 @@ void LIBMTP_destroy_allowed_values_t(LIBMTP_allowed_values_t *allowed_vals)
  * @return 0 if not supported, positive if supported, negative on error
  */
 int LIBMTP_Is_Property_Supported(LIBMTP_mtpdevice_t *device, LIBMTP_property_t const property,
-            LIBMTP_filetype_t const filetype)
+                                 LIBMTP_filetype_t const filetype)
 {
     uint16_t *props = NULL;
     uint32_t propcnt = 0;
@@ -1131,7 +1131,7 @@ int LIBMTP_Is_Property_Supported(LIBMTP_mtpdevice_t *device, LIBMTP_property_t c
  *         use.
  */
 char *LIBMTP_Get_String_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-                    LIBMTP_property_t const attribute_id)
+                                    LIBMTP_property_t const attribute_id)
 {
     return get_string_from_object(device, object_id, attribute_id);
 }
@@ -1146,7 +1146,7 @@ char *LIBMTP_Get_String_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const o
  * @return the value
  */
 uint64_t LIBMTP_Get_u64_From_Object(LIBMTP_mtpdevice_t *device,uint32_t const object_id,
-                    LIBMTP_property_t const attribute_id, uint64_t const value_default)
+                                    LIBMTP_property_t const attribute_id, uint64_t const value_default)
 {
     return get_u64_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
 }
@@ -1161,7 +1161,7 @@ uint64_t LIBMTP_Get_u64_From_Object(LIBMTP_mtpdevice_t *device,uint32_t const ob
  * @return the value
  */
 uint32_t LIBMTP_Get_u32_From_Object(LIBMTP_mtpdevice_t *device,uint32_t const object_id,
-                    LIBMTP_property_t const attribute_id, uint32_t const value_default)
+                                    LIBMTP_property_t const attribute_id, uint32_t const value_default)
 {
     return get_u32_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
 }
@@ -1176,7 +1176,7 @@ uint32_t LIBMTP_Get_u32_From_Object(LIBMTP_mtpdevice_t *device,uint32_t const ob
  * @return a value
  */
 uint16_t LIBMTP_Get_u16_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-                    LIBMTP_property_t const attribute_id, uint16_t const value_default)
+                                    LIBMTP_property_t const attribute_id, uint16_t const value_default)
 {
     return get_u16_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
 }
@@ -1191,7 +1191,7 @@ uint16_t LIBMTP_Get_u16_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const o
  * @return a value
  */
 uint8_t LIBMTP_Get_u8_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-                  LIBMTP_property_t const attribute_id, uint8_t const value_default)
+                                  LIBMTP_property_t const attribute_id, uint8_t const value_default)
 {
     return get_u8_from_object(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value_default);
 }
@@ -1206,7 +1206,7 @@ uint8_t LIBMTP_Get_u8_From_Object(LIBMTP_mtpdevice_t *device, uint32_t const obj
  * @return 0 on success, any other value means failure
  */
 int LIBMTP_Set_Object_String(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-                 LIBMTP_property_t const attribute_id, char const * const string)
+                             LIBMTP_property_t const attribute_id, char const * const string)
 {
     return set_object_string(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), string);
 }
@@ -1221,7 +1221,7 @@ int LIBMTP_Set_Object_String(LIBMTP_mtpdevice_t *device, uint32_t const object_i
  * @return 0 on success, any other value means failure
  */
 int LIBMTP_Set_Object_u32(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-              LIBMTP_property_t const attribute_id, uint32_t const value)
+                          LIBMTP_property_t const attribute_id, uint32_t const value)
 {
     return set_object_u32(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value);
 }
@@ -1236,7 +1236,7 @@ int LIBMTP_Set_Object_u32(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  * @return 0 on success, any other value means failure
  */
 int LIBMTP_Set_Object_u16(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-              LIBMTP_property_t const attribute_id, uint16_t const value)
+                          LIBMTP_property_t const attribute_id, uint16_t const value)
 {
     return set_object_u16(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value);
 }
@@ -1251,7 +1251,7 @@ int LIBMTP_Set_Object_u16(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  * @return 0 on success, any other value means failure
  */
 int LIBMTP_Set_Object_u8(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-             LIBMTP_property_t const attribute_id, uint8_t const value)
+                         LIBMTP_property_t const attribute_id, uint8_t const value)
 {
     return set_object_u8(device, object_id, map_libmtp_property_to_ptp_property(attribute_id), value);
 }
@@ -1267,7 +1267,7 @@ int LIBMTP_Set_Object_u8(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  *         use.
  */
 static char *get_string_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-                    uint16_t const attribute_id)
+                                    uint16_t const attribute_id)
 {
     PTPPropertyValue propval;
     char *retstring = NULL;
@@ -1310,7 +1310,7 @@ static char *get_string_from_object(LIBMTP_mtpdevice_t *device, uint32_t const o
  * @return the value
  */
 static uint64_t get_u64_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-                    uint16_t const attribute_id, uint64_t const value_default)
+                                    uint16_t const attribute_id, uint64_t const value_default)
 {
     PTPPropertyValue propval;
     uint64_t retval = value_default;
@@ -1346,7 +1346,7 @@ static uint64_t get_u64_from_object(LIBMTP_mtpdevice_t *device, uint32_t const o
  * @return the value
  */
 static uint32_t get_u32_from_object(LIBMTP_mtpdevice_t *device,uint32_t const object_id,
-                    uint16_t const attribute_id, uint32_t const value_default)
+                                    uint16_t const attribute_id, uint32_t const value_default)
 {
     PTPPropertyValue propval;
     uint32_t retval = value_default;
@@ -1381,7 +1381,7 @@ static uint32_t get_u32_from_object(LIBMTP_mtpdevice_t *device,uint32_t const ob
  * @return a value
  */
 static uint16_t get_u16_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-                    uint16_t const attribute_id, uint16_t const value_default)
+                                    uint16_t const attribute_id, uint16_t const value_default)
 {
     PTPPropertyValue propval;
     uint16_t retval = value_default;
@@ -1419,7 +1419,7 @@ static uint16_t get_u16_from_object(LIBMTP_mtpdevice_t *device, uint32_t const o
  * @return a value
  */
 static uint8_t get_u8_from_object(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-                  uint16_t const attribute_id, uint8_t const value_default)
+                                  uint16_t const attribute_id, uint8_t const value_default)
 {
     PTPPropertyValue propval;
     uint8_t retval = value_default;
@@ -1457,7 +1457,7 @@ static uint8_t get_u8_from_object(LIBMTP_mtpdevice_t *device, uint32_t const obj
  * @return 0 on success, any other value means failure
  */
 static int set_object_string(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-                 uint16_t const attribute_id, char const * const string)
+                             uint16_t const attribute_id, char const * const string)
 {
     PTPPropertyValue propval;
     PTPParams *params;
@@ -1469,8 +1469,8 @@ static int set_object_string(LIBMTP_mtpdevice_t *device, uint32_t const object_i
     params = (PTPParams *) device->params;
 
     if (!ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
-        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, 
-            "set_object_string(): could not set object string: PTP_OC_MTP_SetObjectPropValue not supported.");
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "set_object_string(): could not set object string: PTP_OC_MTP_SetObjectPropValue not supported.");
         return -1;
     }
     propval.str = (char *) string;
@@ -1493,7 +1493,7 @@ static int set_object_string(LIBMTP_mtpdevice_t *device, uint32_t const object_i
  * @return 0 on success, any other value means failure
  */
 static int set_object_u32(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-              uint16_t const attribute_id, uint32_t const value)
+                          uint16_t const attribute_id, uint32_t const value)
 {
     PTPPropertyValue propval;
     PTPParams *params;
@@ -1506,7 +1506,7 @@ static int set_object_u32(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
 
     if (!ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "set_object_u32(): could not set unsigned 32bit integer property: PTP_OC_MTP_SetObjectPropValue not supported.");
+                                "set_object_u32(): could not set unsigned 32bit integer property: PTP_OC_MTP_SetObjectPropValue not supported.");
         return -1;
     }
 
@@ -1530,7 +1530,7 @@ static int set_object_u32(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  * @return 0 on success, any other value means failure
  */
 static int set_object_u16(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-              uint16_t const attribute_id, uint16_t const value)
+                          uint16_t const attribute_id, uint16_t const value)
 {
     PTPPropertyValue propval;
     PTPParams *params;
@@ -1543,7 +1543,7 @@ static int set_object_u16(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
 
     if (!ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "set_object_u16(): could not set unsigned 16bit integer property: PTP_OC_MTP_SetObjectPropValue not supported.");
+                                "set_object_u16(): could not set unsigned 16bit integer property: PTP_OC_MTP_SetObjectPropValue not supported.");
         return -1;
     }
     propval.u16 = value;
@@ -1566,7 +1566,7 @@ static int set_object_u16(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
  * @return 0 on success, any other value means failure
  */
 static int set_object_u8(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
-             uint16_t const attribute_id, uint8_t const value)
+                         uint16_t const attribute_id, uint8_t const value)
 {
     PTPPropertyValue propval;
     PTPParams *params;
@@ -1579,7 +1579,7 @@ static int set_object_u8(LIBMTP_mtpdevice_t *device, uint32_t const object_id,
 
     if (!ptp_operation_issupported(params,PTP_OC_MTP_SetObjectPropValue)) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "set_object_u8(): could not set unsigned 8bit integer property: PTP_OC_MTP_SetObjectPropValue not supported.");
+                                "set_object_u8(): could not set unsigned 8bit integer property: PTP_OC_MTP_SetObjectPropValue not supported.");
         return -1;
     }
     propval.u8 = value;
@@ -1643,22 +1643,22 @@ __attribute__((__format__(printf,2,0)))
 #endif
 LIBMTP_ptp_error(void *data, const char *format, va_list args)
 {
-  // if (data == NULL) {
+    // if (data == NULL) {
     vfprintf (stderr, format, args);
     fflush (stderr);
-  /*
-    FIXME: find out how we shall get the device here.
-  } else {
-    PTP_USB *ptp_usb = data;
-    LIBMTP_mtpdevice_t *device = ...;
-    char buf[2048];
+    /*
+      FIXME: find out how we shall get the device here.
+    } else {
+      PTP_USB *ptp_usb = data;
+      LIBMTP_mtpdevice_t *device = ...;
+      char buf[2048];
 
-    vsnprintf (buf, sizeof (buf), format, args);
-    add_error_to_errorstack(device,
-			    LIBMTP_ERROR_PTP_LAYER,
-			    buf);
-  }
-  */
+      vsnprintf (buf, sizeof (buf), format, args);
+      add_error_to_errorstack(device,
+    		    LIBMTP_ERROR_PTP_LAYER,
+    		    buf);
+    }
+    */
 }
 
 /**
@@ -1796,9 +1796,9 @@ LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device_Uncached(LIBMTP_raw_device_t *rawdevi
     current_params->cd_ucs2_to_locale = iconv_open("UTF-8", "UCS-2LE");
 
     if(current_params->cd_locale_to_ucs2 == (iconv_t) -1 ||
-        current_params->cd_ucs2_to_locale == (iconv_t) -1) {
+            current_params->cd_ucs2_to_locale == (iconv_t) -1) {
         LIBMTP_ERROR("LIBMTP PANIC: Cannot open iconv() converters to/from UCS-2!\n"
-           "Too old stdlibc, glibc and libiconv?\n");
+                     "Too old stdlibc, glibc and libiconv?\n");
         free(current_params);
         free(mtp_device);
         return NULL;
@@ -1819,7 +1819,7 @@ LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device_Uncached(LIBMTP_raw_device_t *rawdevi
     /* Cache the device information for later use */
     if (ptp_getdeviceinfo(current_params, &current_params->deviceinfo) != PTP_RC_OK) {
         LIBMTP_ERROR("LIBMTP PANIC: Unable to read device information on device %d on bus %d, trying to continue",
-                rawdevice->devnum, rawdevice->bus_location);
+                     rawdevice->devnum, rawdevice->bus_location);
 
         /* Prevent memory leaks for this device */
         free(mtp_device->usbinfo);
@@ -1832,14 +1832,14 @@ LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device_Uncached(LIBMTP_raw_device_t *rawdevi
     /* Check: if this is a PTP device, is it really tagged as MTP? */
     if (current_params->deviceinfo.VendorExtensionID != 0x00000006) {
         LIBMTP_ERROR("LIBMTP WARNING: no MTP vendor extension on device %d on bus %d",
-                rawdevice->devnum, rawdevice->bus_location);
+                     rawdevice->devnum, rawdevice->bus_location);
         LIBMTP_ERROR("LIBMTP WARNING: VendorExtensionID: %08x",
-                current_params->deviceinfo.VendorExtensionID);
+                     current_params->deviceinfo.VendorExtensionID);
         LIBMTP_ERROR("LIBMTP WARNING: VendorExtensionDesc: %s",
-                current_params->deviceinfo.VendorExtensionDesc);
+                     current_params->deviceinfo.VendorExtensionDesc);
         LIBMTP_ERROR("LIBMTP WARNING: this typically means the device is PTP "
-                "(i.e. a camera) but not an MTP device at all. "
-                "Trying to continue anyway.");
+                     "(i.e. a camera) but not an MTP device at all. "
+                     "Trying to continue anyway.");
     }
 
     parse_extension_descriptor(mtp_device, current_params->deviceinfo.VendorExtensionDesc);
@@ -1872,17 +1872,17 @@ LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device_Uncached(LIBMTP_raw_device_t *rawdevi
 
         /* Check for specific stacks */
         if (is_microsoft_com_wpdna && is_sonyericsson_com_se && !is_android) {
-        /*
-         * The Aricent stack seems to be detected by providing WPDNA, the SonyEricsson
-         * extension and NO Android extension.
-         */
+            /*
+             * The Aricent stack seems to be detected by providing WPDNA, the SonyEricsson
+             * extension and NO Android extension.
+             */
             ptp_usb->rawdevice.device_entry.device_flags |= DEVICE_FLAGS_ARICENT_BUGS;
             LIBMTP_INFO("Aricent MTP stack device detected, assigning default bug flags\n");
         }
         else if (is_android) {
-        /*
-         * If bugs are fixed in later versions, test on tmpext->major, tmpext->minor
-         */
+            /*
+             * If bugs are fixed in later versions, test on tmpext->major, tmpext->minor
+             */
             ptp_usb->rawdevice.device_entry.device_flags |= DEVICE_FLAGS_ANDROID_BUGS;
             LIBMTP_INFO("Android device detected, assigning default bug flags\n");
         }
@@ -1966,8 +1966,8 @@ LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device_Uncached(LIBMTP_raw_device_t *rawdevi
         /* Try to read maximum battery level */
         if (ptp_getdevicepropdesc(current_params, PTP_DPC_BatteryLevel, &dpd) != PTP_RC_OK) {
             add_error_to_errorstack(mtp_device, LIBMTP_ERROR_CONNECTING,
-                "Unable to read Maximum Battery Level for this device even though the device supposedly "
-                "supports this functionality");
+                                    "Unable to read Maximum Battery Level for this device even though the device supposedly "
+                                    "supports this functionality");
         }
 
         /* TODO: is this appropriate? */
@@ -2019,7 +2019,7 @@ LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device(LIBMTP_raw_device_t *rawdevice)
                     LIBMTP_INFO ("(MTPZ) Failure - could not authenticate with device.\n");
                 break;
             }
-        tmpext = tmpext->next;
+            tmpext = tmpext->next;
         }
     }
 
@@ -2284,8 +2284,8 @@ void LIBMTP_Release_Device(LIBMTP_mtpdevice_t *device)
  * directly.
  */
 static void add_error_to_errorstack(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_error_number_t errornumber,
-                    char const * const error_text)
+                                    LIBMTP_error_number_t errornumber,
+                                    char const * const error_text)
 {
     LIBMTP_error_t *newerror;
 
@@ -2312,8 +2312,8 @@ static void add_error_to_errorstack(LIBMTP_mtpdevice_t *device,
  * Adds an error from the PTP layer to the error stack.
  */
 static void add_ptp_error_to_errorstack(LIBMTP_mtpdevice_t *device,
-                    uint16_t ptp_error,
-                    char const * const error_text)
+                                        uint16_t ptp_error,
+                                        char const * const error_text)
 {
     if (device == NULL) {
         LIBMTP_ERROR("LIBMTP PANIC: Trying to add PTP error to a NULL device!\n");
@@ -2447,18 +2447,18 @@ static int get_all_metadata_fast(LIBMTP_mtpdevice_t *device)
          * you cannot use it to get all props for AT LEAST one object?
          * Well, whatever... */
         add_ptp_error_to_errorstack(device, ret, "get_all_metadata_fast(): "
-        "cannot retrieve all metadata for an object on this device.");
+                                    "cannot retrieve all metadata for an object on this device.");
         return -1;
     }
     if (ret != PTP_RC_OK) {
         add_ptp_error_to_errorstack(device, ret, "get_all_metadata_fast(): "
-        "could not get proplist of all objects.");
+                                    "could not get proplist of all objects.");
         return -1;
     }
     if (props == NULL && nrofprops != 0) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-        "get_all_metadata_fast(): call to ptp_mtp_getobjectproplist() returned "
-        "inconsistent results.");
+                                "get_all_metadata_fast(): call to ptp_mtp_getobjectproplist() returned "
+                                "inconsistent results.");
         return -1;
     }
     /*
@@ -2521,14 +2521,14 @@ static int get_all_metadata_fast(LIBMTP_mtpdevice_t *device)
             /* Copy all of the other MTP oprierties into the per-object proplist */
             if (params->objects[i].nrofmtpprops) {
                 newprops = realloc(params->objects[i].mtpprops,
-                (params->objects[i].nrofmtpprops+1)*sizeof(MTPProperties));
+                                   (params->objects[i].nrofmtpprops+1)*sizeof(MTPProperties));
             } else
                 newprops = calloc(1, sizeof(MTPProperties));
             if (!newprops)
                 return 0; /* FIXME: error handling? */
             params->objects[i].mtpprops = newprops;
             memcpy(&params->objects[i].mtpprops[params->objects[i].nrofmtpprops],
-                    &props[j],sizeof(props[j]));
+                   &props[j],sizeof(props[j]));
             params->objects[i].nrofmtpprops++;
             params->objects[i].flags |= PTPOBJECT_MTPPROPLIST_LOADED;
             break;
@@ -2552,9 +2552,9 @@ static int get_all_metadata_fast(LIBMTP_mtpdevice_t *device)
  * for all objects.
  */
 static void get_handles_recursively(LIBMTP_mtpdevice_t *device,
-                    PTPParams *params,
-                    uint32_t storageid,
-                    uint32_t parent)
+                                    PTPParams *params,
+                                    uint32_t storageid,
+                                    uint32_t parent)
 {
     PTPObjectHandles currentHandles;
     int i = 0;
@@ -2576,8 +2576,8 @@ static void get_handles_recursively(LIBMTP_mtpdevice_t *device,
             if (ob->oi.ObjectFormat == PTP_OFC_Association)
                 get_handles_recursively(device, params, storageid, currentHandles.Handler[i]);
         } else
-            add_error_to_errorstack(device, LIBMTP_ERROR_CONNECTING, 
-                "Found a bad handle, trying to ignore it.");
+            add_error_to_errorstack(device, LIBMTP_ERROR_CONNECTING,
+                                    "Found a bad handle, trying to ignore it.");
     }
     free(currentHandles.Handler);
 }
@@ -2608,8 +2608,8 @@ static void flush_handles(LIBMTP_mtpdevice_t *device)
     }
 
     if (ptp_operation_issupported(params,PTP_OC_MTP_GetObjPropList)
-        && !FLAG_BROKEN_MTPGETOBJPROPLIST(ptp_usb)
-        && !FLAG_BROKEN_MTPGETOBJPROPLIST_ALL(ptp_usb))
+            && !FLAG_BROKEN_MTPGETOBJPROPLIST(ptp_usb)
+            && !FLAG_BROKEN_MTPGETOBJPROPLIST_ALL(ptp_usb))
         /* Use the fast method. Ignore return value for now. */
         ret = get_all_metadata_fast(device);
 
@@ -2660,33 +2660,33 @@ static void flush_handles(LIBMTP_mtpdevice_t *device)
 
         /* Is this the Music Folder */
         if (!strcasecmp(ob->oi.Filename, "My Music") ||
-            !strcasecmp(ob->oi.Filename, "My_Music") ||
-            !strcasecmp(ob->oi.Filename, "Music"))
+                !strcasecmp(ob->oi.Filename, "My_Music") ||
+                !strcasecmp(ob->oi.Filename, "Music"))
             device->default_music_folder = ob->oid;
         else if (!strcasecmp(ob->oi.Filename, "My Playlists") ||
-                !strcasecmp(ob->oi.Filename, "My_Playlists") ||
-                !strcasecmp(ob->oi.Filename, "Playlists"))
+                 !strcasecmp(ob->oi.Filename, "My_Playlists") ||
+                 !strcasecmp(ob->oi.Filename, "Playlists"))
             device->default_playlist_folder = ob->oid;
         else if (!strcasecmp(ob->oi.Filename, "My Pictures") ||
-                !strcasecmp(ob->oi.Filename, "My_Pictures") ||
-                !strcasecmp(ob->oi.Filename, "Pictures"))
+                 !strcasecmp(ob->oi.Filename, "My_Pictures") ||
+                 !strcasecmp(ob->oi.Filename, "Pictures"))
             device->default_picture_folder = ob->oid;
         else if (!strcasecmp(ob->oi.Filename, "My Video") ||
-                !strcasecmp(ob->oi.Filename, "My_Video") ||
-                !strcasecmp(ob->oi.Filename, "Video"))
+                 !strcasecmp(ob->oi.Filename, "My_Video") ||
+                 !strcasecmp(ob->oi.Filename, "Video"))
             device->default_video_folder = ob->oid;
         else if (!strcasecmp(ob->oi.Filename, "My Organizer") ||
-                !strcasecmp(ob->oi.Filename, "My_Organizer"))
+                 !strcasecmp(ob->oi.Filename, "My_Organizer"))
             device->default_organizer_folder = ob->oid;
         else if (!strcasecmp(ob->oi.Filename, "ZENcast") ||
-                !strcasecmp(ob->oi.Filename, "Datacasts"))
+                 !strcasecmp(ob->oi.Filename, "Datacasts"))
             device->default_zencast_folder = ob->oid;
         else if (!strcasecmp(ob->oi.Filename, "My Albums") ||
-                !strcasecmp(ob->oi.Filename, "My_Albums") ||
-                !strcasecmp(ob->oi.Filename, "Albums"))
+                 !strcasecmp(ob->oi.Filename, "My_Albums") ||
+                 !strcasecmp(ob->oi.Filename, "Albums"))
             device->default_album_folder = ob->oid;
         else if (!strcasecmp(ob->oi.Filename, "Text") ||
-                !strcasecmp(ob->oi.Filename, "Texts"))
+                 !strcasecmp(ob->oi.Filename, "Texts"))
             device->default_text_folder = ob->oid;
     }
 }
@@ -2737,7 +2737,7 @@ static int sort_storage_by(LIBMTP_mtpdevice_t *device,int const sortby)
         while(ptr1 != NULL) {
 
             if ((sortby == LIBMTP_STORAGE_SORTBY_FREESPACE || sortby == LIBMTP_STORAGE_SORTBY_MAXSPACE)
-                && ptr1->FreeSpaceInBytes > ptr2->FreeSpaceInBytes)
+                    && ptr1->FreeSpaceInBytes > ptr2->FreeSpaceInBytes)
                 ptr2 = ptr1;
 
             ptr1 = ptr1->next;
@@ -2791,7 +2791,7 @@ static int sort_storage_by(LIBMTP_mtpdevice_t *device,int const sortby)
  * @param fitsize a file of this file must fit on the device.
  */
 static uint32_t get_writeable_storageid(LIBMTP_mtpdevice_t *device,
-                    uint64_t fitsize)
+                                        uint64_t fitsize)
 {
     LIBMTP_devicestorage_t *storage;
     int subcall_ret;
@@ -2805,7 +2805,7 @@ static uint32_t get_writeable_storageid(LIBMTP_mtpdevice_t *device,
     while(storage != NULL) {
         /* These storages cannot be used. */
         if (storage->StorageType == PTP_ST_FixedROM ||
-            storage->StorageType == PTP_ST_RemovableROM) {
+                storage->StorageType == PTP_ST_RemovableROM) {
             storage = storage->next;
             continue;
         }
@@ -2817,7 +2817,7 @@ static uint32_t get_writeable_storageid(LIBMTP_mtpdevice_t *device,
         }
         /* Also check the access capability to avoid e.g. deletable only storages */
         if (storage->AccessCapability == PTP_AC_ReadOnly ||
-            storage->AccessCapability == PTP_AC_ReadOnly_with_Object_Deletion) {
+                storage->AccessCapability == PTP_AC_ReadOnly_with_Object_Deletion) {
             storage = storage->next;
             continue;
         }
@@ -2831,7 +2831,7 @@ static uint32_t get_writeable_storageid(LIBMTP_mtpdevice_t *device,
     }
     if (storage == NULL) {
         add_error_to_errorstack(device, LIBMTP_ERROR_STORAGE_FULL,
-            "get_writeable_storageid(): all device storage is full or corrupt.");
+                                "get_writeable_storageid(): all device storage is full or corrupt.");
         return -1;
     }
 
@@ -2846,8 +2846,8 @@ static uint32_t get_writeable_storageid(LIBMTP_mtpdevice_t *device,
  * @ret storageID
  */
 static int get_suggested_storage_id(LIBMTP_mtpdevice_t *device,
-                    uint64_t fitsize,
-                    uint32_t parent_id)
+                                    uint64_t fitsize,
+                                    uint32_t parent_id)
 {
     PTPParams *params = (PTPParams *) device->params;
     PTPObject *ob;
@@ -2856,7 +2856,7 @@ static int get_suggested_storage_id(LIBMTP_mtpdevice_t *device,
     ret = ptp_object_want(params, parent_id, PTPOBJECT_MTPPROPLIST_LOADED, &ob);
     if ((ret != PTP_RC_OK) || (ob->oi.StorageID == 0)) {
         add_ptp_error_to_errorstack(device, ret, "get_suggested_storage_id(): "
-            "could not get storage id from parent id.");
+                                    "could not get storage id from parent id.");
         return get_writeable_storageid(device, fitsize);
     }
     /* OK we know the parent storage, then use that */
@@ -2874,8 +2874,8 @@ static int get_suggested_storage_id(LIBMTP_mtpdevice_t *device,
  * in this variable.
  */
 static int get_storage_freespace(LIBMTP_mtpdevice_t *device,
-                 LIBMTP_devicestorage_t *storage,
-                 uint64_t *freespace)
+                                 LIBMTP_devicestorage_t *storage,
+                                 uint64_t *freespace)
 {
     PTPParams *params = (PTPParams *) device->params;
 
@@ -2888,7 +2888,7 @@ static int get_storage_freespace(LIBMTP_mtpdevice_t *device,
         ret = ptp_getstorageinfo(params, storage->id, &storageInfo);
         if (ret != PTP_RC_OK) {
             add_ptp_error_to_errorstack(device, ret,
-            "get_storage_freespace(): could not get storage info.");
+                                        "get_storage_freespace(): could not get storage info.");
             return -1;
         }
         free(storage->StorageDescription);
@@ -2953,7 +2953,7 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
     printf("Device Properties Supported:\n");
     for (i = 0; i < params->deviceinfo.DevicePropertiesSupported_len; i++) {
         char const *propdesc = ptp_get_property_description(params,
-            params->deviceinfo.DevicePropertiesSupported[i]);
+                               params->deviceinfo.DevicePropertiesSupported[i]);
 
         if (propdesc != NULL)
             printf("   0x%04x: %s\n", params->deviceinfo.DevicePropertiesSupported[i], propdesc);
@@ -2975,11 +2975,11 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
             ptp_render_ofc(params, params->deviceinfo.ImageFormats[i], sizeof(txt), txt);
             printf("   %04x: %s\n", params->deviceinfo.ImageFormats[i], txt);
 
-            ret = ptp_mtp_getobjectpropssupported (params, 
-                params->deviceinfo.ImageFormats[i], &propcnt, &props);
+            ret = ptp_mtp_getobjectpropssupported (params,
+                                                   params->deviceinfo.ImageFormats[i], &propcnt, &props);
             if (ret != PTP_RC_OK) {
                 add_ptp_error_to_errorstack(device, ret,
-                    "LIBMTP_Dump_Device_Info(): error on query for object properties.");
+                                            "LIBMTP_Dump_Device_Info(): error on query for object properties.");
                 free(props);
                 continue;
             }
@@ -2989,12 +2989,12 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                 int k;
 
                 printf("      %04x: %s", props[j],
-                LIBMTP_Get_Property_Description(map_ptp_property_to_libmtp_property(props[j])));
+                       LIBMTP_Get_Property_Description(map_ptp_property_to_libmtp_property(props[j])));
                 /* Get a more verbose description */
                 ret = ptp_mtp_getobjectpropdesc(params, props[j], params->deviceinfo.ImageFormats[i], &opd);
                 if (ret != PTP_RC_OK) {
                     add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                        "LIBMTP_Dump_Device_Info(): could not get property description.");
+                                            "LIBMTP_Dump_Device_Info(): could not get property description.");
                     break;
                 }
 
@@ -3027,9 +3027,9 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                     switch (opd.FormFlag) {
                     case PTP_OPFF_Range:
                         printf(" range: MIN %d, MAX %d, STEP %d",
-                            opd.FORM.Range.MinimumValue.i8,
-                            opd.FORM.Range.MaximumValue.i8,
-                            opd.FORM.Range.StepSize.i8);
+                               opd.FORM.Range.MinimumValue.i8,
+                               opd.FORM.Range.MaximumValue.i8,
+                               opd.FORM.Range.StepSize.i8);
                         break;
                     case PTP_OPFF_Enumeration:
                         printf(" enumeration: ");
@@ -3050,9 +3050,9 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                     switch (opd.FormFlag) {
                     case PTP_OPFF_Range:
                         printf(" range: MIN %d, MAX %d, STEP %d",
-                            opd.FORM.Range.MinimumValue.u8,
-                            opd.FORM.Range.MaximumValue.u8,
-                            opd.FORM.Range.StepSize.u8);
+                               opd.FORM.Range.MinimumValue.u8,
+                               opd.FORM.Range.MaximumValue.u8,
+                               opd.FORM.Range.StepSize.u8);
                         break;
                     case PTP_OPFF_Enumeration:
                         printf(" enumeration: ");
@@ -3073,9 +3073,9 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                     switch (opd.FormFlag) {
                     case PTP_OPFF_Range:
                         printf(" range: MIN %d, MAX %d, STEP %d",
-                            opd.FORM.Range.MinimumValue.i16,
-                            opd.FORM.Range.MaximumValue.i16,
-                            opd.FORM.Range.StepSize.i16);
+                               opd.FORM.Range.MinimumValue.i16,
+                               opd.FORM.Range.MaximumValue.i16,
+                               opd.FORM.Range.StepSize.i16);
                         break;
                     case PTP_OPFF_Enumeration:
                         printf(" enumeration: ");
@@ -3093,9 +3093,9 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                     switch (opd.FormFlag) {
                     case PTP_OPFF_Range:
                         printf(" range: MIN %d, MAX %d, STEP %d",
-                            opd.FORM.Range.MinimumValue.u16,
-                            opd.FORM.Range.MaximumValue.u16,
-                            opd.FORM.Range.StepSize.u16);
+                               opd.FORM.Range.MinimumValue.u16,
+                               opd.FORM.Range.MaximumValue.u16,
+                               opd.FORM.Range.StepSize.u16);
                         break;
                     case PTP_OPFF_Enumeration:
                         printf(" enumeration: ");
@@ -3113,9 +3113,9 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                     switch (opd.FormFlag) {
                     case PTP_OPFF_Range:
                         printf(" range: MIN %d, MAX %d, STEP %d",
-                            opd.FORM.Range.MinimumValue.i32,
-                            opd.FORM.Range.MaximumValue.i32,
-                            opd.FORM.Range.StepSize.i32);
+                               opd.FORM.Range.MinimumValue.i32,
+                               opd.FORM.Range.MaximumValue.i32,
+                               opd.FORM.Range.StepSize.i32);
                         break;
                     case PTP_OPFF_Enumeration:
                         printf(" enumeration: ");
@@ -3133,9 +3133,9 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                     switch (opd.FormFlag) {
                     case PTP_OPFF_Range:
                         printf(" range: MIN %d, MAX %d, STEP %d",
-                            opd.FORM.Range.MinimumValue.u32,
-                            opd.FORM.Range.MaximumValue.u32,
-                            opd.FORM.Range.StepSize.u32);
+                               opd.FORM.Range.MinimumValue.u32,
+                               opd.FORM.Range.MaximumValue.u32,
+                               opd.FORM.Range.StepSize.u32);
                         break;
                     case PTP_OPFF_Enumeration:
                         /* Special pretty-print for FOURCC codes */
@@ -3199,11 +3199,11 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
     }
 
     if (storage != NULL &&
-        ptp_operation_issupported(params,PTP_OC_GetStorageInfo)) {
+            ptp_operation_issupported(params,PTP_OC_GetStorageInfo)) {
         printf("Storage Devices:\n");
         while(storage != NULL) {
             printf("   StorageID: 0x%08x\n",storage->id);
-            
+
             printf("      StorageType: 0x%04x ",storage->StorageType);
             switch (storage->StorageType) {
             case PTP_ST_Undefined:
@@ -3225,7 +3225,7 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                 printf("UNKNOWN storage\n");
                 break;
             }
-            
+
             printf("      FilesystemType: 0x%04x ",storage->FilesystemType);
             switch (storage->FilesystemType) {
             case PTP_FST_Undefined:
@@ -3244,7 +3244,7 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                 printf("UNKNOWN filesystem type\n");
                 break;
             }
-            
+
             printf("      AccessCapability: 0x%04x ",storage->AccessCapability);
             switch (storage->AccessCapability) {
             case PTP_AC_ReadWrite:
@@ -3260,7 +3260,7 @@ void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t *device)
                 printf("UNKNOWN access capability\n");
                 break;
             }
-            
+
             printf("      MaxCapacity: %llu\n", (long long unsigned int) storage->MaxCapacity);
             printf("      FreeSpaceInBytes: %llu\n", (long long unsigned int) storage->FreeSpaceInBytes);
             printf("      FreeSpaceInObjects: %llu\n", (long long unsigned int) storage->FreeSpaceInObjects);
@@ -3294,7 +3294,7 @@ int LIBMTP_Reset_Device(LIBMTP_mtpdevice_t *device)
 
     if (!ptp_operation_issupported(params,PTP_OC_ResetDevice)) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Reset_Device(): device does not support resetting.");
+                                "LIBMTP_Reset_Device(): device does not support resetting.");
         return -1;
     }
     ret = ptp_resetdevice(params);
@@ -3416,7 +3416,7 @@ char *LIBMTP_Get_Friendlyname(LIBMTP_mtpdevice_t *device)
  * @see LIBMTP_Get_Friendlyname()
  */
 int LIBMTP_Set_Friendlyname(LIBMTP_mtpdevice_t *device,
-            char const * const friendlyname)
+                            char const * const friendlyname)
 {
     PTPPropertyValue propval;
     PTPParams *params = (PTPParams *) device->params;
@@ -3475,7 +3475,7 @@ char *LIBMTP_Get_Syncpartner(LIBMTP_mtpdevice_t *device)
  * @see LIBMTP_Get_Syncpartner()
  */
 int LIBMTP_Set_Syncpartner(LIBMTP_mtpdevice_t *device,
-            char const * const syncpartner)
+                           char const * const syncpartner)
 {
     PTPPropertyValue propval;
     PTPParams *params = (PTPParams *) device->params;
@@ -3501,8 +3501,8 @@ int LIBMTP_Set_Syncpartner(LIBMTP_mtpdevice_t *device,
  * @return 0 if the file fits, any other value means failure.
  */
 static int check_if_file_fits(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_devicestorage_t *storage,
-                    uint64_t const filesize)
+                              LIBMTP_devicestorage_t *storage,
+                              uint64_t const filesize)
 {
     PTPParams *params = (PTPParams *) device->params;
     uint64_t freebytes;
@@ -3515,12 +3515,12 @@ static int check_if_file_fits(LIBMTP_mtpdevice_t *device,
     ret = get_storage_freespace(device, storage, &freebytes);
     if (ret != 0) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "check_if_file_fits(): error checking free storage.");
+                                "check_if_file_fits(): error checking free storage.");
         return -1;
     }
     /* See if it fits. */
     if (filesize > freebytes)
-      return -1;
+        return -1;
     return 0;
 }
 
@@ -3537,8 +3537,8 @@ static int check_if_file_fits(LIBMTP_mtpdevice_t *device,
  *        the device does not support the battery level property.
  */
 int LIBMTP_Get_Batterylevel(LIBMTP_mtpdevice_t *device,
-                uint8_t * const maximum_level,
-                uint8_t * const current_level)
+                            uint8_t * const maximum_level,
+                            uint8_t * const current_level)
 {
     PTPPropertyValue propval;
     uint16_t ret;
@@ -3549,13 +3549,13 @@ int LIBMTP_Get_Batterylevel(LIBMTP_mtpdevice_t *device,
     *current_level = 0;
 
     if (FLAG_BROKEN_BATTERY_LEVEL(ptp_usb) ||
-        !ptp_property_issupported(params, PTP_DPC_BatteryLevel))
+            !ptp_property_issupported(params, PTP_DPC_BatteryLevel))
         return -1;
 
     ret = ptp_getdevicepropvalue(params, PTP_DPC_BatteryLevel, &propval, PTP_DTC_UINT8);
     if (ret != PTP_RC_OK) {
         add_ptp_error_to_errorstack(device, ret,
-                "LIBMTP_Get_Batterylevel(): could not get device property value.");
+                                    "LIBMTP_Get_Batterylevel(): could not get device property value.");
         return -1;
     }
 
@@ -3575,20 +3575,20 @@ int LIBMTP_Get_Batterylevel(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Format_Storage(LIBMTP_mtpdevice_t *device,
-                LIBMTP_devicestorage_t *storage)
+                          LIBMTP_devicestorage_t *storage)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
 
     if (!ptp_operation_issupported(params,PTP_OC_FormatStore)) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Format_Storage(): device does not support formatting storage.");
+                                "LIBMTP_Format_Storage(): device does not support formatting storage.");
         return -1;
     }
     ret = ptp_formatstore(params, storage->id);
     if (ret != PTP_RC_OK) {
         add_ptp_error_to_errorstack(device, ret,
-            "LIBMTP_Format_Storage(): failed to format storage.");
+                                    "LIBMTP_Format_Storage(): failed to format storage.");
         return -1;
     }
     return 0;
@@ -3605,7 +3605,7 @@ int LIBMTP_Format_Storage(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 static int get_device_unicode_property(LIBMTP_mtpdevice_t *device,
-                        char **unicstring, uint16_t property)
+                                       char **unicstring, uint16_t property)
 {
     PTPPropertyValue propval;
     PTPParams *params = (PTPParams *) device->params;
@@ -3622,7 +3622,7 @@ static int get_device_unicode_property(LIBMTP_mtpdevice_t *device,
         /* TODO: add a note on WHICH property that we failed to get. */
         *unicstring = NULL;
         add_ptp_error_to_errorstack(device, ret,
-            "get_device_unicode_property(): failed to get unicode property.");
+                                    "get_device_unicode_property(): failed to get unicode property.");
         return -1;
     }
 
@@ -3684,7 +3684,7 @@ int LIBMTP_Get_Device_Certificate(LIBMTP_mtpdevice_t *device, char ** const devc
  * @see LIBMTP_Get_Filetype_Description()
  */
 int LIBMTP_Get_Supported_Filetypes(LIBMTP_mtpdevice_t *device, uint16_t ** const filetypes,
-                    uint16_t * const length)
+                                   uint16_t * const length)
 {
     PTPParams *params = (PTPParams *) device->params;
     PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
@@ -3743,11 +3743,11 @@ int LIBMTP_Check_Capability(LIBMTP_mtpdevice_t *device, LIBMTP_devicecap_t cap)
         return  ptp_operation_issupported(device->params, PTP_OC_ANDROID_TruncateObject) &&
                 ptp_operation_issupported(device->params, PTP_OC_ANDROID_BeginEditObject) &&
                 ptp_operation_issupported(device->params, PTP_OC_ANDROID_EndEditObject);
-    /*
-     * Handle other capabilities here, this is also a good place to
-     * blacklist some advanced operations on specific devices if need
-     * be.
-     */
+        /*
+         * Handle other capabilities here, this is also a good place to
+         * blacklist some advanced operations on specific devices if need
+         * be.
+         */
 
     default:
         break;
@@ -3826,8 +3826,8 @@ int LIBMTP_Get_Storage(LIBMTP_mtpdevice_t *device, int const sortby)
             uint16_t ret;
             ret = ptp_getstorageinfo(params, storageIDs.Storage[i], &storageInfo);
             if (ret != PTP_RC_OK) {
-                add_ptp_error_to_errorstack(device, ret, 
-                    "LIBMTP_Get_Storage(): Could not get storage info.");
+                add_ptp_error_to_errorstack(device, ret,
+                                            "LIBMTP_Get_Storage(): Could not get storage info.");
                 if (device->storage != NULL)
                     free_storage_list(device);
                 return -1;
@@ -3941,7 +3941,7 @@ static LIBMTP_file_t *obj2file(LIBMTP_mtpdevice_t *device, PTPObject *ob)
      */
     if (file->filetype == LIBMTP_FILETYPE_UNKNOWN) {
         if ((FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) || FLAG_OGG_IS_UNKNOWN(ptp_usb)) &&
-            has_ogg_extension(file->filename))
+                has_ogg_extension(file->filename))
             file->filetype = LIBMTP_FILETYPE_OGG;
 
         if (FLAG_FLAC_IS_UNKNOWN(ptp_usb) && has_flac_extension(file->filename))
@@ -3986,7 +3986,7 @@ static LIBMTP_file_t *obj2file(LIBMTP_mtpdevice_t *device, PTPObject *ob)
         ret = ptp_mtp_getobjectpropssupported(params, map_libmtp_type_to_ptp_type(file->filetype), &propcnt, &props);
         if (ret != PTP_RC_OK)
             add_ptp_error_to_errorstack(device, ret, "obj2file: call to ptp_mtp_getobjectpropssupported() failed.");
-            /* Silently fall through. */
+        /* Silently fall through. */
         else {
             for (i = 0; i < propcnt; i++) {
                 switch (props[i]) {
@@ -4098,8 +4098,8 @@ LIBMTP_file_t *LIBMTP_Get_Filelisting(LIBMTP_mtpdevice_t *device)
  * @see LIBMTP_Get_Filemetadata()
  */
 LIBMTP_file_t *LIBMTP_Get_Filelisting_With_Callback(LIBMTP_mtpdevice_t *device,
-                                                    LIBMTP_progressfunc_t const callback,
-                                                    void const * const data)
+        LIBMTP_progressfunc_t const callback,
+        void const * const data)
 {
     uint32_t i = 0;
     LIBMTP_file_t *retfiles = NULL;
@@ -4160,8 +4160,8 @@ LIBMTP_file_t *LIBMTP_Get_Filelisting_With_Callback(LIBMTP_mtpdevice_t *device,
  * @param parent the parent folder id.
  */
 LIBMTP_file_t * LIBMTP_Get_Files_And_Folders(LIBMTP_mtpdevice_t *device,
-                uint32_t const storage,
-                uint32_t const parent)
+        uint32_t const storage,
+        uint32_t const parent)
 {
     PTPParams *params = (PTPParams *) device->params;
     PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
@@ -4183,7 +4183,7 @@ LIBMTP_file_t * LIBMTP_Get_Files_And_Folders(LIBMTP_mtpdevice_t *device,
         /* These devices cannot handle the commands needed for
          * Uncached access! */
         LIBMTP_ERROR("tried to use %s on an unsupported device, this command does not work on all devices "
-                    "due to missing low-level support to read information on individual tracks\n", __func__);
+                     "due to missing low-level support to read information on individual tracks\n", __func__);
         return NULL;
     }
 
@@ -4196,7 +4196,7 @@ LIBMTP_file_t * LIBMTP_Get_Files_And_Folders(LIBMTP_mtpdevice_t *device,
 
     if (ret != PTP_RC_OK) {
         add_ptp_error_to_errorstack(device, ret,
-            "LIBMTP_Get_Files_And_Folders(): could not get object handles.");
+                                    "LIBMTP_Get_Files_And_Folders(): could not get object handles.");
         return NULL;
     }
 
@@ -4388,7 +4388,7 @@ static void pick_property_to_track_metadata(LIBMTP_mtpdevice_t *device, MTPPrope
  * @param track a metadata set to fill in.
  */
 static void get_track_metadata(LIBMTP_mtpdevice_t *device, uint16_t objectformat,
-                        LIBMTP_track_t *track)
+                               LIBMTP_track_t *track)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -4531,8 +4531,8 @@ LIBMTP_track_t *LIBMTP_Get_Tracklisting(LIBMTP_mtpdevice_t *device)
  * @see LIBMTP_Get_Trackmetadata()
  */
 LIBMTP_track_t *LIBMTP_Get_Tracklisting_With_Callback(LIBMTP_mtpdevice_t *device,
-                                                      LIBMTP_progressfunc_t const callback,
-                                                      void const * const data)
+        LIBMTP_progressfunc_t const callback,
+        void const * const data)
 {
     return LIBMTP_Get_Tracklisting_With_Callback_For_Storage(device, 0, callback, data);
 }
@@ -4561,7 +4561,7 @@ LIBMTP_track_t *LIBMTP_Get_Tracklisting_With_Callback(LIBMTP_mtpdevice_t *device
  * arrange tracks into folders, you must dereference the <code>storage_id</code>
  * and/or <code>parent_id</code> field of the returned <code>LIBMTP_track_t</code>
  * struct. To arrange by folders or files you typically have to create the proper
- * trees by calls to <code>LIBMTP_Get_Storage()</code> and/or 
+ * trees by calls to <code>LIBMTP_Get_Storage()</code> and/or
  * <code>LIBMTP_Get_Folder_List()</code> first.
  *
  * @param device a pointer to the device to get the track listing for.
@@ -4581,8 +4581,8 @@ LIBMTP_track_t *LIBMTP_Get_Tracklisting_With_Callback(LIBMTP_mtpdevice_t *device
  * @see LIBMTP_Get_Trackmetadata()
  */
 LIBMTP_track_t *LIBMTP_Get_Tracklisting_With_Callback_For_Storage(LIBMTP_mtpdevice_t *device, uint32_t const storage_id,
-                                                      LIBMTP_progressfunc_t const callback,
-                                                      void const * const data)
+        LIBMTP_progressfunc_t const callback,
+        void const * const data)
 {
     uint32_t i = 0;
     LIBMTP_track_t *retracks = NULL;
@@ -4610,11 +4610,11 @@ LIBMTP_track_t *LIBMTP_Get_Tracklisting_With_Callback_For_Storage(LIBMTP_mtpdevi
          * supported by the device and the from the device and
          * all known track files? */
         if (!LIBMTP_FILETYPE_IS_TRACK(mtptype) &&
-            /* This row lets through undefined files for examination since they may be forgotten OGG files. */
-            (ob->oi.ObjectFormat != PTP_OFC_Undefined ||
-            (!FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) &&
-            !FLAG_OGG_IS_UNKNOWN(ptp_usb) &&
-            !FLAG_FLAC_IS_UNKNOWN(ptp_usb))))
+                /* This row lets through undefined files for examination since they may be forgotten OGG files. */
+                (ob->oi.ObjectFormat != PTP_OFC_Undefined ||
+                 (!FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) &&
+                  !FLAG_OGG_IS_UNKNOWN(ptp_usb) &&
+                  !FLAG_FLAC_IS_UNKNOWN(ptp_usb))))
             continue;
 
         /* Ignore stuff that isn't into the storage device */
@@ -4648,13 +4648,13 @@ LIBMTP_track_t *LIBMTP_Get_Tracklisting_With_Callback_For_Storage(LIBMTP_mtpdevi
          * for these bugged devices only.
          */
         if (track->filetype == LIBMTP_FILETYPE_UNKNOWN &&
-            track->filename != NULL) {
+                track->filename != NULL) {
             if ((FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) ||
-                FLAG_OGG_IS_UNKNOWN(ptp_usb)) &&
-                has_ogg_extension(track->filename))
+                    FLAG_OGG_IS_UNKNOWN(ptp_usb)) &&
+                    has_ogg_extension(track->filename))
                 track->filetype = LIBMTP_FILETYPE_OGG;
             else if (FLAG_FLAC_IS_UNKNOWN(ptp_usb) &&
-                    has_flac_extension(track->filename))
+                     has_flac_extension(track->filename))
                 track->filetype = LIBMTP_FILETYPE_FLAC;
             else {
                 /* This was not an OGG/FLAC file so discard it and continue */
@@ -4714,14 +4714,14 @@ LIBMTP_track_t *LIBMTP_Get_Trackmetadata(LIBMTP_mtpdevice_t *device, uint32_t co
 
     /* Ignore stuff we don't know how to handle... */
     if (!LIBMTP_FILETYPE_IS_TRACK(mtptype) &&
-        /*
-         * This row lets through undefined files for examination
-         * since they may be forgotten OGG or FLAC files.
-         */
-        (ob->oi.ObjectFormat != PTP_OFC_Undefined ||
-        (!FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) &&
-        !FLAG_OGG_IS_UNKNOWN(ptp_usb) &&
-        !FLAG_FLAC_IS_UNKNOWN(ptp_usb))))
+            /*
+             * This row lets through undefined files for examination
+             * since they may be forgotten OGG or FLAC files.
+             */
+            (ob->oi.ObjectFormat != PTP_OFC_Undefined ||
+             (!FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) &&
+              !FLAG_OGG_IS_UNKNOWN(ptp_usb) &&
+              !FLAG_FLAC_IS_UNKNOWN(ptp_usb))))
         return NULL;
 
     /* Allocate a new track type */
@@ -4749,13 +4749,13 @@ LIBMTP_track_t *LIBMTP_Get_Trackmetadata(LIBMTP_mtpdevice_t *device, uint32_t co
      * for these bugged devices only.
      */
     if (track->filetype == LIBMTP_FILETYPE_UNKNOWN &&
-        track->filename != NULL) {
+            track->filename != NULL) {
         if ((FLAG_IRIVER_OGG_ALZHEIMER(ptp_usb) ||
-            FLAG_OGG_IS_UNKNOWN(ptp_usb)) &&
-            has_ogg_extension(track->filename))
+                FLAG_OGG_IS_UNKNOWN(ptp_usb)) &&
+                has_ogg_extension(track->filename))
             track->filetype = LIBMTP_FILETYPE_OGG;
         else if (FLAG_FLAC_IS_UNKNOWN(ptp_usb) &&
-                has_flac_extension(track->filename))
+                 has_flac_extension(track->filename))
             track->filetype = LIBMTP_FILETYPE_FLAC;
         else {
             /* This was not an OGG/FLAC file so discard it */
@@ -4829,8 +4829,8 @@ static uint16_t put_func_wrapper(PTPParams* params, void* priv, unsigned long se
  * @see LIBMTP_Get_File_To_File_Descriptor()
  */
 int LIBMTP_Get_File_To_File(LIBMTP_mtpdevice_t *device, uint32_t const id,
-            char const * const path, LIBMTP_progressfunc_t const callback,
-            void const * const data)
+                            char const * const path, LIBMTP_progressfunc_t const callback,
+                            void const * const data)
 {
     int fd = -1;
     int ret;
@@ -4893,10 +4893,10 @@ int LIBMTP_Get_File_To_File(LIBMTP_mtpdevice_t *device, uint32_t const id,
  * @see LIBMTP_Get_File_To_File()
  */
 int LIBMTP_Get_File_To_File_Descriptor(LIBMTP_mtpdevice_t *device,
-                    uint32_t const id,
-                    int const fd,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+                                       uint32_t const id,
+                                       int const fd,
+                                       LIBMTP_progressfunc_t const callback,
+                                       void const * const data)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -4957,11 +4957,11 @@ int LIBMTP_Get_File_To_File_Descriptor(LIBMTP_mtpdevice_t *device,
  *           failure.
  */
 int LIBMTP_Get_File_To_Handler(LIBMTP_mtpdevice_t *device,
-                    uint32_t const id,
-                    MTPDataPutFunc put_func,
-                    void * priv,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+                               uint32_t const id,
+                               MTPDataPutFunc put_func,
+                               void * priv,
+                               LIBMTP_progressfunc_t const callback,
+                               void const * const data)
 {
     PTPObject *ob;
     uint16_t ret;
@@ -5032,8 +5032,8 @@ int LIBMTP_Get_File_To_Handler(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Get_Track_To_File_Descriptor()
  */
 int LIBMTP_Get_Track_To_File(LIBMTP_mtpdevice_t *device, uint32_t const id,
-                    char const * const path, LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+                             char const * const path, LIBMTP_progressfunc_t const callback,
+                             void const * const data)
 {
     /* This is just a wrapper */
     return LIBMTP_Get_File_To_File(device, id, path, callback, data);
@@ -5056,10 +5056,10 @@ int LIBMTP_Get_Track_To_File(LIBMTP_mtpdevice_t *device, uint32_t const id,
  * @see LIBMTP_Get_Track_To_File()
  */
 int LIBMTP_Get_Track_To_File_Descriptor(LIBMTP_mtpdevice_t *device,
-                    uint32_t const id,
-                    int const fd,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+                                        uint32_t const id,
+                                        int const fd,
+                                        LIBMTP_progressfunc_t const callback,
+                                        void const * const data)
 {
     /* This is just a wrapper */
     return LIBMTP_Get_File_To_File_Descriptor(device, id, fd, callback, data);
@@ -5083,11 +5083,11 @@ int LIBMTP_Get_Track_To_File_Descriptor(LIBMTP_mtpdevice_t *device,
  *           failure.
  */
 int LIBMTP_Get_Track_To_Handler(LIBMTP_mtpdevice_t *device,
-                    uint32_t const id,
-                    MTPDataPutFunc put_func,
-                    void * priv,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+                                uint32_t const id,
+                                MTPDataPutFunc put_func,
+                                void * priv,
+                                LIBMTP_progressfunc_t const callback,
+                                void const * const data)
 {
     /* This is just a wrapper */
     return LIBMTP_Get_File_To_Handler(device, id, put_func, priv, callback, data);
@@ -5131,10 +5131,10 @@ int LIBMTP_Get_Track_To_Handler(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_Track_From_File(LIBMTP_mtpdevice_t *device,
-                    char const * const path,
-                    LIBMTP_track_t * const metadata,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+                                char const * const path,
+                                LIBMTP_track_t * const metadata,
+                                LIBMTP_progressfunc_t const callback,
+                                void const * const data)
 {
     int fd;
     int ret;
@@ -5204,7 +5204,7 @@ static char *generate_unique_filename(PTPParams* params, char const * const file
     char *extension_position;
 
     if (!check_filename_exists(params, filename))
-        return strdup(filename); 
+        return strdup(filename);
 
     extension_position = strrchr(filename,'.');
     char basename[extension_position - filename + 1];
@@ -5257,10 +5257,10 @@ static char *generate_unique_filename(PTPParams* params, char const * const file
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_Track_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
-                    int const fd,
-                    LIBMTP_track_t * const metadata,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+        int const fd,
+        LIBMTP_track_t * const metadata,
+        LIBMTP_progressfunc_t const callback,
+        void const * const data)
 {
     int subcall_ret;
     LIBMTP_file_t filedata;
@@ -5270,7 +5270,7 @@ int LIBMTP_Send_Track_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
     /* Sanity check, is this really a track? */
     if (!LIBMTP_FILETYPE_IS_TRACK(metadata->filetype))
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Send_Track_From_File_Descriptor(): I don't think this is actually a track, strange filetype...");
+                                "LIBMTP_Send_Track_From_File_Descriptor(): I don't think this is actually a track, strange filetype...");
 
     /* Wrap around the file transfer function */
     filedata.item_id = metadata->item_id;
@@ -5288,7 +5288,7 @@ int LIBMTP_Send_Track_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
 
     if (subcall_ret != 0) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Send_Track_From_File_Descriptor(): subcall to LIBMTP_Send_File_From_File_Descriptor failed.");
+                                "LIBMTP_Send_Track_From_File_Descriptor(): subcall to LIBMTP_Send_File_From_File_Descriptor failed.");
         /* We used to delete the file here, but don't... It might be OK after all. */
         /* LIBMTP_Delete_Object(device, metadata->item_id); */
         return -1;
@@ -5350,10 +5350,10 @@ int LIBMTP_Send_Track_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_Track_From_Handler(LIBMTP_mtpdevice_t *device,
-                    MTPDataGetFunc get_func, void * priv,
-                    LIBMTP_track_t * const metadata,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+                                   MTPDataGetFunc get_func, void * priv,
+                                   LIBMTP_track_t * const metadata,
+                                   LIBMTP_progressfunc_t const callback,
+                                   void const * const data)
 {
     int subcall_ret;
     LIBMTP_file_t filedata;
@@ -5363,7 +5363,7 @@ int LIBMTP_Send_Track_From_Handler(LIBMTP_mtpdevice_t *device,
     /* Sanity check, is this really a track? */
     if (!LIBMTP_FILETYPE_IS_TRACK(metadata->filetype))
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Send_Track_From_Handler(): I don't think this is actually a track, strange filetype...");
+                                "LIBMTP_Send_Track_From_Handler(): I don't think this is actually a track, strange filetype...");
 
     /* Wrap around the file transfer function */
     filedata.item_id = metadata->item_id;
@@ -5381,7 +5381,7 @@ int LIBMTP_Send_Track_From_Handler(LIBMTP_mtpdevice_t *device,
 
     if (subcall_ret != 0) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Send_Track_From_Handler(): subcall to LIBMTP_Send_File_From_Handler failed.");
+                                "LIBMTP_Send_Track_From_Handler(): subcall to LIBMTP_Send_File_From_Handler failed.");
         return -1;
     }
 
@@ -5431,10 +5431,10 @@ int LIBMTP_Send_Track_From_Handler(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_File_From_File(LIBMTP_mtpdevice_t *device,
-                    char const * const path,
-                    LIBMTP_file_t * const filedata,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+                               char const * const path,
+                               LIBMTP_file_t * const filedata,
+                               LIBMTP_progressfunc_t const callback,
+                               void const * const data)
 {
     int fd;
     int ret;
@@ -5456,7 +5456,7 @@ int LIBMTP_Send_File_From_File(LIBMTP_mtpdevice_t *device,
     fd = open(path, O_RDONLY);
 #endif
     if (fd == -1) {
-        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Send_File_From_File(): Could not open source file.");
+    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, "LIBMTP_Send_File_From_File(): Could not open source file.");
         return -1;
     }
 
@@ -5511,10 +5511,10 @@ int LIBMTP_Send_File_From_File(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_File_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
-                    int const fd,
-                    LIBMTP_file_t * const filedata,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+        int const fd,
+        LIBMTP_file_t * const filedata,
+        LIBMTP_progressfunc_t const callback,
+        void const * const data)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -5554,13 +5554,13 @@ int LIBMTP_Send_File_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
 
     if (ret == PTP_ERROR_CANCEL) {
         add_error_to_errorstack(device, LIBMTP_ERROR_CANCELLED,
-            "LIBMTP_Send_File_From_File_Descriptor(): Cancelled transfer.");
+                                "LIBMTP_Send_File_From_File_Descriptor(): Cancelled transfer.");
         return -1;
     }
     if (ret != PTP_RC_OK) {
         add_ptp_error_to_errorstack(device, ret,
-            "LIBMTP_Send_File_From_File_Descriptor(): Could not send object.");
-    return -1;
+                                    "LIBMTP_Send_File_From_File_Descriptor(): Could not send object.");
+        return -1;
     }
 
     add_object_to_cache(device, filedata->item_id);
@@ -5578,7 +5578,7 @@ int LIBMTP_Send_File_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
         LIBMTP_destroy_file_t(newfilemeta);
     } else {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Send_File_From_File_Descriptor(): Could not retrieve updated metadata.");
+                                "LIBMTP_Send_File_From_File_Descriptor(): Could not retrieve updated metadata.");
         return -1;
     }
 
@@ -5626,11 +5626,11 @@ int LIBMTP_Send_File_From_File_Descriptor(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Send_File_From_Handler(LIBMTP_mtpdevice_t *device,
-                    MTPDataGetFunc get_func,
-                    void * priv,
-                    LIBMTP_file_t * const filedata,
-                    LIBMTP_progressfunc_t const callback,
-                    void const * const data)
+                                  MTPDataGetFunc get_func,
+                                  void * priv,
+                                  LIBMTP_file_t * const filedata,
+                                  LIBMTP_progressfunc_t const callback,
+                                  void const * const data)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -5667,12 +5667,12 @@ int LIBMTP_Send_File_From_Handler(LIBMTP_mtpdevice_t *device,
 
     if (ret == PTP_ERROR_CANCEL) {
         add_error_to_errorstack(device, LIBMTP_ERROR_CANCELLED,
-            "LIBMTP_Send_File_From_Handler(): Cancelled transfer.");
+                                "LIBMTP_Send_File_From_Handler(): Cancelled transfer.");
         return -1;
     }
     if (ret != PTP_RC_OK) {
         add_ptp_error_to_errorstack(device, ret,
-            "LIBMTP_Send_File_From_Handler(): Could not send object.");
+                                    "LIBMTP_Send_File_From_Handler(): Could not send object.");
         return -1;
     }
 
@@ -5691,7 +5691,7 @@ int LIBMTP_Send_File_From_Handler(LIBMTP_mtpdevice_t *device,
         LIBMTP_destroy_file_t(newfilemeta);
     } else {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Send_File_From_Handler(): Could not retrieve updated metadata.");
+                                "LIBMTP_Send_File_From_Handler(): Could not retrieve updated metadata.");
         return -1;
     }
 
@@ -5722,8 +5722,8 @@ static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *file
      * If the zerolength files cause problems on some devices,
      * then add a bug flag for this. */
     if (filedata->filesize == 0) {
-        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL, 
-            "send_file_object_info(): File of zero size.");
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "send_file_object_info(): File of zero size.");
         return -1;
     }
 #endif
@@ -5754,23 +5754,23 @@ static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *file
         else if (LIBMTP_FILETYPE_IS_VIDEO(filedata->filetype))
             localph = device->default_video_folder;
         else if (of == PTP_OFC_EXIF_JPEG ||
-                of == PTP_OFC_JP2 ||
-                of == PTP_OFC_JPX ||
-                of == PTP_OFC_JFIF ||
-                of == PTP_OFC_TIFF ||
-                of == PTP_OFC_TIFF_IT ||
-                of == PTP_OFC_BMP ||
-                of == PTP_OFC_GIF ||
-                of == PTP_OFC_PICT ||
-                of == PTP_OFC_PNG ||
-                of == PTP_OFC_MTP_WindowsImageFormat)
+                 of == PTP_OFC_JP2 ||
+                 of == PTP_OFC_JPX ||
+                 of == PTP_OFC_JFIF ||
+                 of == PTP_OFC_TIFF ||
+                 of == PTP_OFC_TIFF_IT ||
+                 of == PTP_OFC_BMP ||
+                 of == PTP_OFC_GIF ||
+                 of == PTP_OFC_PICT ||
+                 of == PTP_OFC_PNG ||
+                 of == PTP_OFC_MTP_WindowsImageFormat)
             localph = device->default_picture_folder;
         else if (of == PTP_OFC_MTP_vCalendar1 ||
-                of == PTP_OFC_MTP_vCalendar2 ||
-                of == PTP_OFC_MTP_UndefinedContact ||
-                of == PTP_OFC_MTP_vCard2 ||
-                of == PTP_OFC_MTP_vCard3 ||
-                of == PTP_OFC_MTP_UndefinedCalendarItem)
+                 of == PTP_OFC_MTP_vCalendar2 ||
+                 of == PTP_OFC_MTP_UndefinedContact ||
+                 of == PTP_OFC_MTP_vCard2 ||
+                 of == PTP_OFC_MTP_vCard3 ||
+                 of == PTP_OFC_MTP_UndefinedCalendarItem)
             localph = device->default_organizer_folder;
         else if (of == PTP_OFC_Text)
             localph = device->default_text_folder;
@@ -5779,11 +5779,11 @@ static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *file
     /* Here we wire the type to unknown on bugged, but
      * Ogg or FLAC-supportive devices. */
     if ((FLAG_OGG_IS_UNKNOWN(ptp_usb) && of == PTP_OFC_MTP_OGG) ||
-        (FLAG_FLAC_IS_UNKNOWN(ptp_usb) && of == PTP_OFC_MTP_FLAC))
+            (FLAG_FLAC_IS_UNKNOWN(ptp_usb) && of == PTP_OFC_MTP_FLAC))
         of = PTP_OFC_Undefined;
 
     if (ptp_operation_issupported(params, PTP_OC_MTP_SendObjectPropList) &&
-        !FLAG_BROKEN_SEND_OBJECT_PROPLIST(ptp_usb)) {
+            !FLAG_BROKEN_SEND_OBJECT_PROPLIST(ptp_usb)) {
         /*
          * MTP enhanched does it this way (from a sniff):
          * -> PTP_OC_MTP_SendObjectPropList (0x9808):
@@ -5864,7 +5864,7 @@ static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *file
             ret = ptp_mtp_getobjectpropdesc(params, properties[i], of, &opd);
             if (ret != PTP_RC_OK)
                 add_ptp_error_to_errorstack(device, ret,
-                    "send_file_object_info(): could not get property description.");
+                                            "send_file_object_info(): could not get property description.");
             else if (opd.GetSet) {
                 switch (properties[i]) {
                 case PTP_OPC_ObjectFileName:
@@ -5918,14 +5918,14 @@ static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *file
         free(properties);
 
         ret = ptp_mtp_sendobjectproplist(params, &store, &localph, &filedata->item_id,
-            of, filedata->filesize, props, nrofprops);
+                                         of, filedata->filesize, props, nrofprops);
 
         /* Free property list */
         ptp_destroy_object_prop_list(props, nrofprops);
 
         if (ret != PTP_RC_OK) {
             add_ptp_error_to_errorstack(device, ret,
-                "send_file_object_info(): Could not send object property list.");
+                                        "send_file_object_info(): Could not send object property list.");
             if (ret == PTP_RC_AccessDenied)
                 add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
             return -1;
@@ -5953,7 +5953,7 @@ static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *file
 
         if (ret != PTP_RC_OK) {
             add_ptp_error_to_errorstack(device, ret,
-                "send_file_object_info(): Could not send object info.");
+                                        "send_file_object_info(): Could not send object info.");
             if (ret == PTP_RC_AccessDenied)
                 add_ptp_error_to_errorstack(device, ret, "ACCESS DENIED.");
             return -1;
@@ -5986,7 +5986,7 @@ static int send_file_object_info(LIBMTP_mtpdevice_t *device, LIBMTP_file_t *file
  *        properties that exist cannot be updated.
  */
 int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
-                LIBMTP_track_t const * const metadata)
+                                 LIBMTP_track_t const * const metadata)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -6001,11 +6001,11 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
     if (ret != PTP_RC_OK) {
         /* Just bail out for now, nothing is ever set. */
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Update_Track_Metadata(): could not retrieve supported object properties.");
+                                "LIBMTP_Update_Track_Metadata(): could not retrieve supported object properties.");
         return -1;
     }
     if (ptp_operation_issupported(params, PTP_OC_MTP_SetObjPropList) &&
-        !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
+            !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
         MTPProperties *props = NULL;
         MTPProperties *prop = NULL;
         int nrofprops = 0;
@@ -6016,7 +6016,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
             ret = ptp_mtp_getobjectpropdesc(params, properties[i], map_libmtp_type_to_ptp_type(metadata->filetype), &opd);
             if (ret != PTP_RC_OK)
                 add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                    "LIBMTP_Update_Track_Metadata(): could not get property description.");
+                                        "LIBMTP_Update_Track_Metadata(): could not get property description.");
             else if (opd.GetSet) {
                 switch (properties[i]) {
                 case PTP_OPC_Name:
@@ -6166,7 +6166,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
         if (ret != PTP_RC_OK) {
             /* TODO: return error of which property we couldn't set */
             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                "LIBMTP_Update_Track_Metadata(): could not set object property list.");
+                                    "LIBMTP_Update_Track_Metadata(): could not set object property list.");
             free(properties);
             return -1;
         }
@@ -6178,7 +6178,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
             ret = ptp_mtp_getobjectpropdesc(params, properties[i], map_libmtp_type_to_ptp_type(metadata->filetype), &opd);
             if (ret != PTP_RC_OK)
                 add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                    "LIBMTP_Update_Track_Metadata(): could not get property description.");
+                                        "LIBMTP_Update_Track_Metadata(): could not get property description.");
             else if (opd.GetSet) {
                 switch (properties[i]) {
                 case PTP_OPC_Name:
@@ -6186,28 +6186,28 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                     ret = set_object_string(device, metadata->item_id, PTP_OPC_Name, metadata->title);
                     if (ret != 0)
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "LIBMTP_Update_Track_Metadata(): could not set track title.");
-                        break;
+                                                "LIBMTP_Update_Track_Metadata(): could not set track title.");
+                    break;
                 case PTP_OPC_AlbumName:
                     /* Update album */
                     ret = set_object_string(device, metadata->item_id, PTP_OPC_AlbumName, metadata->album);
                     if (ret != 0)
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "LIBMTP_Update_Track_Metadata(): could not set track album name.");
+                                                "LIBMTP_Update_Track_Metadata(): could not set track album name.");
                     break;
                 case PTP_OPC_Artist:
                     /* Update artist */
                     ret = set_object_string(device, metadata->item_id, PTP_OPC_Artist, metadata->artist);
                     if (ret != 0)
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "LIBMTP_Update_Track_Metadata(): could not set track artist name.");
+                                                "LIBMTP_Update_Track_Metadata(): could not set track artist name.");
                     break;
                 case PTP_OPC_Composer:
                     /* Update composer */
                     ret = set_object_string(device, metadata->item_id, PTP_OPC_Composer, metadata->composer);
                     if (ret != 0)
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "LIBMTP_Update_Track_Metadata(): could not set track composer name.");
+                                                "LIBMTP_Update_Track_Metadata(): could not set track composer name.");
                     break;
                 case PTP_OPC_Genre:
                     /* Update genre (but only if valid) */
@@ -6215,7 +6215,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_string(device, metadata->item_id, PTP_OPC_Genre, metadata->genre);
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "update_abstract_list(): could not set genre.");
+                                                    "update_abstract_list(): could not set genre.");
                     }
                     break;
                 case PTP_OPC_Duration:
@@ -6224,7 +6224,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_u32(device, metadata->item_id, PTP_OPC_Duration, adjust_u32(metadata->duration, &opd));
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set track duration.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set track duration.");
                     }
                     break;
                 case PTP_OPC_Track:
@@ -6233,7 +6233,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_u16(device, metadata->item_id, PTP_OPC_Track, adjust_u16(metadata->tracknumber, &opd));
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set track tracknumber.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set track tracknumber.");
                     }
                     break;
                 case PTP_OPC_OriginalReleaseDate:
@@ -6244,17 +6244,17 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_string(device, metadata->item_id, PTP_OPC_OriginalReleaseDate, metadata->date);
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set track release date.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set track release date.");
                     }
                     break;
-                /* These are, well not so important. */
+                    /* These are, well not so important. */
                 case PTP_OPC_SampleRate:
                     /* Update sample rate */
                     if (metadata->samplerate != 0) {
                         ret = set_object_u32(device, metadata->item_id, PTP_OPC_SampleRate, adjust_u32(metadata->samplerate, &opd));
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set samplerate.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set samplerate.");
                     }
                     break;
                 case PTP_OPC_NumberOfChannels:
@@ -6263,7 +6263,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_u16(device, metadata->item_id, PTP_OPC_NumberOfChannels, adjust_u16(metadata->nochannels, &opd));
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set number of channels.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set number of channels.");
                     }
                     break;
                 case PTP_OPC_AudioWAVECodec:
@@ -6272,7 +6272,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_u32(device, metadata->item_id, PTP_OPC_AudioWAVECodec, adjust_u32(metadata->wavecodec, &opd));
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set WAVE codec.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set WAVE codec.");
                     }
                     break;
                 case PTP_OPC_AudioBitRate:
@@ -6281,7 +6281,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_u32(device, metadata->item_id, PTP_OPC_AudioBitRate, adjust_u32(metadata->bitrate, &opd));
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set bitrate.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set bitrate.");
                     }
                     break;
                 case PTP_OPC_BitRateType:
@@ -6290,7 +6290,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_u16(device, metadata->item_id, PTP_OPC_BitRateType, adjust_u16(metadata->bitratetype, &opd));
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set bitratetype.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set bitratetype.");
                     }
                     break;
                 case PTP_OPC_Rating:
@@ -6300,7 +6300,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_u16(device, metadata->item_id, PTP_OPC_Rating, adjust_u16(metadata->rating, &opd));
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set user rating.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set user rating.");
                     }
                     break;
                 case PTP_OPC_UseCount:
@@ -6308,7 +6308,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                     ret = set_object_u32(device, metadata->item_id, PTP_OPC_UseCount, adjust_u32(metadata->usecount, &opd));
                     if (ret != 0)
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "LIBMTP_Update_Track_Metadata(): could not set use count.");
+                                                "LIBMTP_Update_Track_Metadata(): could not set use count.");
                     break;
                 case PTP_OPC_DateModified:
                     if (!FLAG_CANNOT_HANDLE_DATEMODIFIED(ptp_usb)) {
@@ -6317,13 +6317,13 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
                         ret = set_object_string(device, metadata->item_id, PTP_OPC_DateModified, tmpstamp);
                         if (ret != 0)
                             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                                "LIBMTP_Update_Track_Metadata(): could not set modification date.");
+                                                    "LIBMTP_Update_Track_Metadata(): could not set modification date.");
                         free(tmpstamp);
                     }
                     break;
 
-                /* NOTE: File size is not updated, this should not change anyway.
-                 * neither will we change the filename. */
+                    /* NOTE: File size is not updated, this should not change anyway.
+                     * neither will we change the filename. */
                 default:
                     break;
                 }
@@ -6332,7 +6332,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
         }
     } else {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Update_Track_Metadata(): Your device doesn't seem to support any known way of setting metadata.");
+                                "LIBMTP_Update_Track_Metadata(): Your device doesn't seem to support any known way of setting metadata.");
         free(properties);
         return -1;
     }
@@ -6361,7 +6361,7 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Delete_Object(LIBMTP_mtpdevice_t *device,
-                    uint32_t object_id)
+                         uint32_t object_id)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -6379,8 +6379,8 @@ int LIBMTP_Delete_Object(LIBMTP_mtpdevice_t *device,
  * Internal function to update an object filename property.
  */
 static int set_object_filename(LIBMTP_mtpdevice_t *device,
-                    uint32_t object_id, uint16_t ptp_type,
-                    const char **newname_ptr)
+                               uint32_t object_id, uint16_t ptp_type,
+                               const char **newname_ptr)
 {
     PTPParams             *params = (PTPParams *) device->params;
     PTP_USB               *ptp_usb = (PTP_USB*) device->usbinfo;
@@ -6392,14 +6392,14 @@ static int set_object_filename(LIBMTP_mtpdevice_t *device,
     ret = ptp_mtp_getobjectpropdesc(params, PTP_OPC_ObjectFileName, ptp_type, &opd);
     if (ret != PTP_RC_OK) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "set_object_filename(): could not get property description.");
+                                "set_object_filename(): could not get property description.");
         return -1;
     }
 
     if (!opd.GetSet) {
         ptp_free_objectpropdesc(&opd);
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "set_object_filename(): property is not settable.");
+                                "set_object_filename(): property is not settable.");
         /* TODO: we COULD actually upload/download the object here, if we feel
          *       like wasting time for the user. */
         return -1;
@@ -6411,7 +6411,7 @@ static int set_object_filename(LIBMTP_mtpdevice_t *device,
         strip_7bit_from_utf8(newname);
 
     if (ptp_operation_issupported(params, PTP_OC_MTP_SetObjPropList) &&
-        !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
+            !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
         MTPProperties *props = NULL;
         MTPProperties *prop = NULL;
         int nrofprops = 0;
@@ -6428,7 +6428,7 @@ static int set_object_filename(LIBMTP_mtpdevice_t *device,
 
         if (ret != PTP_RC_OK) {
             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                "set_object_filename(): could not set object property list.");
+                                    "set_object_filename(): could not set object property list.");
             ptp_free_objectpropdesc(&opd);
             return -1;
         }
@@ -6436,14 +6436,14 @@ static int set_object_filename(LIBMTP_mtpdevice_t *device,
         ret = set_object_string(device, object_id, PTP_OPC_ObjectFileName, newname);
         if (ret != 0) {
             add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                "set_object_filename(): could not set object filename.");
+                                    "set_object_filename(): could not set object filename.");
             ptp_free_objectpropdesc(&opd);
             return -1;
         }
     } else {
         free(newname);
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "set_object_filename(): your device doesn't seem to support any known way of setting metadata.");
+                                "set_object_filename(): your device doesn't seem to support any known way of setting metadata.");
         ptp_free_objectpropdesc(&opd);
         return -1;
     }
@@ -6469,7 +6469,7 @@ static int set_object_filename(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Set_File_Name(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_file_t *file, const char *newname)
+                         LIBMTP_file_t *file, const char *newname)
 {
     int         ret;
 
@@ -6496,7 +6496,7 @@ int LIBMTP_Set_File_Name(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Set_Folder_Name(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_folder_t *folder, const char* newname)
+                           LIBMTP_folder_t *folder, const char* newname)
 {
     int ret;
 
@@ -6523,7 +6523,7 @@ int LIBMTP_Set_Folder_Name(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 int LIBMTP_Set_Track_Name(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_track_t *track, const char* newname)
+                          LIBMTP_track_t *track, const char* newname)
 {
     int ret;
 
@@ -6557,7 +6557,7 @@ int LIBMTP_Set_Track_Name(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Update_Playlist()
  */
 int LIBMTP_Set_Playlist_Name(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_playlist_t *playlist, const char* newname)
+                             LIBMTP_playlist_t *playlist, const char* newname)
 {
     int ret;
 
@@ -6591,7 +6591,7 @@ int LIBMTP_Set_Playlist_Name(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Update_Album()
  */
 int LIBMTP_Set_Album_Name(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_album_t *album, const char* newname)
+                          LIBMTP_album_t *album, const char* newname)
 {
     int ret;
 
@@ -6616,7 +6616,7 @@ int LIBMTP_Set_Album_Name(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Set_Album_Name()
  */
 int LIBMTP_Set_Object_Filename(LIBMTP_mtpdevice_t *device,
-                    uint32_t object_id, char* newname)
+                               uint32_t object_id, char* newname)
 {
     int ret;
     LIBMTP_file_t *file;
@@ -6625,7 +6625,7 @@ int LIBMTP_Set_Object_Filename(LIBMTP_mtpdevice_t *device,
 
     if (file == NULL) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "LIBMTP_Set_Object_Filename(): could not get file metadata for target object.");
+                                "LIBMTP_Set_Object_Filename(): could not get file metadata for target object.");
         return -1;
     }
 
@@ -6776,8 +6776,8 @@ static LIBMTP_folder_t *get_subfolders_for_folder(LIBMTP_folder_t *list, uint32_
  * @param storage a storage ID to get the folder list from
  * @return a list of folders
  */
- LIBMTP_folder_t *LIBMTP_Get_Folder_List_For_Storage(LIBMTP_mtpdevice_t *device,
-                    uint32_t const storage)
+LIBMTP_folder_t *LIBMTP_Get_Folder_List_For_Storage(LIBMTP_mtpdevice_t *device,
+        uint32_t const storage)
 {
     PTPParams *params = (PTPParams *) device->params;
     LIBMTP_folder_t head, *rv;
@@ -6899,7 +6899,7 @@ LIBMTP_folder_t *LIBMTP_Get_Folder_List(LIBMTP_mtpdevice_t *device)
  * @return id to new folder or 0 if an error occured
  */
 uint32_t LIBMTP_Create_Folder(LIBMTP_mtpdevice_t *device, char *name,
-                    uint32_t parent_id, uint32_t storage_id)
+                              uint32_t parent_id, uint32_t storage_id)
 {
     PTPParams *params = (PTPParams *) device->params;
     PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
@@ -6929,8 +6929,8 @@ uint32_t LIBMTP_Create_Folder(LIBMTP_mtpdevice_t *device, char *name,
 
     /* Create the object */
     if (!(params->device_flags & DEVICE_FLAG_BROKEN_SEND_OBJECT_PROPLIST) &&
-        ptp_operation_issupported(params,PTP_OC_MTP_SendObjectPropList)) {
-        
+            ptp_operation_issupported(params,PTP_OC_MTP_SendObjectPropList)) {
+
         MTPProperties *props = (MTPProperties*)calloc(2,sizeof(MTPProperties));
 
         props[0].property = PTP_OPC_ObjectFileName;
@@ -7067,7 +7067,7 @@ LIBMTP_playlist_t *LIBMTP_Get_Playlist_List(LIBMTP_mtpdevice_t *device)
             ret = ptp_mtp_getobjectreferences(params, pl->playlist_id, &pl->tracks, &pl->no_tracks);
             if (ret != PTP_RC_OK) {
                 add_ptp_error_to_errorstack(device, ret,
-                    "LIBMTP_Get_Playlist_List(): could not get object references.");
+                                            "LIBMTP_Get_Playlist_List(): could not get object references.");
                 pl->tracks = NULL;
                 pl->no_tracks = 0;
             }
@@ -7164,17 +7164,17 @@ LIBMTP_playlist_t *LIBMTP_Get_Playlist(LIBMTP_mtpdevice_t *device, uint32_t cons
  * @return 0 on success, any other value means failure.
  */
 static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
-                    char const * const name,
-                    char const * const artist,
-                    char const * const composer,
-                    char const * const genre,
-                    uint32_t const parenthandle,
-                    uint32_t const storageid,
-                    uint16_t const objectformat,
-                    char const * const suffix,
-                    uint32_t * const newid,
-                    uint32_t const * const tracks,
-                    uint32_t const no_tracks)
+                                    char const * const name,
+                                    char const * const artist,
+                                    char const * const composer,
+                                    char const * const genre,
+                                    uint32_t const parenthandle,
+                                    uint32_t const storageid,
+                                    uint16_t const objectformat,
+                                    char const * const suffix,
+                                    uint32_t * const newid,
+                                    uint32_t const * const tracks,
+                                    uint32_t const no_tracks)
 
 {
     int i;
@@ -7192,7 +7192,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
 
     if (name == NULL) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "create_new_abstract_list(): list name was NULL, using default name \"Unknown\"");
+                                "create_new_abstract_list(): list name was NULL, using default name \"Unknown\"");
         return -1;
     }
 
@@ -7211,7 +7211,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
     }
     if (!supported) {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "create_new_abstract_list(): player does not support this abstract type");
+                                "create_new_abstract_list(): player does not support this abstract type");
         LIBMTP_ERROR("Unsupported abstract list type: %04x\n", objectformat);
         return -1;
     }
@@ -7232,7 +7232,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
     }
 
     if (ptp_operation_issupported(params, PTP_OC_MTP_SendObjectPropList) &&
-        !FLAG_BROKEN_SEND_OBJECT_PROPLIST(ptp_usb)) {
+            !FLAG_BROKEN_SEND_OBJECT_PROPLIST(ptp_usb)) {
         MTPProperties *props = NULL;
         MTPProperties *prop = NULL;
         int nrofprops = 0;
@@ -7247,7 +7247,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
             ret = ptp_mtp_getobjectpropdesc(params, properties[i], objectformat, &opd);
             if (ret != PTP_RC_OK)
                 add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                    "create_new_abstract_list(): could not get property description.");
+                                        "create_new_abstract_list(): could not get property description.");
             else if (opd.GetSet) {
                 switch (properties[i]) {
                 case PTP_OPC_ObjectFileName:
@@ -7386,7 +7386,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
         ret = ptp_sendobject(params, data, 1);
         if (ret != PTP_RC_OK) {
             add_ptp_error_to_errorstack(device, ret,
-                "create_new_abstract_list(): Could not send blank object data.");
+                                        "create_new_abstract_list(): Could not send blank object data.");
             return -1;
         }
 #endif
@@ -7400,7 +7400,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
             ret = ptp_mtp_getobjectpropdesc(params, properties[i], objectformat, &opd);
             if (ret != PTP_RC_OK)
                 add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                    "create_new_abstract_list(): could not get property description.");
+                                        "create_new_abstract_list(): could not get property description.");
             else if (opd.GetSet) {
                 switch (properties[i]) {
                 case PTP_OPC_Name:
@@ -7409,7 +7409,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
                     ret = set_object_string(device, *newid, PTP_OPC_Name, name);
                     if (ret != 0) {
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "create_new_abstract_list(): could not set entity name.");
+                                                "create_new_abstract_list(): could not set entity name.");
                         return -1;
                     }
                     break;
@@ -7419,7 +7419,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
                     ret = set_object_string(device, *newid, PTP_OPC_AlbumArtist, artist);
                     if (ret != 0) {
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "create_new_abstract_list(): could not set entity album artist.");
+                                                "create_new_abstract_list(): could not set entity album artist.");
                         return -1;
                     }
                     break;
@@ -7429,7 +7429,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
                     ret = set_object_string(device, *newid, PTP_OPC_Artist, artist);
                     if (ret != 0) {
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "create_new_abstract_list(): could not set entity artist.");
+                                                "create_new_abstract_list(): could not set entity artist.");
                         return -1;
                     }
                     break;
@@ -7439,7 +7439,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
                     ret = set_object_string(device, *newid, PTP_OPC_Composer, composer);
                     if (ret != 0) {
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "create_new_abstract_list(): could not set entity composer.");
+                                                "create_new_abstract_list(): could not set entity composer.");
                         return -1;
                     }
                     break;
@@ -7449,7 +7449,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
                     ret = set_object_string(device, *newid, PTP_OPC_Genre, genre);
                     if (ret != 0) {
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "create_new_abstract_list(): could not set entity genre.");
+                                                "create_new_abstract_list(): could not set entity genre.");
                         return -1;
                     }
                     break;
@@ -7459,7 +7459,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
                     ret = set_object_string(device, *newid, PTP_OPC_DateModified, get_iso8601_stamp());
                     if (ret != 0) {
                         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                            "create_new_abstract_list(): could not set date modified.");
+                                                "create_new_abstract_list(): could not set date modified.");
                         return -1;
                     }
                     break;
@@ -7475,7 +7475,7 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
         ret = ptp_mtp_setobjectreferences (params, *newid, (uint32_t *) tracks, no_tracks);
         if (ret != PTP_RC_OK) {
             add_ptp_error_to_errorstack(device, ret,
-                "create_new_abstract_list(): could not add tracks as object references.");
+                                        "create_new_abstract_list(): could not add tracks as object references.");
             return -1;
         }
     }
@@ -7500,14 +7500,14 @@ static int create_new_abstract_list(LIBMTP_mtpdevice_t *device,
  * @return 0 on success, any other value means failure.
  */
 static int update_abstract_list(LIBMTP_mtpdevice_t *device,
-                    char const * const name,
-                    char const * const artist,
-                    char const * const composer,
-                    char const * const genre,
-                    uint32_t const objecthandle,
-                    uint16_t const objectformat,
-                    uint32_t const * const tracks,
-                    uint32_t const no_tracks)
+                                char const * const name,
+                                char const * const artist,
+                                char const * const composer,
+                                char const * const genre,
+                                uint32_t const objecthandle,
+                                uint16_t const objectformat,
+                                uint32_t const * const tracks,
+                                uint32_t const no_tracks)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -7522,11 +7522,11 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
     if (ret != PTP_RC_OK) {
         /* Just bail out for now, nothing is ever set. */
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "update_abstract_list(): could not retrieve supported object properties.");
+                                "update_abstract_list(): could not retrieve supported object properties.");
         return -1;
     }
     if (ptp_operation_issupported(params,PTP_OC_MTP_SetObjPropList) &&
-        !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
+            !FLAG_BROKEN_SET_OBJECT_PROPLIST(ptp_usb)) {
         MTPProperties *props = NULL;
         MTPProperties *prop = NULL;
         int nrofprops = 0;
@@ -7537,7 +7537,7 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
             ret = ptp_mtp_getobjectpropdesc(params, properties[i], objectformat, &opd);
             if (ret != PTP_RC_OK)
                 add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                    "update_abstract_list(): could not get property description.");
+                                        "update_abstract_list(): could not get property description.");
             else if (opd.GetSet) {
                 switch (properties[i]) {
                 case PTP_OPC_Name:
@@ -7610,7 +7610,7 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
             if (ret != PTP_RC_OK) {
                 /* TODO: return error of which property we couldn't set */
                 add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                    "update_abstract_list(): could not set object property list.");
+                                        "update_abstract_list(): could not set object property list.");
                 free(properties);
                 return -1;
             }
@@ -7624,28 +7624,28 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
                 ret = set_object_string(device, objecthandle, PTP_OPC_Name, name);
                 if (ret != 0)
                     add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                        "update_abstract_list(): could not set title.");
+                                            "update_abstract_list(): could not set title.");
                 break;
             case PTP_OPC_AlbumArtist:
                 /* Update album artist */
                 ret = set_object_string(device, objecthandle, PTP_OPC_AlbumArtist, artist);
                 if (ret != 0)
                     add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                        "update_abstract_list(): could not set album artist name.");
+                                            "update_abstract_list(): could not set album artist name.");
                 break;
             case PTP_OPC_Artist:
                 /* Update artist */
                 ret = set_object_string(device, objecthandle, PTP_OPC_Artist, artist);
                 if (ret != 0)
                     add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                        "update_abstract_list(): could not set artist name.");
+                                            "update_abstract_list(): could not set artist name.");
                 break;
             case PTP_OPC_Composer:
                 /* Update composer */
                 ret = set_object_string(device, objecthandle, PTP_OPC_Composer, composer);
                 if (ret != 0)
                     add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                        "update_abstract_list(): could not set composer name.");
+                                            "update_abstract_list(): could not set composer name.");
                 break;
             case PTP_OPC_Genre:
                 /* Update genre (but only if valid) */
@@ -7654,7 +7654,7 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
                 ret = set_object_string(device, objecthandle, PTP_OPC_Genre, genre);
                 if (ret != 0)
                     add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                        "update_abstract_list(): could not set genre.");
+                                            "update_abstract_list(): could not set genre.");
                 break;
             case PTP_OPC_DateModified:
                 /* Update date modified */
@@ -7664,7 +7664,7 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
                 ret = set_object_string(device, objecthandle, PTP_OPC_DateModified, tmpdate);
                 if (ret != 0)
                     add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-                        "update_abstract_list(): could not set modification date.");
+                                            "update_abstract_list(): could not set modification date.");
                 free(tmpdate);
                 break;
             default:
@@ -7673,7 +7673,7 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
         }
     } else {
         add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-            "update_abstract_list(): Your device doesn't seem to support any known way of setting metadata.");
+                                "update_abstract_list(): Your device doesn't seem to support any known way of setting metadata.");
         free(properties);
         return -1;
     }
@@ -7704,8 +7704,8 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
  *        exits with success, the <code>playlist_id</code> field of this
  *        struct will contain the new playlist ID of the playlist.
  *        <ul>
- *        <li><code>metadata-&gt;parent_id</code> should be set to the parent 
- *        (e.g. folder) to store this track in. Since some 
+ *        <li><code>metadata-&gt;parent_id</code> should be set to the parent
+ *        (e.g. folder) to store this track in. Since some
  *        devices are a bit picky about where files
  *        are placed, a default folder will be chosen if libmtp
  *        has detected one for the current filetype and this
@@ -7721,7 +7721,7 @@ static int update_abstract_list(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Create_New_Playlist(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_playlist_t * const metadata)
+                               LIBMTP_playlist_t * const metadata)
 {
     PTP_USB *ptp_usb = (PTP_USB*) device->usbinfo;
     uint32_t localph = metadata->parent_id;
@@ -7741,8 +7741,8 @@ int LIBMTP_Create_New_Playlist(LIBMTP_mtpdevice_t *device,
 
     /* Just create a new abstract audio/video playlist... */
     return create_new_abstract_list(device, metadata->name, NULL, NULL, NULL,
-        localph, metadata->storage_id, PTP_OFC_MTP_AbstractAudioVideoPlaylist,
-        get_playlist_extension(ptp_usb), &metadata->playlist_id, metadata->tracks, metadata->no_tracks);
+                                    localph, metadata->storage_id, PTP_OFC_MTP_AbstractAudioVideoPlaylist,
+                                    get_playlist_extension(ptp_usb), &metadata->playlist_id, metadata->tracks, metadata->no_tracks);
 }
 
 /**
@@ -7763,7 +7763,7 @@ int LIBMTP_Create_New_Playlist(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Update_Playlist(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_playlist_t * const metadata)
+                           LIBMTP_playlist_t * const metadata)
 {
 
     /* Samsung needs its own special type of playlists */
@@ -7772,7 +7772,7 @@ int LIBMTP_Update_Playlist(LIBMTP_mtpdevice_t *device,
         return update_spl_playlist(device, metadata);
 
     return update_abstract_list(device, metadata->name, NULL, NULL, NULL, metadata->playlist_id,
-        PTP_OFC_MTP_AbstractAudioVideoPlaylist, metadata->tracks, metadata->no_tracks);
+                                PTP_OFC_MTP_AbstractAudioVideoPlaylist, metadata->tracks, metadata->no_tracks);
 }
 
 /**
@@ -7825,7 +7825,7 @@ void LIBMTP_destroy_album_t(LIBMTP_album_t *album)
  * This function maps and copies a property onto the album metadata if applicable.
  */
 static void pick_property_to_album_metadata(LIBMTP_mtpdevice_t *device,
-                    MTPProperties *prop, LIBMTP_album_t *alb)
+        MTPProperties *prop, LIBMTP_album_t *alb)
 {
     switch (prop->property) {
     case PTP_OPC_Name:
@@ -7872,7 +7872,7 @@ static void pick_property_to_album_metadata(LIBMTP_mtpdevice_t *device,
  * @param alb an album metadata metadata set to fill in.
  */
 static void get_album_metadata(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_album_t *alb)
+                               LIBMTP_album_t *alb)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -8083,7 +8083,7 @@ LIBMTP_album_t *LIBMTP_Get_Album(LIBMTP_mtpdevice_t *device, uint32_t const albi
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Create_New_Album(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_album_t * const metadata)
+                            LIBMTP_album_t * const metadata)
 {
     uint32_t localph = metadata->parent_id;
 
@@ -8098,17 +8098,17 @@ int LIBMTP_Create_New_Album(LIBMTP_mtpdevice_t *device,
 
     /* Just create a new abstract album... */
     return create_new_abstract_list(device,
-                    metadata->name,
-                    metadata->artist,
-                    metadata->composer,
-                    metadata->genre,
-                    localph,
-                    metadata->storage_id,
-                    PTP_OFC_MTP_AbstractAudioAlbum,
-                    ".alb",
-                    &metadata->album_id,
-                    metadata->tracks,
-                    metadata->no_tracks);
+                                    metadata->name,
+                                    metadata->artist,
+                                    metadata->composer,
+                                    metadata->genre,
+                                    localph,
+                                    metadata->storage_id,
+                                    PTP_OFC_MTP_AbstractAudioAlbum,
+                                    ".alb",
+                                    &metadata->album_id,
+                                    metadata->tracks,
+                                    metadata->no_tracks);
 }
 
 /**
@@ -8170,8 +8170,8 @@ void LIBMTP_destroy_filesampledata_t(LIBMTP_filesampledata_t * sample)
  * @see LIBMTP_Create_New_Album()
  */
 int LIBMTP_Get_Representative_Sample_Format(LIBMTP_mtpdevice_t *device,
-                    LIBMTP_filetype_t const filetype,
-                    LIBMTP_filesampledata_t ** sample)
+        LIBMTP_filetype_t const filetype,
+        LIBMTP_filesampledata_t ** sample)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -8303,8 +8303,8 @@ int LIBMTP_Get_Representative_Sample_Format(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Create_New_Album()
  */
 int LIBMTP_Send_Representative_Sample(LIBMTP_mtpdevice_t *device,
-                    uint32_t const id,
-                    LIBMTP_filesampledata_t *sampledata)
+                                      uint32_t const id,
+                                      LIBMTP_filesampledata_t *sampledata)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -8396,8 +8396,8 @@ int LIBMTP_Send_Representative_Sample(LIBMTP_mtpdevice_t *device,
  * @see LIBMTP_Create_New_Album()
  */
 int LIBMTP_Get_Representative_Sample(LIBMTP_mtpdevice_t *device,
-                    uint32_t const id,
-                    LIBMTP_filesampledata_t *sampledata)
+                                     uint32_t const id,
+                                     LIBMTP_filesampledata_t *sampledata)
 {
     uint16_t ret;
     PTPParams *params = (PTPParams *) device->params;
@@ -8454,7 +8454,7 @@ int LIBMTP_Get_Representative_Sample(LIBMTP_mtpdevice_t *device,
     sampledata->height = get_u32_from_object(device, id, PTP_OPC_RepresentativeSampleHeight, 0);
     sampledata->duration = get_u32_from_object(device, id, PTP_OPC_RepresentativeSampleDuration, 0);
     sampledata->filetype = map_ptp_type_to_libmtp_type(
-        get_u16_from_object(device, id, PTP_OPC_RepresentativeSampleFormat, LIBMTP_FILETYPE_UNKNOWN));
+                               get_u16_from_object(device, id, PTP_OPC_RepresentativeSampleFormat, LIBMTP_FILETYPE_UNKNOWN));
 
     return 0;
 }
@@ -8468,13 +8468,13 @@ int LIBMTP_Get_Representative_Sample(LIBMTP_mtpdevice_t *device,
 int LIBMTP_Get_Thumbnail(LIBMTP_mtpdevice_t *device, uint32_t const id,
                          unsigned char **data, unsigned int *size)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  ret = ptp_getthumb(params, id, data, size);
-  if (ret == PTP_RC_OK)
-      return 0;
-  return -1;
+    ret = ptp_getthumb(params, id, data, size);
+    if (ret == PTP_RC_OK)
+        return 0;
+    return -1;
 }
 
 
@@ -8482,106 +8482,106 @@ int LIBMTP_GetPartialObject(LIBMTP_mtpdevice_t *device, uint32_t const id,
                             uint64_t offset, uint32_t maxbytes,
                             unsigned char **data, unsigned int *size)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  if (!ptp_operation_issupported(params, PTP_OC_ANDROID_GetPartialObject64)) {
-    if  (!ptp_operation_issupported(params, PTP_OC_GetPartialObject)) {
-      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-        "LIBMTP_GetPartialObject: PTP_OC_GetPartialObject not supported");
-      return -1;
+    if (!ptp_operation_issupported(params, PTP_OC_ANDROID_GetPartialObject64)) {
+        if  (!ptp_operation_issupported(params, PTP_OC_GetPartialObject)) {
+            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                    "LIBMTP_GetPartialObject: PTP_OC_GetPartialObject not supported");
+            return -1;
+        }
+
+        if (offset >> 32 != 0) {
+            add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                    "LIBMTP_GetPartialObject: PTP_OC_GetPartialObject only supports 32bit offsets");
+            return -1;
+        }
+
+        ret = ptp_getpartialobject(params, id, (uint32_t)offset, maxbytes, data, size);
+    } else {
+        ret = ptp_android_getpartialobject64(params, id, offset, maxbytes, data, size);
     }
-
-    if (offset >> 32 != 0) {
-      add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-        "LIBMTP_GetPartialObject: PTP_OC_GetPartialObject only supports 32bit offsets");
-      return -1;
-    }
-
-    ret = ptp_getpartialobject(params, id, (uint32_t)offset, maxbytes, data, size);
-  } else {
-    ret = ptp_android_getpartialobject64(params, id, offset, maxbytes, data, size);
-  }
-  if (ret == PTP_RC_OK)
-      return 0;
-  return -1;
+    if (ret == PTP_RC_OK)
+        return 0;
+    return -1;
 }
 
 
 int LIBMTP_SendPartialObject(LIBMTP_mtpdevice_t *device, uint32_t const id,
                              uint64_t offset, unsigned char *data, unsigned int size)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  if (!ptp_operation_issupported(params, PTP_OC_ANDROID_SendPartialObject)) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-      "LIBMTP_SendPartialObject: PTP_OC_ANDROID_SendPartialObject not supported");
+    if (!ptp_operation_issupported(params, PTP_OC_ANDROID_SendPartialObject)) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_SendPartialObject: PTP_OC_ANDROID_SendPartialObject not supported");
+        return -1;
+    }
+
+    ret = ptp_android_sendpartialobject(params, id, offset, data, size);
+    if (ret == PTP_RC_OK)
+        return 0;
     return -1;
-  }
-
-  ret = ptp_android_sendpartialobject(params, id, offset, data, size);
-  if (ret == PTP_RC_OK)
-      return 0;
-  return -1;
 }
 
 
 int LIBMTP_BeginEditObject(LIBMTP_mtpdevice_t *device, uint32_t const id)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  if (!ptp_operation_issupported(params, PTP_OC_ANDROID_BeginEditObject)) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-      "LIBMTP_BeginEditObject: PTP_OC_ANDROID_BeginEditObject not supported");
+    if (!ptp_operation_issupported(params, PTP_OC_ANDROID_BeginEditObject)) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_BeginEditObject: PTP_OC_ANDROID_BeginEditObject not supported");
+        return -1;
+    }
+
+    ret = ptp_android_begineditobject(params, id);
+    if (ret == PTP_RC_OK)
+        return 0;
     return -1;
-  }
-
-  ret = ptp_android_begineditobject(params, id);
-  if (ret == PTP_RC_OK)
-      return 0;
-  return -1;
 }
 
 
 int LIBMTP_EndEditObject(LIBMTP_mtpdevice_t *device, uint32_t const id)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  if (!ptp_operation_issupported(params, PTP_OC_ANDROID_EndEditObject)) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-      "LIBMTP_EndEditObject: PTP_OC_ANDROID_EndEditObject not supported");
+    if (!ptp_operation_issupported(params, PTP_OC_ANDROID_EndEditObject)) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_EndEditObject: PTP_OC_ANDROID_EndEditObject not supported");
+        return -1;
+    }
+
+    ret = ptp_android_endeditobject(params, id);
+    if (ret == PTP_RC_OK) {
+        // update cached object properties if metadata cache exists
+        update_metadata_cache(device, id);
+        return 0;
+    }
     return -1;
-  }
-
-  ret = ptp_android_endeditobject(params, id);
-  if (ret == PTP_RC_OK) {
-      // update cached object properties if metadata cache exists
-      update_metadata_cache(device, id);
-      return 0;
-  }
-  return -1;
 }
 
 
 int LIBMTP_TruncateObject(LIBMTP_mtpdevice_t *device, uint32_t const id,
                           uint64_t offset)
 {
-  PTPParams *params = (PTPParams *) device->params;
-  uint16_t ret;
+    PTPParams *params = (PTPParams *) device->params;
+    uint16_t ret;
 
-  if (!ptp_operation_issupported(params, PTP_OC_ANDROID_TruncateObject)) {
-    add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
-      "LIBMTP_TruncateObject: PTP_OC_ANDROID_TruncateObject not supported");
+    if (!ptp_operation_issupported(params, PTP_OC_ANDROID_TruncateObject)) {
+        add_error_to_errorstack(device, LIBMTP_ERROR_GENERAL,
+                                "LIBMTP_TruncateObject: PTP_OC_ANDROID_TruncateObject not supported");
+        return -1;
+    }
+
+    ret = ptp_android_truncate(params, id, offset);
+    if (ret == PTP_RC_OK)
+        return 0;
     return -1;
-  }
-
-  ret = ptp_android_truncate(params, id, offset);
-  if (ret == PTP_RC_OK)
-      return 0;
-  return -1;
 }
 
 
@@ -8600,17 +8600,17 @@ int LIBMTP_TruncateObject(LIBMTP_mtpdevice_t *device, uint32_t const id,
  * @see LIBMTP_Delete_Object()
  */
 int LIBMTP_Update_Album(LIBMTP_mtpdevice_t *device,
-			   LIBMTP_album_t const * const metadata)
+                        LIBMTP_album_t const * const metadata)
 {
-  return update_abstract_list(device,
-			      metadata->name,
-			      metadata->artist,
-			      metadata->composer,
-			      metadata->genre,
-			      metadata->album_id,
-			      PTP_OFC_MTP_AbstractAudioAlbum,
-			      metadata->tracks,
-			      metadata->no_tracks);
+    return update_abstract_list(device,
+                                metadata->name,
+                                metadata->artist,
+                                metadata->composer,
+                                metadata->genre,
+                                metadata->album_id,
+                                PTP_OFC_MTP_AbstractAudioAlbum,
+                                metadata->tracks,
+                                metadata->no_tracks);
 }
 
 /**
@@ -8618,7 +8618,7 @@ int LIBMTP_Update_Album(LIBMTP_mtpdevice_t *device,
  * ptp.c/ptp.h files.
  */
 void ptp_nikon_getptpipguid (unsigned char* guid) {
-  return;
+    return;
 }
 
 /**
@@ -8628,13 +8628,13 @@ void ptp_nikon_getptpipguid (unsigned char* guid) {
  */
 static void add_object_to_cache(LIBMTP_mtpdevice_t *device, uint32_t object_id)
 {
-  PTPParams *params = (PTPParams *)device->params;
-  uint16_t ret;
+    PTPParams *params = (PTPParams *)device->params;
+    uint16_t ret;
 
-  ret = ptp_add_object_to_cache(params, object_id);
-  if (ret != PTP_RC_OK) {
-    add_ptp_error_to_errorstack(device, ret, "add_object_to_cache(): couldn't add object to cache");
-  }
+    ret = ptp_add_object_to_cache(params, object_id);
+    if (ret != PTP_RC_OK) {
+        add_ptp_error_to_errorstack(device, ret, "add_object_to_cache(): couldn't add object to cache");
+    }
 }
 
 
@@ -8645,8 +8645,8 @@ static void add_object_to_cache(LIBMTP_mtpdevice_t *device, uint32_t object_id)
  */
 static void update_metadata_cache(LIBMTP_mtpdevice_t *device, uint32_t object_id)
 {
-  PTPParams *params = (PTPParams *)device->params;
+    PTPParams *params = (PTPParams *)device->params;
 
-  ptp_remove_object_from_cache(params, object_id);
-  add_object_to_cache(device, object_id);
+    ptp_remove_object_from_cache(params, object_id);
+    add_object_to_cache(device, object_id);
 }
