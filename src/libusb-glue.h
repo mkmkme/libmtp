@@ -31,13 +31,11 @@
 #define LIBUSB_GLUE_H
 
 #include "ptp.h"
-#ifdef HAVE_LIBUSB1
+#if defined(HAVE_LIBUSB1)
 #include <libusb.h>
-#endif
-#ifdef HAVE_LIBUSB0
+#elif defined(HAVE_LIBUSB0)
 #include <usb.h>
-#endif
-#ifdef HAVE_LIBOPENUSB
+#else
 #include <openusb.h>
 #endif
 #include "libmtp.h"
@@ -63,15 +61,13 @@ extern "C" {
       data_dump_ascii (stdout, buffer, length, base); \
   } while (0)
 
-#ifdef HAVE_LIBUSB1
+#if defined(HAVE_LIBUSB1)
 #define USB_BULK_READ libusb_bulk_transfer
 #define USB_BULK_WRITE libusb_bulk_transfer
-#endif
-#ifdef HAVE_LIBUSB0
+#elif defined(HAVE_LIBUSB0)
 #define USB_BULK_READ usb_bulk_read
 #define USB_BULK_WRITE usb_bulk_write
-#endif
-#ifdef HAVE_LIBOPENUSB
+#else
 #define USB_BULK_READ openusb_bulk_xfer
 #define USB_BULK_WRITE openusb_bulk_xfer
 #endif
@@ -82,13 +78,11 @@ extern "C" {
 typedef struct _PTP_USB PTP_USB;
 struct _PTP_USB {
     PTPParams *params;
-#ifdef HAVE_LIBUSB1
+#if defined(HAVE_LIBUSB1)
     libusb_device_handle* handle;
-#endif
-#ifdef HAVE_LIBUSB0
+#elif defined(HAVE_LIBUSB0)
     usb_dev_handle* handle;
-#endif
-#ifdef HAVE_LIBOPENUSB
+#else
     openusb_dev_handle_t* handle;
 #endif
     uint8_t config;
