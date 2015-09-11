@@ -3,6 +3,9 @@ lib_LTLIBRARIES = libmtp.la
 libmtp_la_CFLAGS = @LIBUSB_CFLAGS@
 libmtp_la_SOURCES = \
         libmtp.c libmtp.h \
+        albums.c albums.h \
+        events.c events.h \
+        objects.c objects.h \
         unicode.c unicode.h \
         util.c util.h \
         playlist-spl.c playlist-spl.h \
