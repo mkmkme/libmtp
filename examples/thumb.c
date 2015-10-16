@@ -47,7 +47,7 @@ int main (int argc, char **argv) {
     int fd;
     uint32_t id = 0;
     uint64_t filesize;
-    uint8_t *imagedata = NULL;
+    char *imagedata = NULL;
     char *path = NULL;
     char *rest;
     struct stat statbuff;
@@ -76,13 +76,13 @@ int main (int argc, char **argv) {
 
     path = argv[0];
 
-    if ( stat(path, &statbuff) == -1 ) {
+    if (stat(path, &statbuff) == -1) {
         fprintf(stderr, "%s: ", path);
         perror("stat");
         exit(1);
     }
     filesize = (uint64_t) statbuff.st_size;
-    imagedata = malloc(filesize * sizeof(uint16_t));
+    imagedata = malloc(filesize);
 
 #ifdef __WIN32__
     if ( (fd = open(path, O_RDONLY|O_BINARY) == -1) ) {
@@ -93,7 +93,9 @@ int main (int argc, char **argv) {
         return 1;
     }
     else {
-        read(fd, imagedata, filesize);
+        ret = read(fd, imagedata, filesize);
+        if (ret == -1)
+            perror("read thumb data");
         close(fd);
     }
 

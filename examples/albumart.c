@@ -55,6 +55,7 @@ int main (int argc, char **argv) {
     struct stat statbuff;
     uint32_t storageid = 0;
     uint32_t parentid = 0;
+    int ret;
 
     fprintf(stdout, "libmtp version: " LIBMTP_VERSION_STRING "\n\n");
 
@@ -125,6 +126,8 @@ int main (int argc, char **argv) {
     }
     else {
         read(fd, imagedata, filesize);
+        if (ret == -1)
+            perror("read");
         close(fd);
     }
 
@@ -146,6 +149,7 @@ int main (int argc, char **argv) {
     album->tracks = ids;
     album->parent_id = parentid;
     album->storage_id = storageid;
+
     int ret = LIBMTP_Create_New_Album(device,album);
     if (ret == 0) {
         ret = LIBMTP_Send_Representative_Sample(device,album->album_id, albumart);

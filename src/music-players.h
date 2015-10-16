@@ -701,6 +701,9 @@
 {   "Acer", 0x0502, "Liquid S56", 0x3725,
     DEVICE_FLAGS_ANDROID_BUGS
 },
+/* https://sourceforge.net/p/libmtp/support-requests/188/ */
+{ "Acer", 0x0502, "Liquid Z220", 0x3750,
+    DEVICE_FLAGS_ANDROID_BUGS },
 
 /*
  * SanDisk
@@ -1103,6 +1106,7 @@
 { "Archos", 0x0e79, "SPOD (MTP mode)", 0x1341, DEVICE_FLAG_UNLOAD_DRIVER },
 { "Archos", 0x0e79, "5S IT (MTP mode)", 0x1351, DEVICE_FLAG_UNLOAD_DRIVER },
 { "Archos", 0x0e79, "5H IT (MTP mode)", 0x1357, DEVICE_FLAG_UNLOAD_DRIVER },
+{ "Archos", 0x0e79, "48 (MTP mode)", 0x1421, DEVICE_FLAGS_ANDROID_BUGS },
 { "Archos", 0x0e79, "Arnova Childpad", 0x1458, DEVICE_FLAGS_ANDROID_BUGS },
 { "Archos", 0x0e79, "Arnova 8c G3", 0x145e, DEVICE_FLAGS_ANDROID_BUGS },
 { "Archos", 0x0e79, "Arnova 10bG3 Tablet", 0x146b, DEVICE_FLAGS_ANDROID_BUGS },
@@ -1124,13 +1128,17 @@
 { "Archos", 0x0e79, "70it2 (ID 2)", 0x1569, DEVICE_FLAGS_ANDROID_BUGS },
 { "Archos", 0x0e79, "50c", 0x2008, DEVICE_FLAGS_ANDROID_BUGS },
 { "Archos", 0x0e79, "C40", 0x31ab, DEVICE_FLAGS_ANDROID_BUGS },
+
+/* https://sourceforge.net/p/libmtp/bugs/1393/ */
+{ "Archos", 0x0e79, "Phone", 0x31e1, DEVICE_FLAGS_ANDROID_BUGS },
 /* https://sourceforge.net/p/libmtp/bugs/1325/ */
 { "Archos", 0x0e79, "45 Neon", 0x31f3, DEVICE_FLAGS_ANDROID_BUGS },
 /* https://sourceforge.net/p/libmtp/bugs/1352/ */
 { "Archos", 0x0e79, "50 Diamond", 0x3229, DEVICE_FLAGS_ANDROID_BUGS },
 { "Archos", 0x0e79, "101 G4", 0x4002, DEVICE_FLAGS_ANDROID_BUGS },
 { "Archos (for Tesco)", 0x0e79, "Hudl (ID1)", 0x5008, DEVICE_FLAGS_ANDROID_BUGS },
-{ "Archos (for Tesco)", 0x0e79, "Hudl (ID2)", 0x5009, DEVICE_FLAGS_ANDROID_BUGS },
+{ "Archos (for Tesco)", 0x0e79, "Hudl (ID2)", 0x5009, DEVICE_FLAGS_ANDROID_BUGS },  /* https://sourceforge.net/p/libmtp/bugs/1404/ */
+  { "Archos", 0x0e79, "AC40DTI", 0x5217, DEVICE_FLAGS_ANDROID_BUGS },
 
 /*
  * Dunlop (OEM of EGOMAN ltd?) reported by Nanomad
@@ -1320,6 +1328,8 @@
  * ID is the same for various Lumia version.
  */
 { "Nokia", 0x0421, "Lumia (RM-975)", 0x06fc, DEVICE_FLAG_NONE },
+  /* https://sourceforge.net/p/libmtp/bugs/1453/ */
+  { "Nokia", 0x0421, "X2 Dual Sim", 0x0708, DEVICE_FLAG_NONE },
 
 
 /*
@@ -3485,6 +3495,12 @@
 {   "Xiaomi", 0x2717, "Mi-2s (MTP)", 0xff48,
     DEVICE_FLAGS_ANDROID_BUGS
 },
+  /* https://sourceforge.net/p/libmtp/bugs/1402/ */
+  { "Xiaomi", 0x2717, "Redmi 2 (MTP)", 0xff60,
+      DEVICE_FLAGS_ANDROID_BUGS },
+  /* https://sourceforge.net/p/libmtp/bugs/1445/ */
+  { "Xiaomi", 0x2717, "Redmi 2 2014811 (MTP)", 0xff68,
+      DEVICE_FLAGS_ANDROID_BUGS },
 
 /*
  * XO Learning Tablet
@@ -3575,6 +3591,12 @@
 {   "MediaTek Inc", 0x0e8d, "MT5xx and MT6xx SoCs", 0x0050,
     DEVICE_FLAGS_ANDROID_BUGS
 },
+  /* https://sourceforge.net/p/libmtp/bugs/1422/ */
+  { "MediaTek Inc", 0x0e8d, "MT65xx", 0x2008,
+      DEVICE_FLAGS_ANDROID_BUGS },
+  /* https://sourceforge.net/p/libmtp/feature-requests/79/ */
+  { "MediaTek Inc", 0x0e8d, "Elephone P8000", 0x201d,
+      DEVICE_FLAGS_ANDROID_BUGS },
 
 /*
  * Jolla
@@ -3641,6 +3663,8 @@
 { "Prestigio", 0x29e4, "5505 DUO ", 0x1103, DEVICE_FLAGS_ANDROID_BUGS },
 /* https://sourceforge.net/p/libmtp/bugs/1243/ */
 { "Prestigio", 0x29e4, "5504 DUO ", 0x1203, DEVICE_FLAGS_ANDROID_BUGS },
+  /* https://sourceforge.net/p/libmtp/feature-requests/141/ */
+  { "Prestigio", 0x29e4, "3405 DUO ", 0x3201, DEVICE_FLAGS_ANDROID_BUGS },
 
 /* https://sourceforge.net/p/libmtp/bugs/1283/ */
 { "Megafon", 0x201e, "MFLogin3T", 0x42ab, DEVICE_FLAGS_ANDROID_BUGS },

@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.52)
-AC_INIT([libmtp], [1.1.9], [libmtp-discuss@lists.sourceforge.net])
+AC_INIT([libmtp], [1.1.10], [libmtp-discuss@lists.sourceforge.net])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/libmtp.c])
@@ -188,7 +188,6 @@ AC_TYPE_SIZE_T
 AC_STRUCT_ST_BLKSIZE
 
 # Checks for library functions.
-AC_FUNC_MALLOC
 AC_FUNC_MEMCMP
 AC_FUNC_STAT
 AC_CHECK_FUNCS(basename memset select strdup strerror strndup strrchr strtoul usleep mkstemp)

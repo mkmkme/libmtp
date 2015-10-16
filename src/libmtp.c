@@ -1608,8 +1608,10 @@ LIBMTP_mtpdevice_t *LIBMTP_Get_First_Device(void)
     if (ret != LIBMTP_ERROR_NONE)
         return NULL;
 
-    if (devices == NULL || numdevs == 0)
+    if (devices == NULL || numdevs == 0) {
+        free(devices);
         return NULL;
+    }
 
     first_device = LIBMTP_Open_Raw_Device(&devices[0]);
     free(devices);
@@ -2106,6 +2108,7 @@ LIBMTP_error_number_t LIBMTP_Get_Connected_Devices(LIBMTP_mtpdevice_t **device_l
     /* Assign linked list of devices */
     if (devices == NULL || numdevs == 0) {
         *device_list = NULL;
+        free(devices);
         return LIBMTP_ERROR_NO_DEVICE_ATTACHED;
     }
 

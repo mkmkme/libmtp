@@ -2053,6 +2053,7 @@ LIBMTP_error_number_t configure_usb_device(LIBMTP_raw_device_t *device,
 
     if (err) {
         libusb_free_device_list (devs, 0);
+        free(ptp_usb);
         LIBMTP_ERROR("LIBMTP PANIC: Unable to find interface & endpoints of device\n");
         return LIBMTP_ERROR_CONNECTING;
     }
@@ -2062,6 +2063,7 @@ LIBMTP_error_number_t configure_usb_device(LIBMTP_raw_device_t *device,
 
     /* Attempt to initialize this device */
     if (init_ptp_usb(params, ptp_usb, ldevice) < 0) {
+        free(ptp_usb);
         LIBMTP_ERROR("LIBMTP PANIC: Unable to initialize device\n");
         libusb_free_device_list (devs, 0);
         return LIBMTP_ERROR_CONNECTING;
@@ -2080,6 +2082,7 @@ LIBMTP_error_number_t configure_usb_device(LIBMTP_raw_device_t *device,
         if(init_ptp_usb(params, ptp_usb, ldevice) <0) {
             LIBMTP_ERROR("LIBMTP PANIC: Could not init USB on second attempt\n");
             libusb_free_device_list (devs, 0);
+            free(ptp_usb);
             return LIBMTP_ERROR_CONNECTING;
         }
 
@@ -2087,6 +2090,7 @@ LIBMTP_error_number_t configure_usb_device(LIBMTP_raw_device_t *device,
         if ((ret = ptp_opensession(params, 1)) == PTP_ERROR_IO) {
             LIBMTP_ERROR("LIBMTP PANIC: failed to open session on second attempt\n");
             libusb_free_device_list (devs, 0);
+            free(ptp_usb);
             return LIBMTP_ERROR_CONNECTING;
         }
     }
@@ -2110,6 +2114,7 @@ LIBMTP_error_number_t configure_usb_device(LIBMTP_raw_device_t *device,
     /* OK configured properly */
     *usbinfo = (void *) ptp_usb;
     libusb_free_device_list (devs, 0);
+    free(ptp_usb);
     return LIBMTP_ERROR_NONE;
 }
 
