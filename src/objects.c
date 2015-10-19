@@ -147,7 +147,7 @@ int LIBMTP_EndEditObject(LIBMTP_mtpdevice_t *device, uint32_t const id)
 
     ret = ptp_android_endeditobject(params, id);
     if (ret == PTP_RC_OK) {
-        // update cached object properties if metadata cache exists
+        /* update cached object properties if metadata cache exists */
         update_metadata_cache(device, id);
         return 0;
     }

@@ -26,7 +26,5 @@ int LIBMTP_BeginEditObject(LIBMTP_mtpdevice_t *device, uint32_t const id);
 
 int LIBMTP_EndEditObject(LIBMTP_mtpdevice_t *device, uint32_t const id);
 
-int LIBMTP_TruncateObject(LIBMTP_mtpdevice_t *device,
-                          uint32_t const id,
-                          uint64_t offset);
+int LIBMTP_TruncateObject(LIBMTP_mtpdevice_t *device, uint32_t const id, uint64_t offset);
 

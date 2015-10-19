@@ -817,42 +817,6 @@ extern int LIBMTP_debug;
 void LIBMTP_Set_Debug(int);
 void LIBMTP_Init(void);
 int LIBMTP_Get_Supported_Devices_List(LIBMTP_device_entry_t ** const, int * const);
-/**
- * @}
- * @defgroup basic The basic device management API.
- * @{
- */
-LIBMTP_error_number_t LIBMTP_Detect_Raw_Devices(LIBMTP_raw_device_t **, int *);
-int LIBMTP_Check_Specific_Device(int busno, int devno);
-LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device(LIBMTP_raw_device_t *);
-LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device_Uncached(LIBMTP_raw_device_t *);
-/* Begin old, legacy interface */
-LIBMTP_mtpdevice_t *LIBMTP_Get_First_Device(void);
-LIBMTP_error_number_t LIBMTP_Get_Connected_Devices(LIBMTP_mtpdevice_t **);
-uint32_t LIBMTP_Number_Devices_In_List(LIBMTP_mtpdevice_t *);
-void LIBMTP_Release_Device_List(LIBMTP_mtpdevice_t*);
-/* End old, legacy interface */
-void LIBMTP_Release_Device(LIBMTP_mtpdevice_t*);
-void LIBMTP_Dump_Device_Info(LIBMTP_mtpdevice_t*);
-int LIBMTP_Reset_Device(LIBMTP_mtpdevice_t*);
-char *LIBMTP_Get_Manufacturername(LIBMTP_mtpdevice_t*);
-char *LIBMTP_Get_Modelname(LIBMTP_mtpdevice_t*);
-char *LIBMTP_Get_Serialnumber(LIBMTP_mtpdevice_t*);
-char *LIBMTP_Get_Deviceversion(LIBMTP_mtpdevice_t*);
-char *LIBMTP_Get_Friendlyname(LIBMTP_mtpdevice_t*);
-int LIBMTP_Set_Friendlyname(LIBMTP_mtpdevice_t*, char const * const);
-char *LIBMTP_Get_Syncpartner(LIBMTP_mtpdevice_t*);
-int LIBMTP_Set_Syncpartner(LIBMTP_mtpdevice_t*, char const * const);
-int LIBMTP_Get_Batterylevel(LIBMTP_mtpdevice_t *,
-                            uint8_t * const,
-                            uint8_t * const);
-int LIBMTP_Get_Secure_Time(LIBMTP_mtpdevice_t *, char ** const);
-int LIBMTP_Get_Device_Certificate(LIBMTP_mtpdevice_t *, char ** const);
-int LIBMTP_Get_Supported_Filetypes(LIBMTP_mtpdevice_t *, uint16_t ** const, uint16_t * const);
-int LIBMTP_Check_Capability(LIBMTP_mtpdevice_t *, LIBMTP_devicecap_t);
-LIBMTP_error_t *LIBMTP_Get_Errorstack(LIBMTP_mtpdevice_t*);
-void LIBMTP_Clear_Errorstack(LIBMTP_mtpdevice_t*);
-void LIBMTP_Dump_Errorstack(LIBMTP_mtpdevice_t*);
 
 #define LIBMTP_STORAGE_SORTBY_NOTSORTED 0
 #define LIBMTP_STORAGE_SORTBY_FREESPACE 1
@@ -891,64 +855,6 @@ void LIBMTP_destroy_allowed_values_t(LIBMTP_allowed_values_t*);
 
 /**
  * @}
- * @defgroup files The file management API.
- * @{
- */
-LIBMTP_file_t *LIBMTP_new_file_t(void);
-void LIBMTP_destroy_file_t(LIBMTP_file_t*);
-char const * LIBMTP_Get_Filetype_Description(LIBMTP_filetype_t);
-LIBMTP_file_t *LIBMTP_Get_Filelisting(LIBMTP_mtpdevice_t *);
-LIBMTP_file_t *LIBMTP_Get_Filelisting_With_Callback(LIBMTP_mtpdevice_t *,
-        LIBMTP_progressfunc_t const, void const * const);
-LIBMTP_file_t * LIBMTP_Get_Files_And_Folders(LIBMTP_mtpdevice_t *,
-        uint32_t const,
-        uint32_t const);
-LIBMTP_file_t *LIBMTP_Get_Filemetadata(LIBMTP_mtpdevice_t *, uint32_t const);
-int LIBMTP_Get_File_To_File(LIBMTP_mtpdevice_t*, uint32_t, char const * const,
-                            LIBMTP_progressfunc_t const, void const * const);
-int LIBMTP_Get_File_To_File_Descriptor(LIBMTP_mtpdevice_t*,
-                                       uint32_t const,
-                                       int const,
-                                       LIBMTP_progressfunc_t const,
-                                       void const * const);
-int LIBMTP_Get_File_To_Handler(LIBMTP_mtpdevice_t *,
-                               uint32_t const,
-                               MTPDataPutFunc,
-                               void *,
-                               LIBMTP_progressfunc_t const,
-                               void const * const);
-int LIBMTP_Send_File_From_File(LIBMTP_mtpdevice_t *,
-                               char const * const,
-                               LIBMTP_file_t * const,
-                               LIBMTP_progressfunc_t const,
-                               void const * const);
-int LIBMTP_Send_File_From_File_Descriptor(LIBMTP_mtpdevice_t *,
-        int const,
-        LIBMTP_file_t * const,
-        LIBMTP_progressfunc_t const,
-        void const * const);
-int LIBMTP_Send_File_From_Handler(LIBMTP_mtpdevice_t *,
-                                  MTPDataGetFunc, void *,
-                                  LIBMTP_file_t * const,
-                                  LIBMTP_progressfunc_t const,
-                                  void const * const);
-int LIBMTP_Set_File_Name(LIBMTP_mtpdevice_t *,
-                         LIBMTP_file_t *,
-                         const char *);
-LIBMTP_filesampledata_t *LIBMTP_new_filesampledata_t(void);
-void LIBMTP_destroy_filesampledata_t(LIBMTP_filesampledata_t *);
-int LIBMTP_Get_Representative_Sample_Format(LIBMTP_mtpdevice_t *,
-        LIBMTP_filetype_t const,
-        LIBMTP_filesampledata_t **);
-int LIBMTP_Send_Representative_Sample(LIBMTP_mtpdevice_t *, uint32_t const,
-                                      LIBMTP_filesampledata_t *);
-int LIBMTP_Get_Representative_Sample(LIBMTP_mtpdevice_t *, uint32_t const,
-                                     LIBMTP_filesampledata_t *);
-int LIBMTP_Get_Thumbnail(LIBMTP_mtpdevice_t *, uint32_t const,
-                         unsigned char **data, unsigned int *size);
-
-/**
- * @}
  * @defgroup tracks The track management API.
  * @{
  */
@@ -983,22 +889,6 @@ int LIBMTP_Update_Track_Metadata(LIBMTP_mtpdevice_t *,
 int LIBMTP_Track_Exists(LIBMTP_mtpdevice_t *, uint32_t const);
 int LIBMTP_Set_Track_Name(LIBMTP_mtpdevice_t *, LIBMTP_track_t *, const char *);
 /** @} */
-
-/**
- * @}
- * @defgroup folders The folder management API.
- * @{
- */
-LIBMTP_folder_t *LIBMTP_new_folder_t(void);
-void LIBMTP_destroy_folder_t(LIBMTP_folder_t*);
-LIBMTP_folder_t *LIBMTP_Get_Folder_List(LIBMTP_mtpdevice_t*);
-LIBMTP_folder_t *LIBMTP_Get_Folder_List_For_Storage(LIBMTP_mtpdevice_t*,
-        uint32_t const);
-LIBMTP_folder_t *LIBMTP_Find_Folder(LIBMTP_folder_t*, uint32_t const);
-uint32_t LIBMTP_Create_Folder(LIBMTP_mtpdevice_t*, char *, uint32_t, uint32_t);
-int LIBMTP_Set_Folder_Name(LIBMTP_mtpdevice_t *, LIBMTP_folder_t *, const char *);
-/** @} */
-
 
 /**
  * @}
@@ -1042,15 +932,6 @@ int LIBMTP_SendPartialObject(LIBMTP_mtpdevice_t *, uint32_t const,
 int LIBMTP_BeginEditObject(LIBMTP_mtpdevice_t *, uint32_t const);
 int LIBMTP_EndEditObject(LIBMTP_mtpdevice_t *, uint32_t const);
 int LIBMTP_TruncateObject(LIBMTP_mtpdevice_t *, uint32_t const, uint64_t);
-
-/**
- * @}
- * @defgroup files The events API.
- * @{
- */
-int LIBMTP_Read_Event(LIBMTP_mtpdevice_t *, LIBMTP_event_t *, uint32_t *);
-
-/** @} */
 
 /* End of C++ exports */
 #ifdef __cplusplus
