@@ -84,7 +84,7 @@
  *
  * (Please keep this list in sync with libmtp.h.)
  */
-int LIBMTP_debug = LIBMTP_DEBUG_NONE;
+static int LIBMTP_debug = LIBMTP_DEBUG_NONE;
 
 
 /*
