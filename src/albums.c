@@ -1,4 +1,6 @@
 
+#include "albums.h"
+
 /**
  * This creates a new album metadata structure and allocates memory
  * for it. Notice that if you add strings to this structure they
