@@ -808,8 +808,6 @@ typedef enum LIBMTP_event_enum LIBMTP_event_t;
 extern "C" {
 #endif
 
-extern int LIBMTP_debug;
-
 /**
  * @defgroup internals The libmtp internals API.
  * @{
