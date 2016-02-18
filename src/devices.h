@@ -4,6 +4,67 @@
  * @{
  */
 
+/**
+ * Main MTP device object struct
+ */
+struct LIBMTP_mtpdevice_struct {
+    /**
+     * Object bitsize, typically 32 or 64.
+     */
+    uint8_t object_bitsize;
+    /**
+     * Parameters for this device, must be cast into
+     * \c (PTPParams*) before internal use.
+     */
+    void *params;
+    /**
+     * USB device for this device, must be cast into
+     * \c (PTP_USB*) before internal use.
+     */
+    void *usbinfo;
+    /**
+     * The storage for this device, do not use strings in here without
+     * copying them first, and beware that this list may be rebuilt at
+     * any time.
+     * @see LIBMTP_Get_Storage()
+     */
+    LIBMTP_devicestorage_t *storage;
+    /**
+     * The error stack. This shall be handled using the error getting
+     * and clearing functions, not by dereferencing this list.
+     */
+    LIBMTP_error_t *errorstack;
+    /** The maximum battery level for this device */
+    uint8_t maximum_battery_level;
+    /** Default music folder */
+    uint32_t default_music_folder;
+    /** Default playlist folder */
+    uint32_t default_playlist_folder;
+    /** Default picture folder */
+    uint32_t default_picture_folder;
+    /** Default video folder */
+    uint32_t default_video_folder;
+    /** Default organizer folder */
+    uint32_t default_organizer_folder;
+    /** Default ZENcast folder (only Creative devices...) */
+    uint32_t default_zencast_folder;
+    /** Default Album folder */
+    uint32_t default_album_folder;
+    /** Default Text folder */
+    uint32_t default_text_folder;
+    /** Per device iconv() converters, only used internally */
+    void *cd;
+    /** Extension list */
+    LIBMTP_device_extension_t *extensions;
+    /** Whether the device uses caching, only used internally */
+    int cached;
+
+    /** Pointer to next device in linked list; NULL if this is the last device */
+    LIBMTP_mtpdevice_t *next;
+};
+
+typedef struct LIBMTP_mtpdevice_struct LIBMTP_mtpdevice_t; /**< @see LIBMTP_mtpdevice_struct */
+
 LIBMTP_error_number_t LIBMTP_Detect_Raw_Devices(LIBMTP_raw_device_t **, int *);
 int LIBMTP_Check_Specific_Device(int busno, int devno);
 LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device(LIBMTP_raw_device_t *);

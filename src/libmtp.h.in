@@ -32,29 +32,7 @@
 #define LIBMTP_VERSION @VERSION@
 #define LIBMTP_VERSION_STRING "@VERSION@"
 
-/* This handles MSVC pecularities */
-#ifdef _MSC_VER
-#include <windows.h>
-#define __WIN32__
-#define snprintf _snprintf
-#define ssize_t SSIZE_T
-/*
- * Types that do not exist in Windows
- * sys/types.h, but they exist in mingw32
- * sys/types.h.
- */
-typedef char int8_t;
-typedef unsigned char uint8_t;
-typedef __int16 int16_t;
-typedef unsigned __int16 uint16_t;
-typedef __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-typedef unsigned __int64 uint64_t;
-#endif
-
-#include <stdio.h>
-#include <stdint.h>
-/* We use time_t */
+#include "config.h"
 #include <time.h>
 
 /**

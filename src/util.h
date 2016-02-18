@@ -24,6 +24,9 @@
 #define __MTP__UTIL__H
 #include "config.h" // To get HAVE_STRNDUP
 
+#define LIBMTP_VERSION 1.1.10
+#define LIBMTP_VERSION_STRING "1.1.10"
+
 void data_dump(FILE *f, void *buf, uint32_t nbytes);
 void data_dump_ascii (FILE *f, void *buf, uint32_t n, uint32_t dump_boundry);
 #ifndef HAVE_STRNDUP

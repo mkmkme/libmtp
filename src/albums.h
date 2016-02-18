@@ -1,4 +1,7 @@
 
+#include "config.h"
+#include "devices.h"
+
 typedef struct LIBMTP_album_struct LIBMTP_album_t; /**< @see LIBMTP_album_struct */
 
 /**

@@ -3206,13 +3206,6 @@ typedef struct tagptp_chdk_videosettings {
 /* Nafraf: Test this!!!*/
 #define ptp_chdk_switch_mode(params,mode) ptp_generic_no_data(params,PTP_OC_CHDK,2,PTP_CHDK_SwitchMode,mode)
 
-/* include CHDK ptp protocol definitions from a CHDK source tree */
-#include "chdk_ptp.h"
-#if (PTP_CHDK_VERSION_MAJOR < 2 || (PTP_CHDK_VERSION_MAJOR == 2 && PTP_CHDK_VERSION_MINOR < 5))
-#error your chdk headers are too old, unset CHDK_SRC_DIR in config.mk
-#endif
-#include "chdk_live_view.h"
-
 /* the following happens to match what is used in CHDK, but is not part of the protocol */
 typedef struct {
     unsigned size;

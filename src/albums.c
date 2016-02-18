@@ -1,5 +1,6 @@
 
 #include "albums.h"
+#include <stdlib.h>
 
 /**
  * This creates a new album metadata structure and allocates memory
