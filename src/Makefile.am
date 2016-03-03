@@ -4,10 +4,12 @@ libmtp_la_CFLAGS = @LIBUSB_CFLAGS@
 libmtp_la_SOURCES = \
         libmtp.c libmtp.h \
         albums.c albums.h \
-        devices.c devices.h \
+        device.c device.h \
+        errors.c errors.h \
         events.c events.h \
         files.c files.h \
         objects.c objects.h \
+        storage.c storage.h \
         unicode.c unicode.h \
         util.c util.h \
         playlist-spl.c playlist-spl.h \

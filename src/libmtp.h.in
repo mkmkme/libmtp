@@ -33,6 +33,8 @@
 #define LIBMTP_VERSION_STRING "@VERSION@"
 
 #include "config.h"
+#include "errors.h"
+#include <stdint.h>
 #include <time.h>
 
 /**
@@ -404,25 +406,10 @@ typedef enum {
     LIBMTP_DEVICECAP_EditObjects,
 } LIBMTP_devicecap_t;
 
-/**
- * These are the numbered error codes. You can also
- * get string representations for errors.
- */
-typedef enum {
-    LIBMTP_ERROR_NONE,
-    LIBMTP_ERROR_GENERAL,
-    LIBMTP_ERROR_PTP_LAYER,
-    LIBMTP_ERROR_USB_LAYER,
-    LIBMTP_ERROR_MEMORY_ALLOCATION,
-    LIBMTP_ERROR_NO_DEVICE_ATTACHED,
-    LIBMTP_ERROR_STORAGE_FULL,
-    LIBMTP_ERROR_CONNECTING,
-    LIBMTP_ERROR_CANCELLED
-} LIBMTP_error_number_t;
+
 
 typedef struct LIBMTP_device_entry_struct LIBMTP_device_entry_t; /**< @see LIBMTP_device_entry_struct */
 typedef struct LIBMTP_raw_device_struct LIBMTP_raw_device_t; /**< @see LIBMTP_raw_device_struct */
-typedef struct LIBMTP_error_struct LIBMTP_error_t; /**< @see LIBMTP_error_struct */
 typedef struct LIBMTP_allowed_values_struct LIBMTP_allowed_values_t; /**< @see LIBMTP_allowed_values_struct */
 typedef struct LIBMTP_device_extension_struct LIBMTP_device_extension_t; /** < @see LIBMTP_device_extension_struct */
 typedef struct LIBMTP_mtpdevice_struct LIBMTP_mtpdevice_t; /**< @see LIBMTP_mtpdevice_struct */
@@ -433,7 +420,6 @@ typedef struct LIBMTP_album_struct LIBMTP_album_t; /**< @see LIBMTP_album_struct
 typedef struct LIBMTP_folder_struct LIBMTP_folder_t; /**< @see LIBMTP_folder_t */
 typedef struct LIBMTP_object_struct LIBMTP_object_t; /**< @see LIBMTP_object_t */
 typedef struct LIBMTP_filesampledata_struct LIBMTP_filesampledata_t; /**< @see LIBMTP_filesample_t */
-typedef struct LIBMTP_devicestorage_struct LIBMTP_devicestorage_t; /**< @see LIBMTP_devicestorage_t */
 
 /**
  * The callback type definition. Notice that a progress percentage ratio
@@ -512,14 +498,7 @@ struct LIBMTP_raw_device_struct {
     uint8_t devnum; /**< Device number on the bus, if device available */
 };
 
-/**
- * A data structure to hold errors from the library.
- */
-struct LIBMTP_error_struct {
-    LIBMTP_error_number_t errornumber;
-    char *error_text;
-    LIBMTP_error_t *next;
-};
+
 
 /**
  * A data structure to hold allowed ranges of values
@@ -595,79 +574,6 @@ struct LIBMTP_device_extension_struct {
 };
 
 /**
- * Main MTP device object struct
- */
-struct LIBMTP_mtpdevice_struct {
-    /**
-     * Object bitsize, typically 32 or 64.
-     */
-    uint8_t object_bitsize;
-    /**
-     * Parameters for this device, must be cast into
-     * \c (PTPParams*) before internal use.
-     */
-    void *params;
-    /**
-     * USB device for this device, must be cast into
-     * \c (PTP_USB*) before internal use.
-     */
-    void *usbinfo;
-    /**
-     * The storage for this device, do not use strings in here without
-     * copying them first, and beware that this list may be rebuilt at
-     * any time.
-     * @see LIBMTP_Get_Storage()
-     */
-    LIBMTP_devicestorage_t *storage;
-    /**
-     * The error stack. This shall be handled using the error getting
-     * and clearing functions, not by dereferencing this list.
-     */
-    LIBMTP_error_t *errorstack;
-    /** The maximum battery level for this device */
-    uint8_t maximum_battery_level;
-    /** Default music folder */
-    uint32_t default_music_folder;
-    /** Default playlist folder */
-    uint32_t default_playlist_folder;
-    /** Default picture folder */
-    uint32_t default_picture_folder;
-    /** Default video folder */
-    uint32_t default_video_folder;
-    /** Default organizer folder */
-    uint32_t default_organizer_folder;
-    /** Default ZENcast folder (only Creative devices...) */
-    uint32_t default_zencast_folder;
-    /** Default Album folder */
-    uint32_t default_album_folder;
-    /** Default Text folder */
-    uint32_t default_text_folder;
-    /** Per device iconv() converters, only used internally */
-    void *cd;
-    /** Extension list */
-    LIBMTP_device_extension_t *extensions;
-    /** Whether the device uses caching, only used internally */
-    int cached;
-
-    /** Pointer to next device in linked list; NULL if this is the last device */
-    LIBMTP_mtpdevice_t *next;
-};
-
-/**
- * MTP file struct
- */
-struct LIBMTP_file_struct {
-    uint32_t item_id; /**< Unique item ID */
-    uint32_t parent_id; /**< ID of parent folder */
-    uint32_t storage_id; /**< ID of storage holding this file */
-    char *filename; /**< Filename of this file */
-    uint64_t filesize; /**< Size of file in bytes */
-    time_t modificationdate; /**< Date of last alteration of the file */
-    LIBMTP_filetype_t filetype; /**< Filetype used for the current file */
-    LIBMTP_file_t *next; /**< Next file in list or NULL if last file */
-};
-
-/**
  * MTP track struct
  */
 struct LIBMTP_track_struct {
@@ -709,33 +615,6 @@ struct LIBMTP_playlist_struct {
     LIBMTP_playlist_t *next; /**< Next playlist or NULL if last playlist */
 };
 
-/**
- * MTP Album structure
- */
-struct LIBMTP_album_struct {
-    uint32_t album_id; /**< Unique playlist ID */
-    uint32_t parent_id; /**< ID of parent folder */
-    uint32_t storage_id; /**< ID of storage holding this album */
-    char *name; /**< Name of album */
-    char *artist; /**< Name of album artist */
-    char *composer; /**< Name of recording composer */
-    char *genre; /**< Genre of album */
-    uint32_t *tracks; /**< The tracks in this album */
-    uint32_t no_tracks; /**< The number of tracks in this album */
-    LIBMTP_album_t *next; /**< Next album or NULL if last album */
-};
-
-/**
- * MTP Folder structure
- */
-struct LIBMTP_folder_struct {
-    uint32_t folder_id; /**< Unique folder ID */
-    uint32_t parent_id; /**< ID of parent folder */
-    uint32_t storage_id; /**< ID of storage holding this folder */
-    char *name; /**< Name of folder */
-    LIBMTP_folder_t *sibling; /**< Next folder at same level or NULL if no more */
-    LIBMTP_folder_t *child; /**< Child folder or NULL if no children */
-};
 
 /**
  * LIBMTP Object RepresentativeSampleData Structure
@@ -749,22 +628,7 @@ struct LIBMTP_filesampledata_struct {
     char *data; /**< Sample data */
 };
 
-/**
- * LIBMTP Device Storage structure
- */
-struct LIBMTP_devicestorage_struct {
-    uint32_t id; /**< Unique ID for this storage */
-    uint16_t StorageType; /**< Storage type */
-    uint16_t FilesystemType; /**< Filesystem type */
-    uint16_t AccessCapability; /**< Access capability */
-    uint64_t MaxCapacity; /**< Maximum capability */
-    uint64_t FreeSpaceInBytes; /**< Free space in bytes */
-    uint64_t FreeSpaceInObjects; /**< Free space in objects */
-    char *StorageDescription; /**< A brief description of this storage */
-    char *VolumeIdentifier; /**< A volume identifier */
-    LIBMTP_devicestorage_t *next; /**< Next storage, follow this link until NULL */
-    LIBMTP_devicestorage_t *prev; /**< Previous storage */
-};
+
 
 /**
  * LIBMTP Event structure
@@ -793,13 +657,6 @@ extern "C" {
 void LIBMTP_Set_Debug(int);
 void LIBMTP_Init(void);
 int LIBMTP_Get_Supported_Devices_List(LIBMTP_device_entry_t ** const, int * const);
-
-#define LIBMTP_STORAGE_SORTBY_NOTSORTED 0
-#define LIBMTP_STORAGE_SORTBY_FREESPACE 1
-#define LIBMTP_STORAGE_SORTBY_MAXSPACE  2
-
-int LIBMTP_Get_Storage(LIBMTP_mtpdevice_t *, int const);
-int LIBMTP_Format_Storage(LIBMTP_mtpdevice_t *, LIBMTP_devicestorage_t *);
 
 /**
  * Get/set arbitrary properties.  These do not update the cache; should only be used on

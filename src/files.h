@@ -4,6 +4,33 @@
  * @{
  */
 
+/**
+ * MTP file struct
+ */
+struct LIBMTP_file_struct {
+    uint32_t item_id; /**< Unique item ID */
+    uint32_t parent_id; /**< ID of parent folder */
+    uint32_t storage_id; /**< ID of storage holding this file */
+    char *filename; /**< Filename of this file */
+    uint64_t filesize; /**< Size of file in bytes */
+    time_t modificationdate; /**< Date of last alteration of the file */
+    LIBMTP_filetype_t filetype; /**< Filetype used for the current file */
+    LIBMTP_file_t *next; /**< Next file in list or NULL if last file */
+};
+
+/**
+ * MTP Folder structure
+ */
+struct LIBMTP_folder_struct {
+    uint32_t folder_id; /**< Unique folder ID */
+    uint32_t parent_id; /**< ID of parent folder */
+    uint32_t storage_id; /**< ID of storage holding this folder */
+    char *name; /**< Name of folder */
+    LIBMTP_folder_t *sibling; /**< Next folder at same level or NULL if no more */
+    LIBMTP_folder_t *child; /**< Child folder or NULL if no children */
+};
+
+
 LIBMTP_file_t *LIBMTP_new_file_t(void);
 
 void LIBMTP_destroy_file_t(LIBMTP_file_t *file);
@@ -13,7 +40,8 @@ char const * LIBMTP_Get_Filetype_Description(LIBMTP_filetype_t intype);
 LIBMTP_file_t *LIBMTP_Get_Filelisting(LIBMTP_mtpdevice_t *device);
 
 LIBMTP_file_t *LIBMTP_Get_Filelisting_With_Callback(LIBMTP_mtpdevice_t *device,
-        LIBMTP_progressfunc_t const callback, void const * const data);
+                                                    LIBMTP_progressfunc_t const callback,
+                                                    void const * const data);
 
 LIBMTP_file_t * LIBMTP_Get_Files_And_Folders(LIBMTP_mtpdevice_t *device,
         uint32_t const storage,

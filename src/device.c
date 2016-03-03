@@ -1,3 +1,4 @@
+#include "device.h"
 
 /**
  * Detect the raw MTP device descriptors and return a list of
@@ -15,7 +16,7 @@
  * @return 0 if successful, any other value means failure.
  */
 LIBMTP_error_number_t LIBMTP_Detect_Raw_Devices(LIBMTP_raw_device_t ** devices,
-        int * numdevs)
+                                                int * numdevs)
 {
     mtpdevice_list_t *devlist = NULL;
     mtpdevice_list_t *dev;
@@ -505,7 +506,7 @@ uint32_t LIBMTP_Number_Devices_In_List(LIBMTP_mtpdevice_t *device_list)
 {
     uint32_t numdevices = 0;
     LIBMTP_mtpdevice_t *iter;
-    for(iter = device_list; iter != NULL; iter = iter->next)
+    for (iter = device_list; iter != NULL; iter = iter->next)
         numdevices++;
 
     return numdevices;
@@ -517,8 +518,8 @@ uint32_t LIBMTP_Number_Devices_In_List(LIBMTP_mtpdevice_t *device_list)
  */
 void LIBMTP_Release_Device_List(LIBMTP_mtpdevice_t *device)
 {
-    if(device != NULL) {
-        if(device->next != NULL)
+    if (device != NULL) {
+        if (device->next != NULL)
             LIBMTP_Release_Device_List(device->next);
 
         LIBMTP_Release_Device(device);

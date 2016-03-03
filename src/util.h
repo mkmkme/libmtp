@@ -23,6 +23,7 @@
 #ifndef __MTP__UTIL__H
 #define __MTP__UTIL__H
 #include "config.h" // To get HAVE_STRNDUP
+#include <stdio.h>
 
 #define LIBMTP_VERSION 1.1.10
 #define LIBMTP_VERSION_STRING "1.1.10"
